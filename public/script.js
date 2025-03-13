@@ -20,7 +20,10 @@ socket.onmessage = (event) => {
 
     if (data.type === "move") {
         updateTable(data.card);
-        myTurn = !myTurn;
+    }
+
+    if (data.type === "turn") {
+        myTurn = data.turn;
         updateStatus();
     }
 };
@@ -47,9 +50,7 @@ function playCard(card) {
     if (!myTurn) return;
     
     socket.send(JSON.stringify({ type: "move", card: card }));
-    updateTable(card);
-    
-    myTurn = false;
+    myTurn = false; // Temporarily set to false before getting server confirmation
     updateStatus();
 }
 
