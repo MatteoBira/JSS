@@ -1,7 +1,7 @@
 # JSS
 JavaScript-Scopa online
 ## SCOPA: THE GAME OF STRATEGY, PASSION, AND DOMINATION
-Welcome to Scopa, the legendary Italian card game where skill seduces, timing teases, and every victory feels better than it should. Play smart, play aggressive, and when the moment is right—go for the Scopa and leave your opponents begging for another round.
+Welcome to Scopa, the legendary Italian card game where skill seduces, timing teases, and every victory feels better than it should. Play smart, play aggressive, and when the moment is right go for the Scopa and leave your opponents begging for another round.
 
 This online version may entirely be coded in JavaScript: the clumsy, awkward language of the internet, but don’t let that kill the mood. The game itself? Pure elegance. Unlike JavaScript, Scopa actually makes sense. So shuffle up, take control, and show your rivals who really knows how to play.
 ## RULES OF THE GAME
