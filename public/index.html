@@ -1,19 +1,65 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scopa Multiplayer</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>Scopa - Home</title>
 </head>
 <body>
-    <h1>Scopa Multiplayer</h1>
-    <div id="game">
-        <div id="table"></div>
-        <div id="player-hand"></div>
-        <p id="status">Waiting for another player...</p>
+    <audio id="audio" >
+        <source src="music/Relaxing Jazz Music in the Rain - 30 Minutes.mp3" type="audio/mp3">
+    </audio>
+    <div id="starting-menu">
+        <h1>Scopa Multiplayer</h1>
+        <button onclick="playGame()">Play</button>
+        <button onclick="apriImpostazioni()">Settings</button>
+        <button onclick="exitGame()">Exit</button>
+        <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
+    </div>
+    <div class="settings-popup" id="settingsPopup" style="display: none;">
+        <h2>Impostazioni</h2>
+        <label>Volume:</label>
+        <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="10">
+        <button id="btn" onclick="chiudiImpostazioni()">Chiudi</button>
+    </div>
+
+    <div id="content">
+        <div id="left-content">
+            <div id="guide">
+                <a target="_blank" href="https://it.wikipedia.org/wiki/Scopa_(gioco)" > <img src="img/guideIcon.png" alt=""></a>
+            </div>
+            <div class="icon-container">
+                <p id="status">Waiting for another player...</p>
+                <img id="icon-img" src="img/icon.png" alt="">
+                <p id="player1ID">You</p>
+            </div>
+        </div>
+        <div id="main-content">
+            <div id="top-content">
+                <div class="half-table" id="opponent-hand">
+                </div>
+            </div>
+            <div id="game">
+                <div id="table"></div>
+            </div>
+            <div id="bottom-content">
+                <div class="half-table" id="player-hand">
+                </div>
+            </div>
+        </div>
+        <div id="right-content">
+            <div class="icon-container">
+                <p id="opponent">Waiting for an opponent...</p>
+                <img id="icon-img" src="img/icon.png" alt="">
+                <p id="player2ID">Opponent</p>
+            </div>
+            <div id="deck">
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
 </html>
-
