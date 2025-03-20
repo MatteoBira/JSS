@@ -1,18 +1,24 @@
-const WebSocket = require("ws");
-
+const WebSocket = require("ws"); //web socket library
 require("./Card/index.js"); //get class card
 const Mazzo = require("./Mazzo/index.js"); //get deck card
+require("dotenv").config(); // load env variables from .env file
 
 let players = [];
 
-const serverPort = 8080;
+const serverPort = process.env.PORT;
+const serverHost = process.env.HOST;
+
+if (!serverPort || !serverHost) {
+  console.log("You must set the .env file first!");
+  process.exit(1);
+}
 
 let mazzo = new Mazzo();
-let server = new WebSocket.Server({ port: serverPort }); //handle problem
+let server = new WebSocket.Server({ host: serverHost, port: serverPort });
 
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
-    console.log("Errore assegnazione porta: " + serverPort);
+    console.log("Errore binding su porta " + serverPort);
   } else {
     console.log("Errore sconosciuto");
   }
@@ -20,7 +26,9 @@ server.on("error", (err) => {
 });
 
 server.on("listening", () => {
-  console.log("WebSocket server is running on ws://localhost:8080");
+  console.log(
+    `WebSocket server is running on ws://${serverHost}:${serverPort}`
+  );
   mazzo.shuffle();
   console.log(mazzo.getArray());
 });
