@@ -1,4 +1,7 @@
 body, html {
+    background-image: url(img/sfondo.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -8,8 +11,6 @@ body, html {
 }
 
 #content {
-    background-image: url(img/sfondo.jfif);
-    background-position: 100% 100%;
     display: flex;
     width: 100%;
     height: 100%;
@@ -133,15 +134,16 @@ body, html {
     width: 40%;
 }
 
-#guide {
+#settings-game {
     align-self: flex-start;
     height: 100%;
 }
 
-#guide > a > img {
+#settings-game > img {
     width: 30%;
     margin-left: 5%;
     margin-top: 5%;
+    cursor: pointer;
 }
 
 #deckCards {
@@ -224,52 +226,52 @@ p {
     height: 100%;
     margin: 0;
     color: white;
-    background: linear-gradient(to bottom, #1a1a1a, #292929);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 button {
     color: white;
-    background-color: #ff1717;
+    background-color:  #53ca1b;
     padding: 1% 2% 1% 2%;
     border-radius: 5px;
     border: none;
     width: 15%;
     margin: 0.5%;
-    font-size: 30px;
+    font-size: 25px;
 }
 
 button:hover {
-    background-color: #fc2d2d;
+    background-color:  #43b310;
 }
 
 .settings-popup {
-    position: relative;
+    flex-direction: column;
     text-align: center;
     background: rgba(0, 0, 0, 0.8);
-    padding: 0.5%;
+    padding: 2%;
     border-radius: 10px;
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
+    justify-content: center;
 }
 
-#btn {
-    display: block;
+.btn {
     width: 100%;
-    margin: 0.5% auto;
     padding: 0.5%;
-    background: #ff1717;
+    margin: 1%;
+    background: #53ca1b;
     border: none;
-    border-radius: 10%;
+    border-radius: 10px;
     font-size: 1.2rem;
     cursor: pointer;
     transition: 0.3s;
 }
 
-#btn:hover {
-    background-color: #fc2d2d;
+.btn:hover {
+    background-color: #43b310;
 }
 
 .volume-icon {

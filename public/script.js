@@ -1,5 +1,4 @@
-const socket = new WebSocket("ws://localhost:8080");
-
+let socket = null;
 let playerNumber;
 let myTurn = false;
 let myHand = [];
@@ -7,28 +6,6 @@ let cardNumber = 1;
 let prevVolume;
 let music = 0.01;
 
-socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-
-    if (data.type === "welcome") {
-        playerNumber = data.playerNumber;
-        document.getElementById("status").innerText = `You are Player ${playerNumber}`;
-    }
-
-    if (data.type === "start") {
-        myTurn = data.turn;
-        startGame();
-    }
-
-    if (data.type === "move") {
-        updateTable(data.card);
-    }
-
-    if (data.type === "turn") {
-        myTurn = data.turn;
-        updateStatus();
-    }
-};
 
 function updateStatus() {
     document.getElementById("status").innerText = myTurn ? "Your Turn!" : "Waiting for a move...";
@@ -111,9 +88,33 @@ function updateTable(cardId) {
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("content").style.display = "none";
+    avviaMusica();
 })
 
 function playGame() {
+    socket = new WebSocket("ws://localhost:8080");
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+    
+        if (data.type === "welcome") {
+            playerNumber = data.playerNumber;
+            document.getElementById("status").innerText = `You are Player ${playerNumber}`;
+        }
+    
+        if (data.type === "start") {
+            myTurn = data.turn;
+            startGame();
+        }
+    
+        if (data.type === "move") {
+            updateTable(data.card);
+        }
+    
+        if (data.type === "turn") {
+            myTurn = data.turn;
+            updateStatus();
+        }
+    };
     let btn = event.currentTarget;
     btn.innerText = "Searching for an opponent...";
     btn.style.backgroundColor = "grey";
@@ -124,12 +125,17 @@ function exitGame() {
     window.close();
 }
 
-function apriImpostazioni() {
-    document.getElementById('settingsPopup').style.display = 'block';
+function apriImpostazioniMenu() {
+    document.getElementById('settingsPopupMenu').style.display = 'flex';
+}
+
+function apriImpostazioniGame() {
+    document.getElementById('settingsPopupGame').style.display = 'flex';
 }
 
 function chiudiImpostazioni() {
-    document.getElementById('settingsPopup').style.display = 'none';
+    document.getElementById('settingsPopupGame').style.display = 'none';
+    document.getElementById('settingsPopupMenu').style.display = 'none';
 }
 
 function cambiaVolume(value) {
@@ -160,9 +166,13 @@ function volumeChanger() {
 function startGame() {
     document.getElementById("starting-menu").style.display = "none";
     document.getElementById("content").style.display = "flex";
-
+    document.title = "Scopa - Game"
     updateStatus();
     generateDeck();
     generateTable();
     generateHand();
+}
+
+function quitGame() {
+    alert("Non funziona...");
 }

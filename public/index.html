@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,22 +14,31 @@
     <div id="starting-menu">
         <h1>Scopa Multiplayer</h1>
         <button onclick="playGame()">Play</button>
-        <button onclick="apriImpostazioni()">Settings</button>
+        <button onclick="apriImpostazioniMenu()">Settings</button>
         <button onclick="exitGame()">Exit</button>
         <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
     </div>
-    <div class="settings-popup" id="settingsPopup" style="display: none;">
+    <div class="settings-popup" id="settingsPopupMenu" style="display: none;">
         <h2>Impostazioni</h2>
         <label>Volume:</label>
         <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="10">
-        <button id="btn" onclick="chiudiImpostazioni()">Chiudi</button>
+        <button class="btn" onclick="chiudiImpostazioni()">Chiudi</button>
     </div>
 
     <div id="content">
         <div id="left-content">
-            <div id="guide">
-                <a target="_blank" href="https://it.wikipedia.org/wiki/Scopa_(gioco)" > <img src="img/guideIcon.png" alt=""></a>
+            <div id="settings-game">
+                <img onclick="apriImpostazioniGame()" src="img/settings-gears.png" alt="Settings">
             </div>
+
+            <div class="settings-popup" id="settingsPopupGame" style="display: none;">
+                <h2>Impostazioni</h2>
+                <label>Volume:</label>
+                <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="10">
+                <button class="btn" onclick="chiudiImpostazioni()">Chiudi</button>
+                <button class="btn" onclick="quitGame()">Abbandona</button>
+            </div>
+
             <div class="icon-container">
                 <p id="status">Waiting for another player...</p>
                 <img id="icon-img" src="img/icon.png" alt="">
