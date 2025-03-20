@@ -5,7 +5,7 @@ const Mazzo = require("./Mazzo/index.js"); //get deck card
 
 let players = [];
 
-const serverPort = 8180;
+const serverPort = 8080;
 
 let mazzo = new Mazzo();
 let server = new WebSocket.Server({ port: serverPort }); //handle problem
