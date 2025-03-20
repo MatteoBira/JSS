@@ -15,14 +15,13 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
+          node-version: "18"
 
       - name: Install dependencies
         run: |
-          cd server
-          npm install
+          npm ci
 
       - name: Esegui server.js
         run: |
-          cd server
-          node server.js
+          npm run test:client
+          npm run test:server

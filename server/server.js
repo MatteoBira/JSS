@@ -34,12 +34,11 @@ server.on("connection", (socket) => {
       JSON.stringify({ type: "welcome", playerNumber: players.length })
     );
   }
-
-  /*if (players.length === 2) {
-      players.forEach((p, index) => {
-        p.send(JSON.stringify({ type: "start", turn: index === 0 }));
-      });
-    }*/
+  if (players.length === 2) {
+    players.forEach((p, index) => {
+      p.send(JSON.stringify({ type: "start", turn: index === 0 }));
+    });
+  }
 
   socket.on("message", (message) => {
     const data = JSON.parse(message);

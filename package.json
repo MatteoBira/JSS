@@ -2,13 +2,14 @@
   "name": "jss",
   "version": "1.0.0",
   "description": "Javascript Scopa online",
-  "main": "index.js",
+  "main": "./server/server.js",
   "dependencies": {
     "ws": "^8.18.1"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node ./server/server.js"
+    "test:server": "node --check ./server/server.js",
+    "test:client": "node --check ./public/script.js"
   },
   "repository": {
     "type": "git",
