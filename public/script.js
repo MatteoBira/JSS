@@ -1,5 +1,4 @@
-const socket = new WebSocket("ws://localhost:8080");
-
+let socket = null;
 let playerNumber;
 let myTurn = false;
 let myHand = [];
@@ -7,41 +6,48 @@ let cardNumber = 1;
 let prevVolume;
 let music = 0.01;
 
-socket.onmessage = (event) => {
-  const data = JSON.parse(event.data);
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("content").style.display = "none";
+});
 
-  if (data.type === "welcome") {
-    playerNumber = data.playerNumber;
-    document.getElementById(
-      "status"
-    ).innerText = `You are Player ${playerNumber}`;
-  }
+function playGame() {
+  socket = new WebSocket("ws://localhost:8080");
 
-  if (data.type === "start") {
-    myTurn = data.turn;
-    startGame();
-  }
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
 
-  if (data.type === "move") {
-    updateTable(data.card);
-    if(myTurn){
+    if (data.type === "welcome") {
+      playerNumber = data.playerNumber;
+      document.getElementById("status").innerText = `You are Player ${playerNumber}`;
     }
-  }
 
-  if (data.type === "remove_opponent_card") {
-    removeOpponentCard();
-  }
+    if (data.type === "start") {
+      myTurn = data.turn;
+      startGame();
+    }
 
-  if (data.type === "turn") {
-    myTurn = data.turn;
-    updateStatus();
-  }
-};
+    if (data.type === "move") {
+      updateTable(data.card);
+    }
+
+    if (data.type === "remove_opponent_card") {
+      removeOpponentCard();
+    }
+
+    if (data.type === "turn") {
+      myTurn = data.turn;
+      updateStatus();
+    }
+  };
+
+  const btn = event.currentTarget;
+  btn.innerText = "Searching for an opponent...";
+  btn.style.backgroundColor = "grey";
+  avviaMusica();
+}
 
 function updateStatus() {
-  document.getElementById("status").innerText = myTurn
-    ? "Your Turn!"
-    : "Waiting for a move...";
+  document.getElementById("status").innerText = myTurn? "Your Turn!" : "Waiting for a move...";
   document.getElementById("opponent").innerText = myTurn ? "" : "";
 }
 
@@ -103,7 +109,7 @@ function playCard(card) {
   if (!myTurn) return;
   let myCardRemover = event.currentTarget.id;
   socket.send(JSON.stringify({ type: "move", card: card }));
-  myTurn = false; // Temporarily set to false before getting server confirmation
+  myTurn = false;
   document.getElementById(myCardRemover).remove();
   updateStatus();
   updateTable();
@@ -116,22 +122,11 @@ function updateTable(cardId) {
   tableDiv.appendChild(cardDiv);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("content").style.display = "none";
-});
-
 function removeOpponentCard() {
   let opponentHandDiv = document.getElementById("opponent-hand");
   if (opponentHandDiv.children.length > 0) {
     opponentHandDiv.removeChild(opponentHandDiv.children[0]);
   }
-}
-
-function playGame() {
-  let btn = event.currentTarget;
-  btn.innerText = "Searching for an opponent...";
-  btn.style.backgroundColor = "grey";
-  avviaMusica();
 }
 
 function exitGame() {
@@ -174,7 +169,6 @@ function volumeChanger() {
 function startGame() {
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("content").style.display = "flex";
-
   updateStatus();
   generateDeck();
   generateTable();
