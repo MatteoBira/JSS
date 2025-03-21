@@ -24,6 +24,12 @@ socket.onmessage = (event) => {
 
   if (data.type === "move") {
     updateTable(data.card);
+    if(myTurn){
+    }
+  }
+
+  if (data.type === "remove_opponent_card") {
+    removeOpponentCard();
   }
 
   if (data.type === "turn") {
@@ -113,6 +119,13 @@ function updateTable(cardId) {
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("content").style.display = "none";
 });
+
+function removeOpponentCard() {
+  let opponentHandDiv = document.getElementById("opponent-hand");
+  if (opponentHandDiv.children.length > 0) {
+    opponentHandDiv.removeChild(opponentHandDiv.children[0]);
+  }
+}
 
 function playGame() {
   let btn = event.currentTarget;
