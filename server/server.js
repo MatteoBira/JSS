@@ -1,6 +1,7 @@
 const WebSocket = require("ws"); //web socket library
-require("./Card/index.js"); //get class card
-const Mazzo = require("./Mazzo/index.js"); //get deck card
+const Card = require("./Card/index.js"); //get class card
+const Mazzo = require("./Mazzo/index.js");
+const Tavolo = require("./Tavolo/index.js"); //ricevi le carte sul tavolo
 require("dotenv").config(); // load env variables from .env file
 
 let players = [];
@@ -14,6 +15,7 @@ if (!serverPort || !serverHost) {
 }
 
 let mazzo = new Mazzo();
+let tavolo = new Tavolo();
 let server = new WebSocket.Server({ host: serverHost, port: serverPort });
 
 server.on("error", (err) => {
@@ -33,6 +35,15 @@ server.on("listening", () => {
   console.log(mazzo.getArray());
 });
 
+function giveCard(nGiocatore, carta) {
+  if (!(carta instanceof Card)) {
+    throw new Error("L'elemento aggiunto deve essere una Carta");
+  }
+
+  const player = players[nGiocatore];
+  player ? player.send(JSON.stringify({ type: "card", card: carta })) : console.log("Giocatore non trovato");
+}
+
 server.on("connection", (socket) => {
   console.log("A player connected");
 
@@ -43,9 +54,17 @@ server.on("connection", (socket) => {
     );
   }
   if (players.length === 2) {
+    let primoGiocatore = Math.random() < 0.5 ? 0 : 1;
+  
     players.forEach((p, index) => {
-      p.send(JSON.stringify({ type: "start", turn: index === 0 }));
+      p.send(JSON.stringify({ type: "start", turn: index === primoGiocatore }));
     });
+  }
+
+  for(let i = 0; i< 3; i++)
+  {
+    giveCard(0,mazzo.removeCard());
+    giveCard(1,mazzo.removeCard());
   }
 
   socket.on("message", (message) => {
@@ -57,6 +76,8 @@ server.on("connection", (socket) => {
         p.send(JSON.stringify({ type: "move", card: data.card }))
       );
 
+      tavolo.addCard(data.card)
+
       // Switch turns
       players.forEach((p, index) => {
         p.send(
@@ -66,6 +87,21 @@ server.on("connection", (socket) => {
           })
         );
       });
+    }
+
+    if (data.type === "showTavolo") {
+      socket.send(
+        JSON.stringify({
+          type: "tavolo",
+          cards: tavolo.toJSON(),
+        })
+      );
+    }
+
+    if (data.type === "azione") { //parola migliore non mi veniva, non rompete
+
+      const combinazione = tavolo.Combinations(data.card, data.cardsList);
+      socket.send(JSON.stringify({ type: "azione", success: combinazione }));
     }
   });
 

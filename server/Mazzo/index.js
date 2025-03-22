@@ -28,6 +28,10 @@ class Mazzo {
       [this.#mazzo[i], this.#mazzo[j]] = [this.#mazzo[j], this.#mazzo[i]];
     }
   }
+
+  removeCard() {
+    return this.#mazzo.shift() || null;
+  }
 }
 
 // Esportazione della classe
