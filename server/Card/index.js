@@ -18,10 +18,6 @@ class Card {
   mostraCard() {
     return `${this.#valore} di ${this.#seme}`;
   }
-
-  toString() {
-    return this.mostraCard();
-  }
 }
 
 // Esportazione della classe
