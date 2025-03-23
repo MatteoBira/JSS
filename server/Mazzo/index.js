@@ -19,7 +19,10 @@ class Mazzo {
   }
 
   getArray() {
-    return this.#mazzo;
+    return this.#mazzo.map(carta => ({
+      valore: carta.getValore(),
+      seme: carta.getSeme()
+    }));
   }
 
   shuffle() {

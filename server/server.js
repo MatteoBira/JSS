@@ -44,6 +44,8 @@ function giveCard(nGiocatore, carta) {
   player ? player.send(JSON.stringify({ type: "card", card: carta })) : console.log("Giocatore non trovato");
 }
 
+
+
 server.on("connection", (socket) => {
   console.log("A player connected");
 
@@ -110,3 +112,5 @@ server.on("connection", (socket) => {
     console.log("A player disconnected");
   });
 });
+
+

@@ -19,8 +19,8 @@ class Card {
     return `${this.#valore} di ${this.#seme}`;
   }
 
-  toJSON() {
-    return { valore: this.#valore, seme: this.#seme };
+  toString() {
+    return this.mostraCard();
   }
 }
 

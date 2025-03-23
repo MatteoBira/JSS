@@ -8,7 +8,10 @@ class Tavolo {
   }
 
   getArray() {
-    return this.#tavolo;
+    return this.#tavolo.map(carta => ({
+      valore: carta.getValore(),
+      seme: carta.getSeme()
+    }));
   }
 
   addCard(carta) {
@@ -33,8 +36,17 @@ class Tavolo {
     if (!Array.isArray(carteTavolo) || !carteTavolo.every(c => c instanceof Card)) {
       throw new Error("Non sono delle carte");
     }
+  
+    if (this.#tavolo.some(c => c.getValore() === carta.getValore())) { //c'è già una carta con lo stesso valore
+      return false;
+    }
+  
+    let sommaCarteTavolo = carteTavolo.reduce((acc, c) => acc + c.getValore(), 0);
+    if (sommaCarteTavolo !== carta.getValore()) {
+      return false;
+    }
 
-    for (let card of carteTavolo) {
+    for (let card of carteTavolo) { //controllo se le carte sono presenti nel tavolo
       const found = this.#tavolo.some(
         c => c.getValore() === card.getValore() && c.getSeme() === card.getSeme()
       );
@@ -43,19 +55,11 @@ class Tavolo {
       }
     }
 
-    let sommaCarteTavolo = carteTavolo.reduce((acc, c) => acc + c.getValore(), 0);
-    if (sommaCarteTavolo !== carta.getValore()) {
-      return false;
-    }
     for (let card of carteTavolo) {
       this.removeCard(card);
     }
+    
     return true;
-  }
-
-
-  toJSON() {
-    return this.#tavolo.map(card => card.toJSON());
   }
 }
 
