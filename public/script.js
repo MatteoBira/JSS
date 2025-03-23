@@ -4,7 +4,7 @@ let myTurn = false;
 let myHand = [];
 let cardNumber = 1;
 let prevVolume;
-let music = 0.01;
+let music = 0.005;
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("content").style.display = "none";
@@ -135,10 +135,12 @@ function exitGame() {
 
 function apriImpostazioni() {
   document.getElementById("settingsPopup").style.display = "block";
+  document.getElementById("main-menu").style.display = "none";
 }
 
 function chiudiImpostazioni() {
   document.getElementById("settingsPopup").style.display = "none";
+  document.getElementById("main-menu").style.display = "flex";
 }
 
 function cambiaVolume(value) {
@@ -169,6 +171,7 @@ function volumeChanger() {
 function startGame() {
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("content").style.display = "flex";
+  document.getElementById("banner").style.display = "none";
   updateStatus();
   generateDeck();
   generateTable();

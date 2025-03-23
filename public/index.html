@@ -12,18 +12,22 @@
     <audio id="audio" >
         <source src="music/Relaxing Jazz Music in the Rain - 30 Minutes.mp3" type="audio/mp3">
     </audio>
-    <div id="starting-menu">
-        <h1>Scopa Multiplayer</h1>
-        <button onclick="playGame()">Play</button>
-        <button onclick="apriImpostazioni()">Settings</button>
-        <button onclick="exitGame()">Exit</button>
-        <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
-    </div>
-    <div class="settings-popup" id="settingsPopup" style="display: none;">
-        <h2>Impostazioni</h2>
-        <label>Volume:</label>
-        <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="10">
-        <button id="btn" onclick="chiudiImpostazioni()">Chiudi</button>
+    <div id="main-container">
+        <div id="banner"></div>
+        <div id="starting-menu">
+            <div id="main-menu">
+                <button onclick="playGame()">Play</button>
+                <button onclick="apriImpostazioni()">Settings</button>
+                <button onclick="exitGame()">Exit</button>
+                <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>    
+            </div>
+            <div id="settingsPopup" style="display: none;">
+                <h2>Impostazioni</h2>
+                <label>Volume:</label>
+                <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="10">
+                <button id="btn" onclick="chiudiImpostazioni()">Chiudi</button>
+            </div>
+        </div>
     </div>
 
     <div id="content">
