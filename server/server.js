@@ -52,10 +52,17 @@ server.on("connection", (socket) => {
     const data = JSON.parse(message);
 
     if (data.type === "move") {
+      let playerIndex = players.indexOf(socket);
+      let opponentIndex = playerIndex === 0 ? 1 : 0;
       // Broadcast the move to both players
       players.forEach((p) =>
         p.send(JSON.stringify({ type: "move", card: data.card }))
       );
+
+      //avvisa client che deve rimuovere card
+      if (players[opponentIndex]) {
+        players[opponentIndex].send(JSON.stringify({ type: "remove_opponent_card" }));
+      }
 
       // Switch turns
       players.forEach((p, index) => {
