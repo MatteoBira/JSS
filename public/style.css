@@ -164,9 +164,19 @@ body, html {
     z-index: 3;
 }
 
-#bot-card1:hover, #bot-card2:hover, #bot-card3:hover {
+#bot-card1:hover {
     z-index: 4;
     animation: bounceBot1 1.5s infinite;
+}
+
+#bot-card2:hover {
+    z-index: 4;
+    animation: bounceBot2 1.5s infinite;
+}
+
+#bot-card3:hover {
+    z-index: 4;
+    animation: bounceBot3 1.5s infinite;
 }
 
 p {
