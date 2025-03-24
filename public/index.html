@@ -21,10 +21,10 @@
                 <button onclick="exitGame()">Exit</button>
                 <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>    
             </div>
-            <div id="settingsPopup" style="display: none;">
+            <div id="settingsPopup">
                 <h2>Impostazioni</h2>
                 <label>Volume:</label>
-                <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="10">
+                <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="5">
                 <button id="btn" onclick="chiudiImpostazioni()">Chiudi</button>
             </div>
         </div>
@@ -33,7 +33,7 @@
     <div id="content">
         <div id="left-content">
             <div id="guide">
-                <a target="_blank" href="https://it.wikipedia.org/wiki/Scopa_(gioco)" > <img src="img/guideIcon.png" alt=""></a>
+                <img onclick="inGameSettings()" src="img/settings.png" alt="">
             </div>
             <div class="icon-container">
                 <p id="status">Waiting for another player...</p>
@@ -47,6 +47,19 @@
                 </div>
             </div>
             <div id="game">
+                <div id="inGameSettings">
+                    <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="5">    
+                    <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
+                    <button onclick="openGuide()">Open Guide</button>
+                    <button id="btn" onclick="chiudiIGImpostazioni()">Chiudi</button>
+                </div>
+                
+                <div id="pdfContainer" style="display:none;">
+                    <div id="pdfContent">
+                        <iframe id="pdfIframe" src="" width="80%" height="80%"></iframe>
+                        <button onclick="closeGuide()">Close</button>
+                    </div>
+                </div>
                 <div id="table"></div>
             </div>
             <div id="bottom-content">
