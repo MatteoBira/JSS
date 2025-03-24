@@ -12,13 +12,15 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function playGame() {
-  /*if(startButtonClick) { return;
+  if(startButtonClick) { return;
+    /*
     socket = null;
     startButtonClick = false;
     let btn = event.currentTarget;
     btn.innerText = "Play";
     btn.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-  };*/
+    */
+  };
 
   startButtonClick = true;
   socket = new WebSocket("ws://localhost:8080");
