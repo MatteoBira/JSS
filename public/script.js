@@ -5,12 +5,25 @@ let myHand = [];
 let cardNumber = 1;
 let prevVolume;
 let music = 0.005;
+let startButtonClick = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("content").style.display = "none";
 });
 
 function playGame() {
+  if(startButtonClick) {
+    /*
+    socket = null;
+    startButtonClick = false;
+    let btn = event.currentTarget;
+    btn.innerText = "Play";
+    btn.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+    */
+    return;
+  };
+
+  startButtonClick = true;
   socket = new WebSocket("ws://localhost:8080");
 
   socket.onmessage = (event) => {
@@ -40,7 +53,7 @@ function playGame() {
     }
   };
 
-  const btn = event.currentTarget;
+  let btn = event.currentTarget;
   btn.innerText = "Searching for an opponent...";
   btn.style.backgroundColor = "grey";
   avviaMusica();

@@ -50,7 +50,7 @@ server.on("connection", (socket) => {
 
   socket.on("message", (message) => {
     const data = JSON.parse(message);
-
+    
     if (data.type === "move") {
       let playerIndex = players.indexOf(socket);
       let opponentIndex = playerIndex === 0 ? 1 : 0;
