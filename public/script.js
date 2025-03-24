@@ -12,16 +12,13 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function playGame() {
-  if(startButtonClick) {
-    /*
+  /*if(startButtonClick) { return;
     socket = null;
     startButtonClick = false;
     let btn = event.currentTarget;
     btn.innerText = "Play";
     btn.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-    */
-    return;
-  };
+  };*/
 
   startButtonClick = true;
   socket = new WebSocket("ws://localhost:8080");
@@ -168,17 +165,25 @@ function avviaMusica() {
 }
 
 function volumeChanger() {
-  volumeIcon = document.getElementById("volume-icon");
+  let volumeIcons = document.querySelectorAll(".volume-icon");
+  
   if (audio.muted) {
     audio.muted = false;
-    volumeIcon.classList.remove("fa-volume-mute");
-    volumeIcon.classList.add("fa-volume-up");
+    volumeIcons.forEach(icon => {
+      icon.classList.remove("fa-volume-mute");
+      icon.classList.add("fa-volume-up");
+    });
   } else {
     audio.muted = true;
-    volumeIcon.classList.remove("fa-volume-up");
-    volumeIcon.classList.add("fa-volume-mute");
+    volumeIcons.forEach(icon => {
+      icon.classList.remove("fa-volume-up");
+      icon.classList.add("fa-volume-mute");
+    });
   }
-  avviaMusica();
+
+  if (!audio.muted) {
+    audio.volume = music;
+  }
 }
 
 function startGame() {
@@ -189,4 +194,22 @@ function startGame() {
   generateDeck();
   generateTable();
   generateHand();
+}
+
+function inGameSettings() {
+  document.getElementById("inGameSettings").style.display = "flex";
+}
+
+function chiudiIGImpostazioni() {
+  document.getElementById("inGameSettings").style.display = "none";
+}
+
+function openGuide() {
+  document.getElementById("pdfContainer").style.display = "flex";
+  document.getElementById("pdfIframe").src = 'pdf/guide.pdf';
+}
+
+function closeGuide() {
+  document.getElementById("pdfContainer").style.display = "none";
+  document.getElementById("pdfIframe").src = '';
 }

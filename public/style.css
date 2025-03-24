@@ -1,7 +1,9 @@
 body, html {
     font-family: 'Roboto', sans-serif;
     background-image: url(img/sfondo.jpg);
-    background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+    
     margin: 0;
     padding: 0;
     height: 100%;
@@ -119,10 +121,11 @@ body, html {
     height: 100%;
 }
 
-#guide > a > img {
+#guide > img {
     width: 30%;
     margin-left: 5%;
     margin-top: 5%;
+    cursor: pointer;
 }
 
 #deckCards, #top-card1, #top-card2, #top-card3 {
@@ -234,10 +237,7 @@ button:hover {
 
 #settingsPopup {
     display: none;
-    padding: 20px;
-    border-radius: 10px;
-    width: 200px;
-    text-align: center;
+    padding: 21px;
 }
 
 #settingsPopup h2 {
@@ -247,6 +247,23 @@ button:hover {
 #settingsPopup label {
     display: block;
     margin: 10px 0;
+}
+
+#inGameSettings {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    width: 30%;
+    color: white;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
+    padding: 20px;
+    text-align: center;
+    display: none;
 }
 
 #volumeControl {
@@ -309,6 +326,38 @@ button:active {
     background-image: url(img/banner.png);
     background-size: contain;
     background-repeat: no-repeat;
+}
+
+
+#pdfContainer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
+    display: none;
+    z-index: 10;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#pdfContent {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#pdfIframe {
+    border: none;
+    background-color: white;
+    border-radius: 10px;
 }
 
 @keyframes bounceBot1 {
