@@ -1,7 +1,7 @@
 const Card = require("../Card/index.js");
 
 class Mazzo {
-  #mazzo = new Array();
+  #mazzo = [];
 
   constructor() {
     for (let y = 1; y <= 10; y++) {

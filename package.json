@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test:server": "node --check ./server/server.js",
-    "test:client": "node --check ./public/script.js"
+    "test:client": "node --check ./public/script.js",
+    "start": "node ./server/server.js"
   },
   "repository": {
     "type": "git",
