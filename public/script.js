@@ -2,6 +2,7 @@ let socket = null;
 let playerNumber;
 let myTurn = false;
 let myHand = [];
+let tableHand = [];
 let cardNumber = 1;
 let prevVolume;
 let music = 0.005;
@@ -12,7 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function playGame() {
-  if(startButtonClick) { return;
+  if (startButtonClick) {
+    return;
     /*
     socket = null;
     startButtonClick = false;
@@ -20,7 +22,7 @@ function playGame() {
     btn.innerText = "Play";
     btn.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
     */
-  };
+  }
 
   startButtonClick = true;
   socket = new WebSocket("ws://localhost:8080");
@@ -32,7 +34,41 @@ function playGame() {
       playerNumber = data.playerNumber;
       document.getElementById("status").innerText = `You are Player ${playerNumber}`;
     }
+    else if (data.type === "startingCards") {
+      const handDiv = document.getElementById("player-hand"); // riferimento alla mano del giocatore
+      myHand = data.arr.slice(); // copia delle carte
+      console.log(myHand); // debug
+    
+      myHand.forEach((card) => {
+        const cardDiv = document.createElement("div");
+        cardDiv.classList.add("cards", "side-cards-adjustment");
+        cardDiv.onclick = function () {
+          playCard(card, this);
+        };
+    
+        // Imposta l'immagine come background del div
+        const imagePath = getCardImagePath(card);
+        cardDiv.style.backgroundImage = `url('${imagePath}')`;
+    
+        // Aggiungi il div della carta alla mano
+        handDiv.appendChild(cardDiv);
+        cardNumber++;
+      });
+    }
+    else if (data.type === "tableCards") {
+      let tableDiv = document.getElementById("table");
+      tableDiv.innerHTML = "";
+      tableHand = data.arr.slice(); // copia delle carte
+      tableHand.forEach((card) => {
+        const tableCardDiv = document.createElement("div");
+        tableCardDiv.classList.add("cards");
 
+        const imagePath = getCardImagePath(card);
+        tableCardDiv.style.backgroundImage = `url('${imagePath}')`;
+
+        tableDiv.appendChild(tableCardDiv);
+      });
+    }
     if (data.type === "start") {
       myTurn = data.turn;
       startGame();
@@ -59,12 +95,14 @@ function playGame() {
 }
 
 function updateStatus() {
-  document.getElementById("status").innerText = myTurn? "Your Turn!" : "Waiting for a move...";
+  document.getElementById("status").innerText = myTurn
+    ? "Your Turn!"
+    : "Waiting for a move...";
   document.getElementById("opponent").innerText = myTurn ? "" : "";
 }
 
 function generateHand() {
-  myHand = ["1", "2", "3"];
+  /*myHand = ["1", "2", "3"];
   const handDiv = document.getElementById("player-hand");
   handDiv.innerHTML = "";
 
@@ -78,7 +116,7 @@ function generateHand() {
     cardDiv.onclick = () => playCard(card);
     handDiv.appendChild(cardDiv);
     cardNumber++;
-  });
+  });*/
 
   opponentHand = ["1", "2", "3"];
   const oppponentHandDiv = document.getElementById("opponent-hand");
@@ -96,18 +134,6 @@ function generateHand() {
   });
 }
 
-function generateTable() {
-  let tableHand = ["1", "2", "3", "4"];
-  let tableDiv = document.getElementById("table");
-  tableDiv.innerHTML = "";
-
-  tableHand.forEach(() => {
-    const tableCardDiv = document.createElement("div");
-    tableCardDiv.classList.add("cards");
-    tableDiv.appendChild(tableCardDiv);
-  });
-}
-
 function generateDeck() {
   let deckDiv = document.getElementById("deck");
   deckDiv.innerHTML = "";
@@ -117,20 +143,25 @@ function generateDeck() {
   deckDiv.appendChild(deckCard);
 }
 
-function playCard(card) {
+function playCard(card, cardElement) {
   if (!myTurn) return;
-  let myCardRemover = event.currentTarget.id;
+
   socket.send(JSON.stringify({ type: "move", card: card }));
   myTurn = false;
-  document.getElementById(myCardRemover).remove();
+
+  // Rimuove il div della carta giocata dal deck del player (credo)
+  cardElement.remove();
+
   updateStatus();
-  updateTable();
+  updateTable(card);
 }
 
-function updateTable(cardId) {
+function updateTable(card) {
   const tableDiv = document.getElementById("table");
   const cardDiv = document.createElement("div");
   cardDiv.classList.add("cards");
+  const imagePath = getCardImagePath(card);
+  cardDiv.style.backgroundImage = `url('${imagePath}')`;
   tableDiv.appendChild(cardDiv);
 }
 
@@ -168,16 +199,16 @@ function avviaMusica() {
 
 function volumeChanger() {
   let volumeIcons = document.querySelectorAll(".volume-icon");
-  
+
   if (audio.muted) {
     audio.muted = false;
-    volumeIcons.forEach(icon => {
+    volumeIcons.forEach((icon) => {
       icon.classList.remove("fa-volume-mute");
       icon.classList.add("fa-volume-up");
     });
   } else {
     audio.muted = true;
-    volumeIcons.forEach(icon => {
+    volumeIcons.forEach((icon) => {
       icon.classList.remove("fa-volume-up");
       icon.classList.add("fa-volume-mute");
     });
@@ -194,7 +225,6 @@ function startGame() {
   document.getElementById("banner").style.display = "none";
   updateStatus();
   generateDeck();
-  generateTable();
   generateHand();
 }
 
@@ -208,10 +238,17 @@ function chiudiIGImpostazioni() {
 
 function openGuide() {
   document.getElementById("pdfContainer").style.display = "flex";
-  document.getElementById("pdfIframe").src = 'pdf/guide.pdf';
+  document.getElementById("pdfIframe").src = "pdf/guide.pdf";
 }
 
 function closeGuide() {
   document.getElementById("pdfContainer").style.display = "none";
-  document.getElementById("pdfIframe").src = '';
+  document.getElementById("pdfIframe").src = "";
+}
+
+
+
+
+function getCardImagePath(card) {
+  return `./img/cards/${card.valore}${card.seme}.svg`;
 }

@@ -31,16 +31,14 @@ class Partita {
           let playerIndex = this.#players.indexOf(socket);
           let opponentIndex = playerIndex === 0 ? 1 : 0;
 
-          // Broadcast the move to both players
-          this.#players.forEach((p) =>
-            p.send(JSON.stringify({ type: "move", card: data.card }))
-          );
-
-          // Avvisa il client che deve rimuovere la carta
-          if (this.#players[opponentIndex]) {
+          // Avvisa il client opposto che deve rimuovere la carta
+          if (this.#players[opponentIndex]) { //onestamente non so perchè ci sia un if qui. se c'è la partita, ci dovrebbe stare pure il giocatore opposto no? ziobono
+            this.#players[opponentIndex].send(
+              JSON.stringify({ type: "move", card: data.card })
+            );           
             this.#players[opponentIndex].send(
               JSON.stringify({ type: "remove_opponent_card" })
-            );
+            ); 
           }
 
           // Switch turns
