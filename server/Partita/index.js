@@ -9,51 +9,48 @@ class Partita {
     this.#player1 = player1;
     this.#player2 = player2;
     this.#mazzo = mazzo;
-    this.#players.push(player1, player2); //worka meglio con il codice di prima lol
+    this.#players.push(player1, player2);
     this.startGame();
   }
 
   startGame() {
-    // Invia lo stato iniziale ai player
     this.#players.forEach((p, index) => {
       p.send(JSON.stringify({ type: "start", turn: index === 0 }));
     });
 
-    // Distribuzione delle carte
     this.dealCards();
 
-    // Associa evento "message" a ogni socket
-    this.#players.forEach((socket, index) => {
+    this.#players.forEach((socket) => {
       socket.on("message", (message) => {
         const data = JSON.parse(message);
 
         if (data.type === "move") {
-          let playerIndex = this.#players.indexOf(socket);
-          let opponentIndex = playerIndex === 0 ? 1 : 0;
+          const { card, selected } = data;
+          const result = this.checkCombination(card, selected);
+          const playerIndex = this.#players.indexOf(socket);
+          const opponentIndex = playerIndex === 0 ? 1 : 0;
 
-          // Avvisa il client opposto che deve rimuovere la carta
-          if (this.#players[opponentIndex]) { //onestamente non so perchè ci sia un if qui. se c'è la partita, ci dovrebbe stare pure il giocatore opposto no? ziobono
-            this.#players[opponentIndex].send(
-              JSON.stringify({ type: "move", card: data.card })
-            );           
-            this.#players[opponentIndex].send(
-              JSON.stringify({ type: "remove_opponent_card" })
-            ); 
+          if (result.success) {
+            // invia punti al player
+            socket.send(JSON.stringify({ type: "comboResult", success: true, points: result.points }));
+            // rimuovi carte selezionate dal tavolo
+            this.removeTableCards(selected.concat(card));
+          } else {
+            socket.send(JSON.stringify({ type: "comboResult", success: false }));
+          }
+
+          // notifica mossa all'avversario
+          if (this.#players[opponentIndex]) {
+            this.#players[opponentIndex].send(JSON.stringify({ type: "move", card }));
+            this.#players[opponentIndex].send(JSON.stringify({ type: "remove_opponent_card" }));
           }
 
           // Switch turns
-          this.#players.forEach((p, index) => {
-            p.send(
-              JSON.stringify({
-                type: "turn",
-                turn: index !== this.#players.indexOf(socket),
-              })
-            );
+          this.#players.forEach((p, idx) => {
+            p.send(JSON.stringify({ type: "turn", turn: idx !== playerIndex }));
           });
         } else if (data.type === "getCount") {
-          socket.send(
-            JSON.stringify({ type: "count", value: this.getCount() })
-          );
+          socket.send(JSON.stringify({ type: "count", value: this.getCount() }));
         }
       });
       socket.on("close", () => {
@@ -65,16 +62,14 @@ class Partita {
 
   //Dealing delle carte
   dealCards() {
-    // Distribuisci 3 carte a ogni player
     this.#players.forEach((p) => {
       for (let i = 0; i < 3; i++) {
         this.#cards.push(this.#mazzo.getArray().pop());
       }
       p.send(JSON.stringify({ type: "startingCards", arr: this.#cards }));
-      this.#cards.length = 0; // Azzera l'array
+      this.#cards.length = 0;
     });
 
-    // Distribuisci 4 carte sul tavolo
     for (let i = 0; i < 4; i++) {
       this.#cards.push(this.#mazzo.getArray().pop());
     }
@@ -82,6 +77,23 @@ class Partita {
     this.#players.forEach((p) => {
       p.send(JSON.stringify({ type: "tableCards", arr: this.#cards }));
     });
+  }
+
+  // Rimuove carte dal tavolo dopo combinazione
+  removeTableCards(cards) {
+    this.#cards = this.#cards.filter(tc => !cards.some(c => c.valore === tc.valore && c.seme === tc.seme));
+  }
+
+  // Verifica se la combinazione è valida e calcola i punti (Scopa)
+  checkCombination(card, selected) {
+    // somma valori delle selected
+    const sum = selected.reduce((acc, c) => acc + c.valore, 0);
+    if (sum === card.valore) {
+      // se prende tutte le carte sul tavolo fa scopa: 1 punto extra
+      const points = selected.length === this.#cards.length ? 1 : 0;
+      return { success: true, points };
+    }
+    return { success: false, points: 0 };
   }
 
   //Helper method
