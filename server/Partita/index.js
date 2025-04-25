@@ -41,14 +41,10 @@ class Partita {
       p.send(JSON.stringify({ type: "start", turn: index === 0 }));
     });
 
-    for (let i = 0; i < 4; i++) {
-      this.#tableCards.push(this.#mazzo.getArray().pop());
-    }
 
-    this.#players.forEach((p) => {
-      p.send(JSON.stringify({ type: "tableCards", arr: this.#tableCards }));
-    });
 
+
+    this.dealTableCards();
     // Distribuzione delle carte
     this.dealCards();
 
@@ -64,9 +60,11 @@ class Partita {
 
             const playedCard = data.card;
 
-            this.managePresa(playedCard, playerIndex);
+            let take = this.managePresa(playedCard, playerIndex);
+            console.log("dimensione mazzo: " + this.#mazzo.getArray().length);
+
             // Add the played card to the table
-            this.#tableCards.push(playedCard);
+            //this.#tableCards.push(playedCard);
 
             // Remove card from player's hand
             this.#hands[playerIndex] = this.#hands[playerIndex].filter(
@@ -81,22 +79,30 @@ class Partita {
               this.#players[opponentIndex].send(
                 JSON.stringify({ type: "remove_opponent_card" })
               ); 
+              if(take[0]){
+                this.#players[oppontentIndex].send(
+                  JSON.stringify({type: "remove_table_cards", card: data.card, cards: take[1]})
+                );
+              }
             }
 
             if (this.#hands[0].length === 0 && this.#hands[1].length === 0 && this.#mazzo.getArray().length > 0) {
               this.dealCards();
             }else if(this.#hands[0].length === 0 && this.#hands[1].length === 0 && this.#mazzo.getArray().length == 0){
-              if(points[0] > 11 || points[1] > 11){
-                if(points[0] > points[1]){
+              this.assignScore();
+              if(this.#points[0] > 11 || this.#points[1] > 11){
+                if(this.#points[0] > this.#points[1]){
                   console.log("player 1 won");
-                }else if(points[0] == points[1]){
+                }else if(this.#points[0] == this.#points[1]){
                   console.log("Tie");
                 }else{
                   console.log("player 2 won");
                 }
               }else{
-                this.assignScore();
+                this.#mazzo.rebuild();
                 this.#mazzo.shuffle();
+                this.dealTableCards();
+                console.log("rimescolato: " + this.#mazzo.getArray().length);
                 this.dealCards();
               }
             }
@@ -126,22 +132,23 @@ class Partita {
 
   assignScore() {
     if(this.#cardNum[0] > this.#cardNum[1]){
-      points[0]++;
+      this.#points[0]++;
     }else if(this.#cardNum[0] < this.#cardNum[1]){
-      points[1]++;
+      this.#points[1]++;
     }
 
     if(this.#denari[0] > this.#denari[1]){
-      points[0]++;
+      this.#points[0]++;
     }else if(this.#denari[0] < this.#denari[1]){
-      points[1]++;
+      this.#points[1]++;
     }
 
     if(this.#primiera[0] > this.#primiera[1]){
-      points[0]++;
+      this.#points[0]++;
     }else if(this.#primiera[0] < this.#primiera[1]){
-      points[1]++;
+      this.#points[1]++;
     }
+    console.log("player 1: " + this.#points[0] + " player 2: " + this.#points[1]);
   }
 
   managePresa(playedCard, playerIndex) {
@@ -152,22 +159,22 @@ class Partita {
       // Rimuove la carta dal tavolo
       this.#tableCards = this.#tableCards.filter(c => c !== sameValueCard);
       if(this.#tableCards.length == 0){
-        points[playerIndex]++;
+        this.#points[playerIndex]++;
       }
 
-      cardNum[playerIndex] += 2;
+      this.#cardNum[playerIndex] += 2;
 
-      if(playedCard.getSeme() == 'D') denari[playerIndex]++;
-      if(sameValueCard.getSeme() == 'D') denari[playerIndex]++;
+      if(playedCard.seme == 'D') this.#denari[playerIndex]++;
+      if(sameValueCard.seme == 'D') this.#denari[playerIndex]++;
 
-      if(playedCard.getSeme() == 'D' && playedCard.getValore() == '7') points[playerIndex]++;
-      if(sameValueCard.getSeme() == 'D' && playedCard.getValore() == '7') points[playerIndex]++;
+      if(playedCard.seme == 'D' && playedCard.valore == 7) this.#points[playerIndex]++;
+      if(sameValueCard.seme == 'D' && playedCard.valore == 7) this.#points[playerIndex]++;
 
-      if(playedCard.getSeme() == 'D' && playedCard.getValore() == '10') points[playerIndex]++;
-      if(sameValueCard.getSeme() == 'D' && playedCard.getValore() == '10') points[playerIndex]++;
+      if(playedCard.seme == 'D' && playedCard.valore == 10) this.#points[playerIndex]++;
+      if(sameValueCard.seme == 'D' && playedCard.valore == 10) this.#points[playerIndex]++;
 
-      if(playedCard.getValore() == '7') premiera[playerIndex]++;
-      if(sameValueCard.getValore() == '7') premiera[playerIndex]++;
+      if(playedCard.valore == 7) this.#primiera[playerIndex]++;
+      if(sameValueCard.valore == 7) this.#primiera[playerIndex]++;
 
       return {
         taken: true,
@@ -197,8 +204,19 @@ class Partita {
       const comboToTake = combos[0];
       this.#tableCards = this.#tableCards.filter(c => !comboToTake.includes(c));
 
-      // Aggiungi al mazzo del giocatore
-      this.#cards.push({ player: playerIndex, cards: [playedCard, ...comboToTake] });
+      this.#cardNum[playerIndex]++;
+      if(playedCard.seme == 'D') this.#denari[playerIndex]++;
+      if(playedCard.seme == 'D' && playedCard.valore == 7) this.#points[playerIndex]++;
+      if(playedCard.seme == 'D' && playedCard.valore == 10) this.#points[playerIndex]++;
+      if(playedCard.valore == 7) this.#primiera[playerIndex]++;
+
+      comboToTake.forEach((card) => { 
+        this.#cardNum[playerIndex]++;
+        if(card.seme == 'D') this.#denari[playerIndex]++;
+        if(card.seme == 'D' && card.valore == 7) this.#points[playerIndex]++;
+        if(card.seme == 'D' && card.valore == 10) this.#points[playerIndex]++;
+        if(card.valore == 7) this.#primiera[playerIndex]++;
+      });
 
       return {
         taken: true,
@@ -214,13 +232,19 @@ class Partita {
     };
   }
 
+  dealTableCards(){
+    for (let i = 0; i < 4; i++) {
+      this.#tableCards.push(this.#mazzo.getArray().pop());
+    }
+
+    this.#players.forEach((p) => {
+      p.send(JSON.stringify({ type: "tableCards", arr: this.#tableCards }));
+    });
+  }
+
   //Dealing delle carte
   dealCards() {
     // Distribuisci 3 carte a ogni player
-    // TODO: DONE -- manage two different decks for each player manage the message for the startingCards
-    // TODO: maybe done -- Manage turns so that u start with dealCards everyTime both players finish their deck
-    // TODO: Then manage the game to finish when the last turn finish (the turn that starts with 0 cards remaining in the 'Mazzo')
-    // NOTE: Can we instantly calculate the points for each take???
 
     for (let i = 0; i < 3; i++) {
       this.#hands[0].push(this.#mazzo.getArray().pop());

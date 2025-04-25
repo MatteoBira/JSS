@@ -83,6 +83,10 @@ function playGame() {
       removeOpponentCard();
     }
 
+    if (data.type === "remove_opponent_card") {
+      removeTableCards(data.card, data.cards);
+    }
+
     if (data.type === "turn") {
       myTurn = data.turn;
       updateStatus();
@@ -171,6 +175,10 @@ function removeOpponentCard() {
   if (opponentHandDiv.children.length > 0) {
     opponentHandDiv.removeChild(opponentHandDiv.children[0]);
   }
+}
+
+ function removeTableCards(){
+  
 }
 
 function exitGame() {

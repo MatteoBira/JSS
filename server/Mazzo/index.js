@@ -28,6 +28,21 @@ class Mazzo {
       [this.#mazzo[i], this.#mazzo[j]] = [this.#mazzo[j], this.#mazzo[i]];
     }
   }
+
+  rebuild() {
+    for (let y = 1; y <= 10; y++) {
+      this.#mazzo.push(new Card(y, "B"));
+    }
+    for (let y = 1; y <= 10; y++) {
+      this.#mazzo.push(new Card(y, "D"));
+    }
+    for (let y = 1; y <= 10; y++) {
+      this.#mazzo.push(new Card(y, "S"));
+    }
+    for (let y = 1; y <= 10; y++) {
+      this.#mazzo.push(new Card(y, "C"));
+    }
+  }
 }
 
 // Esportazione della classe
