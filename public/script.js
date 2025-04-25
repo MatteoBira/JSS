@@ -54,6 +54,7 @@ function playGame() {
         handDiv.appendChild(cardDiv);
         cardNumber++;
       });
+      generateHand();
     }
     else if (data.type === "tableCards") {
       let tableDiv = document.getElementById("table");

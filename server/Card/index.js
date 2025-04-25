@@ -10,6 +10,14 @@ class Card {
   mostraCard() {
     return `${this.valore} di ${this.seme}`;
   }
+
+  getValore(){
+    return this.#valore;
+  }
+
+  getSeme(){
+    return this.#seme;
+  }
 }
 
 // Esportazione della classe
