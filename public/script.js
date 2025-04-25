@@ -54,6 +54,12 @@ function playGame() {
         handDiv.appendChild(cardDiv);
         cardNumber++;
       });
+      
+      let cardIdNumberCorrection = document.getElementById("player-hand").getElementsByTagName("div");
+      cardIdNumberCorrection[0].id = "bot-card1";
+      cardIdNumberCorrection[1].id = "bot-card2";
+      cardIdNumberCorrection[2].id = "bot-card3";
+      
       generateHand();
     }
     else if (data.type === "tableCards") {
