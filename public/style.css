@@ -1,9 +1,8 @@
 body, html {
     font-family: 'Roboto', sans-serif;
     background-image: url(img/sfondo.jpg);
-  background-size: cover;
-  background-repeat: no-repeat;
-    
+    background-size: cover;
+    background-repeat: no-repeat;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -47,11 +46,12 @@ body, html {
 }
 
 .half-table, #table {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     width: 100%;
     height: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 .cards {
