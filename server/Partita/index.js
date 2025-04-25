@@ -26,17 +26,29 @@ class Partita {
 
         if (data.type === "move") {
           const { card, selected } = data;
-          const result = this.checkCombination(card, selected);
           const playerIndex = this.#players.indexOf(socket);
           const opponentIndex = playerIndex === 0 ? 1 : 0;
-
-          if (result.success) {
-            // invia punti al player
-            socket.send(JSON.stringify({ type: "comboResult", success: true, points: result.points }));
-            // rimuovi carte selezionate dal tavolo
-            this.removeTableCards(selected.concat(card));
+          
+          if (!selected || selected.length === 0) {
+            // Solo una carta giocata, niente combo
+            this.#cards.push(card); // Aggiungila sul tavolo
+            socket.send(JSON.stringify({ type: "comboResult", success: false })); // niente combo
           } else {
-            socket.send(JSON.stringify({ type: "comboResult", success: false }));
+            const result = this.checkCombination(card, selected);
+
+            if (result.success) {
+              // invia punti al player
+              socket.send(JSON.stringify({ type: "comboResult", success: true, points: result.points }));
+              // rimuovi carte selezionate dal tavolo
+              this.removeTableCards(selected.concat(card));
+
+              this.#players.forEach(p => {
+                p.send(JSON.stringify({ type: "tableCards", arr: this.#cards }));
+              });
+            } else {
+              this.#cards.push(card); // aggiungi carta al tavolo anche se non ha selezionato niente dal tavolo
+              socket.send(JSON.stringify({ type: "comboResult", success: false }));
+            }
           }
 
           // notifica mossa all'avversario

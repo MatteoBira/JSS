@@ -153,7 +153,7 @@ function generateDeck() {
 function playCard(card, cardElement) {
   if (!myTurn) return;
 
-  socket.send(JSON.stringify({ type: "move", card: card }));
+  socket.send(JSON.stringify({ type: "move", card: card, selected: selectedTableCards }));
   myTurn = false;
 
   // Rimuove il div della carta giocata dal deck del player (credo)
@@ -170,6 +170,9 @@ function updateTable(card) {
   const imagePath = getCardImagePath(card);
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
   tableDiv.appendChild(cardDiv);
+
+  socket.send(JSON.stringify({ type: "tableCards", arr: tableHand }));
+
   evidenziaCartaTavolo(); // evidenzia le carte sul tavolo
 }
 
@@ -335,6 +338,16 @@ function submitSelection() {
     card: selectedHandCard,
     selected: selectedTableCards
   }));
+  myHand = myHand.filter(c => c !== selectedHandCard); // rimuovi carta dalla mano
+
+  const handDiv = document.getElementById("player-hand"); //rimuovi la carta dal DOM
+  Array.from(handDiv.children).forEach(el => {
+    const bg = el.style.backgroundImage;
+    if (bg.includes(`${selectedHandCard.valore}${selectedHandCard.seme}`)) {
+      el.remove();
+    }
+  });
+
   // pulisci selezioni
   selectedHandCard = null;
   selectedTableCards = [];
