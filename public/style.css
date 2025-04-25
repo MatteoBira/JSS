@@ -266,6 +266,22 @@ button:hover {
     display: none;
 }
 
+.cardselection {
+    cursor: pointer;
+}
+
+.cardselection:hover {
+    box-shadow: 0 0 10px 5px #00eaff;
+    transform: scale(1.1);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.selected {
+    outline: 3px solid gold;
+    transform: scale(1.05);
+  }
+
 #volumeControl {
     width: 100%;
 }

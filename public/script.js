@@ -7,6 +7,8 @@ let cardNumber = 1;
 let prevVolume;
 let music = 0.005;
 let startButtonClick = false;
+let selectedHandCard = null;
+let selectedTableCards = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("content").style.display = "none";
@@ -54,6 +56,7 @@ function playGame() {
         handDiv.appendChild(cardDiv);
         cardNumber++;
       });
+      evidenziaCarta(); // evidenzia le carte nella mano del giocatore all'inizio della partita se il turno è del giocatore
     }
     else if (data.type === "tableCards") {
       let tableDiv = document.getElementById("table");
@@ -68,6 +71,7 @@ function playGame() {
 
         tableDiv.appendChild(tableCardDiv);
       });
+      evidenziaCartaTavolo();  // evidenzia le carte sul tavolo
     }
     if (data.type === "start") {
       myTurn = data.turn;
@@ -84,6 +88,9 @@ function playGame() {
 
     if (data.type === "turn") {
       myTurn = data.turn;
+      clearSelections();   // pulisci selezioni
+      evidenziaCarta();  // evidenzia le carte nella mano del giocatore se il turno è del giocatore
+      evidenziaCartaTavolo(); // evidenzia le carte sul tavolo
       updateStatus();
     }
   };
@@ -163,6 +170,7 @@ function updateTable(card) {
   const imagePath = getCardImagePath(card);
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
   tableDiv.appendChild(cardDiv);
+  evidenziaCartaTavolo(); // evidenzia le carte sul tavolo
 }
 
 function removeOpponentCard() {
@@ -220,6 +228,8 @@ function volumeChanger() {
 }
 
 function startGame() {
+  clearSelections();  // pulisci selezioni per preventire errori
+  document.getElementById("submitBtn").onclick = submitSelection;
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("content").style.display = "flex";
   document.getElementById("banner").style.display = "none";
@@ -251,4 +261,88 @@ function closeGuide() {
 
 function getCardImagePath(card) {
   return `./img/cards/${card.valore}${card.seme}.svg`;
+}
+
+function evidenziaCarta() { // evidenzia le carte nella mano del giocatore se il turno è del giocatore
+  const handDiv = document.getElementById("player-hand");
+  let cartePlayer = handDiv.children;
+
+  for (let i = 0; i < cartePlayer.length; i++) {
+    cartePlayer[i].onclick = () => selectHandCard(i);
+    if (myTurn) {
+      cartePlayer[i].classList.add("cardselection");
+    } else {
+      cartePlayer[i].classList.remove("cardselection");
+    }
+  }
+
+  /*if(myTurn) {
+    for (let i = 0; i < cartePlayer.length; i++) {
+      cartePlayer[i].classList.add("cardselection");
+    }
+  }
+  else {
+    for (let i = 0; i < cartePlayer.length; i++) {
+      cartePlayer[i].classList.remove("cardselection");
+    }
+  }*/
+}
+
+function evidenziaCartaTavolo() { // evidenzia le carte sul tavolo
+  const tableDiv = document.getElementById("table");
+  let carteTavolo = tableDiv.children;
+  for (let i = 0; i < carteTavolo.length; i++) {
+
+    carteTavolo[i].onclick = () => selectTableCard(i); //listener per la selezione delle carte sul tavolo
+    if (myTurn) {
+      carteTavolo[i].classList.add("cardselection");
+    } else {
+      carteTavolo[i].classList.remove("cardselection");
+    }
+  }
+}
+
+function selectHandCard(index) { // seleziona la carta nella mano del giocatore
+  if (!myTurn) return;
+  // deseleziona precedente
+  const handDiv = document.getElementById("player-hand");
+  Array.from(handDiv.children).forEach(el => el.classList.remove("selected"));
+  // seleziona nuova
+  handDiv.children[index].classList.add("selected");
+  selectedHandCard = myHand[index];
+}
+
+function selectTableCard(index) { // seleziona la carta sul tavolo
+  if (!myTurn) return;
+  const tableDiv = document.getElementById("table");
+  const element = tableDiv.children[index];
+  const card = tableHand[index];
+  if (selectedTableCards.includes(card)) {
+    // deseleziona
+    selectedTableCards = selectedTableCards.filter(c => c !== card);
+    element.classList.remove("selected");
+  } else {
+    // seleziona
+    selectedTableCards.push(card);
+    element.classList.add("selected");
+  }
+}
+
+function submitSelection() {
+  if (!myTurn || !selectedHandCard) return;
+  socket.send(JSON.stringify({
+    type: "move",
+    card: selectedHandCard,
+    selected: selectedTableCards
+  }));
+  // pulisci selezioni
+  selectedHandCard = null;
+  selectedTableCards = [];
+  document.querySelectorAll(".selected").forEach(el => el.classList.remove("selected"));
+}
+
+function clearSelections() {  // togli la classe .selected da tutti gli elementi
+  document.querySelectorAll(".selected").forEach(el => el.classList.remove("selected"));
+  selectedHandCard = null;
+  selectedTableCards = [];
 }
