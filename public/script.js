@@ -25,79 +25,85 @@ function playGame() {
   }
 
   startButtonClick = true;
-  socket = new WebSocket("ws://localhost:8080");
+  socket = new WebSocket("ws://10.0.0.8:8180");
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
 
-    if (data.type === "welcome") {
-      playerNumber = data.playerNumber;
-      document.getElementById("status").innerText = `You are Player ${playerNumber}`;
-    }
-    else if (data.type === "startingCards") {
-      const handDiv = document.getElementById("player-hand"); // riferimento alla mano del giocatore
-      myHand = data.arr.slice(); // copia delle carte
-      console.log(myHand); // debug
+    switch (data.type) {
+      case "welcome":
+        playerNumber = data.playerNumber;
+        document.getElementById("status").innerText = `You are Player ${playerNumber}`;
+        break;
     
-      myHand.forEach((card) => {
-        const cardDiv = document.createElement("div");
-        cardDiv.classList.add("cards", "side-cards-adjustment");
-        cardDiv.onclick = function () {
-          playCard(card, this);
-        };
+      case "startingCards":
+        const handDiv = document.getElementById("player-hand");
+        myHand = data.arr.slice();
+        console.log(myHand);
     
-        // Imposta l'immagine come background del div
-        const imagePath = getCardImagePath(card);
-        cardDiv.style.backgroundImage = `url('${imagePath}')`;
+        myHand.forEach((card) => {
+          const cardDiv = document.createElement("div");
+          cardDiv.classList.add("cards", "side-cards-adjustment");
+          cardDiv.onclick = function () {
+            playCard(card, this);
+          };
     
-        // Aggiungi il div della carta alla mano
-        handDiv.appendChild(cardDiv);
-        cardNumber++;
-      });
-      
-      let cardIdNumberCorrection = document.getElementById("player-hand").getElementsByTagName("div");
-      cardIdNumberCorrection[0].id = "bot-card1";
-      cardIdNumberCorrection[1].id = "bot-card2";
-      cardIdNumberCorrection[2].id = "bot-card3";
-      
-      generateHand();
+          const imagePath = getCardImagePath(card);
+          cardDiv.style.backgroundImage = `url('${imagePath}')`;
+    
+          handDiv.appendChild(cardDiv);
+          cardNumber++;
+        });
+    
+        let cardIdNumberCorrection = document.getElementById("player-hand").getElementsByTagName("div");
+        cardIdNumberCorrection[0].id = "bot-card1";
+        cardIdNumberCorrection[1].id = "bot-card2";
+        cardIdNumberCorrection[2].id = "bot-card3";
+    
+        generateHand();
+        break;
+    
+      case "tableCards":
+        let tableDiv = document.getElementById("table");
+        tableDiv.innerHTML = "";
+        tableHand = data.arr.slice();
+        tableHand.forEach((card) => {
+          const tableCardDiv = document.createElement("div");
+          tableCardDiv.classList.add("cards");
+    
+          const imagePath = getCardImagePath(card);
+          tableCardDiv.style.backgroundImage = `url('${imagePath}')`;
+    
+          tableDiv.appendChild(tableCardDiv);
+        });
+        break;
+    
+      case "start":
+        myTurn = data.turn;
+        startGame();
+        break;
+    
+      case "move":
+        updateTable(data.card);
+        break;
+    
+      case "remove_opponent_card":
+        removeOpponentCard();
+        break;
+    
+      case "remove_table_cards":
+        removeTableCards(data.card);
+        break;
+    
+      case "turn":
+        myTurn = data.turn;
+        updateStatus();
+        break;
+    
+      default:
+        console.warn("Tipo di messaggio sconosciuto:", data);
     }
-    else if (data.type === "tableCards") {
-      let tableDiv = document.getElementById("table");
-      tableDiv.innerHTML = "";
-      tableHand = data.arr.slice(); // copia delle carte
-      tableHand.forEach((card) => {
-        const tableCardDiv = document.createElement("div");
-        tableCardDiv.classList.add("cards");
-
-        const imagePath = getCardImagePath(card);
-        tableCardDiv.style.backgroundImage = `url('${imagePath}')`;
-
-        tableDiv.appendChild(tableCardDiv);
-      });
-    }
-    if (data.type === "start") {
-      myTurn = data.turn;
-      startGame();
-    }
-
-    if (data.type === "move") {
-      updateTable(data.card);
-    }
-
-    if (data.type === "remove_opponent_card") {
-      removeOpponentCard();
-    }
-
-    if (data.type === "remove_opponent_card") {
-      removeTableCards(data.card, data.cards);
-    }
-
-    if (data.type === "turn") {
-      myTurn = data.turn;
-      updateStatus();
-    }
-  };
+  }
 
   let btn = event.currentTarget;
   btn.innerText = "Searching for an opponent...";
@@ -183,8 +189,13 @@ function removeOpponentCard() {
   }
 }
 
- function removeTableCards(){
-  
+ function removeTableCards(card){
+  let tableDiv = document.getElementById("table"); //ottengo il div delle carte al centro
+  cardsToRemove = card.slice();
+  tableHand.forEach((card) => {
+    if (card.valore == cardsToRemove.valore && card.seme == cardsToRemove.seme)
+      tableDiv.removeChild(card); //cava la carta dal tavolo
+  });
 }
 
 function exitGame() {

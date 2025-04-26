@@ -7,8 +7,8 @@ class Partita {
   #cardNum = [0,0];
   #denari = [0,0]
   #primiera = [0,0];
-  #hands = [[], []];
-  #tableCards = [];
+  #hands = [[], []]; //aggiornato con le carte dentro la mano di ciascun giocatore
+  #tableCards = []; //aggiornato con le carte a centro tavolo
   #players = [];
   #cards = [];
 
@@ -17,23 +17,8 @@ class Partita {
     this.#player2 = player2;
     this.#mazzo = mazzo;
     this.#players.push(player1, player2); //worka meglio con il codice di prima lol
-//    this.startGame();
     this.startRound();
   }
-/*
-  startGame(){
-    while(point[0] < 11 && points[1] < 11){
-      startRound();
-    }
-    if(points[0] > points[1]){
-      console.log("player 1 vince");
-    }else if(points[0] == points[1]){
-      console.log("patta");
-    }else{
-      console.log("player 2 vince");
-    }
-  }
-  */
 
   startRound() {
     // Invia lo stato iniziale ai player
@@ -41,28 +26,25 @@ class Partita {
       p.send(JSON.stringify({ type: "start", turn: index === 0 }));
     });
 
+    this.dealTableCards(); //invia 4 carte ai player che sono messe al centro (tableDiv)
 
-
-
-    this.dealTableCards();
     // Distribuzione delle carte
-    this.dealCards();
+    this.dealCards(); //invia 3 carte a ogni player che sono messe nella mano (player-hand)
 
     // Associa evento "message" a ogni socket
     this.#players.forEach((socket, index) => {
         socket.on("message", (message) => {
           const data = JSON.parse(message);
-          console.log("ripetuto");
+          console.log("ripetuto"); //?
 
           if (data.type === "move") {
-            let playerIndex = this.#players.indexOf(socket);
-            let opponentIndex = playerIndex === 0 ? 1 : 0;
+            let playerIndex = this.#players.indexOf(socket); //chi ha giocato la mossa?
+            let opponentIndex = playerIndex === 0 ? 1 : 0; //si prende l'altro indice
 
             const playedCard = data.card;
 
-            let take = this.managePresa(playedCard, playerIndex);
+            let take = this.managePresa(playedCard, playerIndex); //valore da inviare direttamente via socket
             console.log("dimensione mazzo: " + this.#mazzo.getArray().length);
-
             // Add the played card to the table
             //this.#tableCards.push(playedCard);
 
@@ -71,16 +53,16 @@ class Partita {
               (c) => !(c.valore === playedCard.valore && c.seme === playedCard.seme)
             );
 
-            // Avvisa il client opposto che deve rimuovere la carta
+            // Avvisa il client opposto che deve rimuovere la carta. if logic da cambiare?
             if (this.#players[opponentIndex]) {
               this.#players[opponentIndex].send(
-                JSON.stringify({ type: "move", card: data.card })
+                JSON.stringify({ type: "move", card: data.card }) //niente carte prese, fai aggiungere al giocatore opposto la carta al tavolo
               );           
               this.#players[opponentIndex].send(
-                JSON.stringify({ type: "remove_opponent_card" })
+                JSON.stringify({ type: "remove_opponent_card" }) //rimuove, dalla vista del giocatore opposto, 1 carta del giocatore che ha iniziato la mossa
               ); 
-              if(take[0]){
-                this.#players[oppontentIndex].send(
+              if(take.taken == true){
+                this.#players[opponentIndex].send(
                   JSON.stringify({type: "remove_table_cards", card: data.card, cards: take[1]})
                 );
               }
@@ -158,7 +140,9 @@ class Partita {
     if (sameValueCard) {
       // Rimuove la carta dal tavolo
       this.#tableCards = this.#tableCards.filter(c => c !== sameValueCard);
-      if(this.#tableCards.length == 0){
+      //bisogna dire di cavare la carta!!!!!!!!!!!!!!
+
+      if(this.#tableCards.length == 0){ //tavolo vuoto = scopa
         this.#points[playerIndex]++;
       }
 
@@ -178,7 +162,7 @@ class Partita {
 
       return {
         taken: true,
-        cardsTaken: [sameValueCard]
+        cardsTaken: [playedCard, sameValueCard]
       };
     }
 
