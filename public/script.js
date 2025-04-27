@@ -9,193 +9,170 @@ let music = 0.005;
 let startButtonClick = false;
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("content").style.display = "none";
+    document.getElementById("content").style.display = "none";
 });
 
 function playGame() {
-  if (startButtonClick) {
-    return;
-    /*
-    socket = null;
-    startButtonClick = false;
-    let btn = event.currentTarget;
-    btn.innerText = "Play";
-    btn.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-    */
-  }
-
-  startButtonClick = true;
-  socket = new WebSocket("ws://10.0.0.8:8180");
-
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-
-    switch (data.type) {
-      case "welcome":
-        playerNumber = data.playerNumber;
-        document.getElementById("status").innerText = `You are Player ${playerNumber}`;
-        break;
-    
-      case "startingCards":
-        const handDiv = document.getElementById("player-hand");
-        myHand = data.arr.slice();
-        console.log(myHand);
-    
-        myHand.forEach((card) => {
-          const cardDiv = document.createElement("div");
-          cardDiv.classList.add("cards", "side-cards-adjustment");
-          cardDiv.onclick = function () {
-            playCard(card, this);
-          };
-    
-          const imagePath = getCardImagePath(card);
-          cardDiv.style.backgroundImage = `url('${imagePath}')`;
-    
-          handDiv.appendChild(cardDiv);
-          cardNumber++;
-        });
-    
-        let cardIdNumberCorrection = document.getElementById("player-hand").getElementsByTagName("div");
-        cardIdNumberCorrection[0].id = "bot-card1";
-        cardIdNumberCorrection[1].id = "bot-card2";
-        cardIdNumberCorrection[2].id = "bot-card3";
-    
-        generateHand();
-        break;
-    
-      case "tableCards":
-        let tableDiv = document.getElementById("table");
-        tableDiv.innerHTML = "";
-        tableHand = data.arr.slice();
-        tableHand.forEach((card) => {
-          const tableCardDiv = document.createElement("div");
-          tableCardDiv.classList.add("cards");
-    
-          const imagePath = getCardImagePath(card);
-          tableCardDiv.style.backgroundImage = `url('${imagePath}')`;
-    
-          tableDiv.appendChild(tableCardDiv);
-        });
-        break;
-    
-      case "start":
-        myTurn = data.turn;
-        startGame();
-        break;
-    
-      case "move":
-        updateTable(data.card);
-        break;
-    
-      case "remove_opponent_card":
-        removeOpponentCard();
-        break;
-    
-      case "remove_table_cards":
-        removeTableCards(data.card);
-        break;
-    
-      case "turn":
-        myTurn = data.turn;
-        updateStatus();
-        break;
-    
-      default:
-        console.warn("Tipo di messaggio sconosciuto:", data);
+    if (startButtonClick) {
+        return;
     }
-  }
 
-  let btn = event.currentTarget;
-  btn.innerText = "Searching for an opponent...";
-  btn.style.backgroundColor = "grey";
-  avviaMusica();
+    startButtonClick = true;
+    socket = new WebSocket("ws://localhost:8080");
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        switch (data.type) {
+            case "welcome":
+                playerNumber = data.playerNumber;
+                document.getElementById("status").innerText = `You are Player ${playerNumber}`;
+                break;
+
+            case "startingCards":
+                const handDiv = document.getElementById("player-hand");
+                myHand = data.arr.slice();
+
+                myHand.forEach((card) => {
+                    const cardDiv = document.createElement("div");
+                    cardDiv.classList.add("cards", "side-cards-adjustment");
+                    cardDiv.onclick = () => {
+                        playCard(card, cardDiv);
+                    };
+
+                    const imagePath = getCardImagePath(card);
+                    cardDiv.style.backgroundImage = `url('${imagePath}')`;
+
+                    handDiv.appendChild(cardDiv);
+                    cardNumber++;
+                });
+
+                let cardIdNumberCorrection = document.getElementById("player-hand").getElementsByTagName("div");
+                cardIdNumberCorrection[0].id = "bot-card1";
+                cardIdNumberCorrection[1].id = "bot-card2";
+                cardIdNumberCorrection[2].id = "bot-card3";
+
+                generateHand();
+                break;
+
+            case "tableCards":
+                let tableDiv = document.getElementById("table");
+                tableDiv.innerHTML = "";
+                tableHand = data.arr.slice();
+                tableHand.forEach((card) => {
+                    const tableCardDiv = document.createElement("div");
+                    tableCardDiv.classList.add("cards");
+                    tableCardDiv.dataset.cardValore = card.valore;
+                    tableCardDiv.dataset.cardSeme = card.seme;
+
+                    const imagePath = getCardImagePath(card);
+                    tableCardDiv.style.backgroundImage = `url('${imagePath}')`;
+
+                    tableDiv.appendChild(tableCardDiv);
+                });
+                break;
+
+            case "start":
+                myTurn = data.turn;
+                startGame();
+                break;
+
+            case "move":
+                break;
+
+            case "remove_opponent_card":
+                removeOpponentCard();
+                break;
+
+            case "remove_table_cards":
+                removeTableCards(data.card, data.cards);
+                break;
+
+            case "turn":
+                myTurn = data.turn;
+                updateStatus();
+                break;
+            case "remove_table_cards_combosAvail":
+                showAvailableCombos(data.combos);
+                break;
+
+            case "game_over":
+                handleGameOver(data.won, data.points);
+                break;
+
+            default:
+                console.warn("Tipo di messaggio sconosciuto:", data);
+        }
+    };
+
+    let btn = event.currentTarget;
+    btn.innerText = "Searching for an opponent...";
+    btn.style.backgroundColor = "grey";
+    avviaMusica();
 }
 
 function updateStatus() {
-  document.getElementById("status").innerText = myTurn
-    ? "Your Turn!"
-    : "Waiting for a move...";
-  document.getElementById("opponent").innerText = myTurn ? "" : "";
+    document.getElementById("status").innerText = myTurn
+        ? "Your Turn!"
+        : "Waiting for a move...";
+    document.getElementById("opponent").innerText = myTurn ? "" : "";
 }
 
 function generateHand() {
-  /*myHand = ["1", "2", "3"];
-  const handDiv = document.getElementById("player-hand");
-  handDiv.innerHTML = "";
-
-  myHand.forEach((card) => {
-    if (cardNumber > 3) cardNumber = 1;
-    let idCard = "card" + cardNumber;
-    const cardDiv = document.createElement("div");
-    cardDiv.id = "bot-" + idCard;
-    cardDiv.classList.add("cards");
-    cardDiv.classList.add("side-cards-adjustment");
-    cardDiv.onclick = () => playCard(card);
-    handDiv.appendChild(cardDiv);
-    cardNumber++;
-  });*/
-
-  opponentHand = ["1", "2", "3"];
-  const oppponentHandDiv = document.getElementById("opponent-hand");
-  oppponentHandDiv.innerHTML = "";
-
-  opponentHand.forEach(() => {
-    if (cardNumber > 3) cardNumber = 1;
-    let idCard = "card" + cardNumber;
-    const cardDiv = document.createElement("div");
-    cardDiv.id = "top-" + idCard;
-    cardDiv.classList.add("cards");
-    cardDiv.classList.add("side-cards-adjustment");
-    oppponentHandDiv.appendChild(cardDiv);
-    cardNumber++;
-  });
+    opponentHand = ["1", 2, 3];
+    const oppponentHandDiv = document.getElementById("opponent-hand");
+    oppponentHandDiv.innerHTML = "";
+    opponentHand.forEach(() => {
+        if (cardNumber > 3) cardNumber = 1;
+        let idCard = "top-card" + cardNumber;
+        const cardDiv = document.createElement("div");
+        cardDiv.id = idCard;
+        cardDiv.classList.add("cards");
+        cardDiv.classList.add("side-cards-adjustment");
+        oppponentHandDiv.appendChild(cardDiv);
+        cardNumber++;
+    });
 }
 
 function generateDeck() {
-  let deckDiv = document.getElementById("deck");
-  deckDiv.innerHTML = "";
-  const deckCard = document.createElement("div");
-  deckCard.classList.add("cards");
-  deckCard.id = "deckCards";
-  deckDiv.appendChild(deckCard);
+    let deckDiv = document.getElementById("deck");
+    deckDiv.innerHTML = "";
+    const deckCard = document.createElement("div");
+    deckCard.classList.add("cards");
+    deckDiv.appendChild(deckCard);
 }
 
-function playCard(card, cardElement) {
-  if (!myTurn) return;
+ function removeTableCards(playedCard, cardsToRemove) {
+        let tableDiv = document.getElementById("table");
 
-  socket.send(JSON.stringify({ type: "move", card: card }));
-  myTurn = false;
+        if (cardsToRemove && cardsToRemove.length > 0) {
+            cardsToRemove.forEach(card => {
+                const cardDivs = tableDiv.querySelectorAll(".cards");
+                cardDivs.forEach(div => {
+                   if (div.dataset.cardValore == String(card.valore)) {
+                      console.log(tableDiv);
+                      div.remove();
+                      console.log(div);
+                      console.log(tableDiv);
+                    }
+                });
+            });
+        }
 
-  // Rimuove il div della carta giocata dal deck del player (credo)
-  cardElement.remove();
-
-  updateStatus();
-  updateTable(card);
-}
-
-function updateTable(card) {
-  const tableDiv = document.getElementById("table");
-  const cardDiv = document.createElement("div");
-  cardDiv.classList.add("cards");
-  const imagePath = getCardImagePath(card);
-  cardDiv.style.backgroundImage = `url('${imagePath}')`;
-  tableDiv.appendChild(cardDiv);
-}
-
+        if (playedCard) {
+            const playedCardDivs = tableDiv.querySelectorAll(".cards");
+            playedCardDivs.forEach(div => {
+                if (div.dataset.cardValore === String(playedCard.valore) && div.dataset.cardSeme === playedCard.seme) {
+                    tableDiv.removeChild(div);
+                }
+            });
+        }
+    }
 function removeOpponentCard() {
   let opponentHandDiv = document.getElementById("opponent-hand");
   if (opponentHandDiv.children.length > 0) {
     opponentHandDiv.removeChild(opponentHandDiv.children[0]);
   }
-}
-
- function removeTableCards(card){
-  let tableDiv = document.getElementById("table"); //ottengo il div delle carte al centro
-  cardsToRemove = card.slice();
-  tableHand.forEach((card) => {
-    if (card.valore == cardsToRemove.valore && card.seme == cardsToRemove.seme)
-      tableDiv.removeChild(card); //cava la carta dal tavolo
-  });
 }
 
 function exitGame() {
@@ -225,7 +202,6 @@ function avviaMusica() {
 
 function volumeChanger() {
   let volumeIcons = document.querySelectorAll(".volume-icon");
-
   if (audio.muted) {
     audio.muted = false;
     volumeIcons.forEach((icon) => {
@@ -235,11 +211,10 @@ function volumeChanger() {
   } else {
     audio.muted = true;
     volumeIcons.forEach((icon) => {
-      icon.classList.remove("fa-volume-up");
-      icon.classList.add("fa-volume-mute");
+      volumeIcons.classList.remove("fa-volume-up");
+      volumeIcons.classList.add("fa-volume-mute");
     });
   }
-
   if (!audio.muted) {
     audio.volume = music;
   }
@@ -272,9 +247,26 @@ function closeGuide() {
   document.getElementById("pdfIframe").src = "";
 }
 
-
-
-
 function getCardImagePath(card) {
   return `./img/cards/${card.valore}${card.seme}.svg`;
+}
+
+function showAvailableCombos(combos) {
+    const chosenCombo = combos;
+    socket.send(JSON.stringify({ type: "combo_response", combo: chosenCombo }));
+}
+
+//Aggiungere questa funzione
+function playCard(card, cardDiv) {
+    if (!myTurn) return;
+    socket.send(JSON.stringify({ type: "move", card: card }));
+    myTurn = false;
+    cardDiv.remove();
+    updateStatus();
+}
+
+function handleGameOver(won, points) {
+    let message = won ? "Hai vinto!" : "Hai perso!";
+    alert(`${message} Punteggio finale: ${points[0]} - ${points[1]}`);
+    window.location.href = "index.html";
 }
