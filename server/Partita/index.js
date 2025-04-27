@@ -72,9 +72,9 @@ class Partita {
                     });              
                 }
                 else {
-                this.#players[opponentIndex].send(
-                  JSON.stringify({type: "remove_table_cards", card: data.card, cards: take.cardsTaken})
-                );
+                  this.#players.forEach((p) => {
+                    p.send(JSON.stringify({type: "remove_table_cards", card: data.card, cards: take.cardsTaken}));
+                  });
                 }
               }
               else {
@@ -123,7 +123,7 @@ class Partita {
           else if (data.type === "comboRequested") {
             let playerIndex = this.#players.indexOf(socket);
             let opponentIndex = playerIndex === 0 ? 1 : 0;
-            removeComboCards(data.combo, this.#players[opponentIndex]);
+            removeComboCards(data.combo, this.#players[opponentIndex], playedCard, this.#players[playerIndex]);
           }
         });
         socket.on("close", () => {
@@ -153,6 +153,7 @@ class Partita {
     });
 
     oppositeSocket.send(JSON.stringify({type: "remove_table_cards", card: playedCard, cards: comboToTake}));
+    playerIndex.send(JSON.stringify({type: "remove_table_cards", card: playedCard, cards: comboToTake}));
   }
 
 
