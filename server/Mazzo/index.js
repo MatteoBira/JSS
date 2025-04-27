@@ -18,6 +18,10 @@ class Mazzo {
     }
   }
 
+  removeCard(card) {
+    this.#mazzo = this.#mazzo.filter(c => !(c.valore === card.valore && c.seme === card.seme));
+  }
+
   getArray() {
     return this.#mazzo;
   }

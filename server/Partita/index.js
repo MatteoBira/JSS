@@ -43,8 +43,8 @@ class Partita {
 
             const playedCard = data.card;
 
-            let take = this.managePresa(playedCard, playerIndex); //valore da inviare direttamente via socket
-            console.log("dimensione mazzo: " + this.#mazzo.getArray().length);
+            let take = this.managePresa(playedCard, playerIndex);
+            
             // Add the played card to the table
             //this.#tableCards.push(playedCard);
 
@@ -53,19 +53,36 @@ class Partita {
               (c) => !(c.valore === playedCard.valore && c.seme === playedCard.seme)
             );
 
-            // Avvisa il client opposto che deve rimuovere la carta. if logic da cambiare?
+            console.log("dimensione mazzo: " + this.#mazzo.getArray().length);
+
+            // Avvisa il client opposto che deve rimuovere la carta.
             if (this.#players[opponentIndex]) {
-              this.#players[opponentIndex].send(
-                JSON.stringify({ type: "move", card: data.card }) //niente carte prese, fai aggiungere al giocatore opposto la carta al tavolo
-              );           
               this.#players[opponentIndex].send(
                 JSON.stringify({ type: "remove_opponent_card" }) //rimuove, dalla vista del giocatore opposto, 1 carta del giocatore che ha iniziato la mossa
               ); 
               if(take.taken == true){
+                if(take.combosAvail) {
+                  console.log("Si ci sono combo");
+                  this.waitForResponse(playerIndex, take.combosAvail)
+                    .then((response) => {
+                      this.removeComboCards(response.combo, this.#players[opponentIndex], playedCard, this.#players[playerIndex]);
+                    })
+                    .catch((error) => {
+                      console.log('Errore nella risposta:', error);
+                    });              
+                }
+                else {
                 this.#players[opponentIndex].send(
-                  JSON.stringify({type: "remove_table_cards", card: data.card, cards: take[1]})
+                  JSON.stringify({type: "remove_table_cards", card: data.card, cards: take.cardsTaken})
                 );
+                }
               }
+              else {
+                this.#players[opponentIndex].send(
+                  JSON.stringify({ type: "move", card: data.card }) //niente carte prese, fai aggiungere al giocatore opposto la carta al tavolo
+                );           
+              }
+            
             }
 
             if (this.#hands[0].length === 0 && this.#hands[1].length === 0 && this.#mazzo.getArray().length > 0) {
@@ -103,6 +120,11 @@ class Partita {
               JSON.stringify({ type: "count", value: this.getCount() })
             );
           }
+          else if (data.type === "comboRequested") {
+            let playerIndex = this.#players.indexOf(socket);
+            let opponentIndex = playerIndex === 0 ? 1 : 0;
+            removeComboCards(data.combo, this.#players[opponentIndex]);
+          }
         });
         socket.on("close", () => {
           this.#players = this.#players.filter((p) => p !== socket);
@@ -110,6 +132,29 @@ class Partita {
         });
     });
   }
+
+
+  removeComboCards(combos, oppositeSocket, playedCard, playerIndex) { //1 array di carte. 1 solo scelto dall'utente
+    const comboToTake = combos;
+    this.#tableCards = this.#tableCards.filter(c => !comboToTake.includes(c));
+
+    this.#cardNum[playerIndex]++;
+    if(playedCard.seme == 'D') this.#denari[playerIndex]++;
+    if(playedCard.seme == 'D' && playedCard.valore == 7) this.#points[playerIndex]++;
+    if(playedCard.seme == 'D' && playedCard.valore == 10) this.#points[playerIndex]++;
+    if(playedCard.valore == 7) this.#primiera[playerIndex]++;
+
+    comboToTake.forEach((card) => { 
+      this.#cardNum[playerIndex]++;
+      if(card.seme == 'D') this.#denari[playerIndex]++;
+      if(card.seme == 'D' && card.valore == 7) this.#points[playerIndex]++;
+      if(card.seme == 'D' && card.valore == 10) this.#points[playerIndex]++;
+      if(card.valore == 7) this.#primiera[playerIndex]++;
+    });
+
+    oppositeSocket.send(JSON.stringify({type: "remove_table_cards", card: playedCard, cards: comboToTake}));
+  }
+
 
 
   assignScore() {
@@ -138,9 +183,12 @@ class Partita {
     const sameValueCard = this.#tableCards.find(c => c.valore === playedCard.valore);
 
     if (sameValueCard) {
-      // Rimuove la carta dal tavolo
+
+      console.log("C'è una carta diretta: " + sameValueCard.valore + sameValueCard.seme);
+
+      // Rimuove la carta dal tavolo memorizzato nel server
       this.#tableCards = this.#tableCards.filter(c => c !== sameValueCard);
-      //bisogna dire di cavare la carta!!!!!!!!!!!!!!
+
 
       if(this.#tableCards.length == 0){ //tavolo vuoto = scopa
         this.#points[playerIndex]++;
@@ -162,11 +210,12 @@ class Partita {
 
       return {
         taken: true,
-        cardsTaken: [playedCard, sameValueCard]
+        cardsTaken: [sameValueCard]
       };
     }
 
     // Se non esiste una carta con lo stesso valore, cerca combinazioni che sommano al valore giocato
+    console.log("Alla ricerca di combo");
     const allCombos = (arr) => {
       const results = [];
       const recurse = (start, combo) => {
@@ -184,27 +233,10 @@ class Partita {
     const combos = allCombos(this.#tableCards);
 
     if (combos.length > 0) {
-      // Prendi la prima combinazione valida
-      const comboToTake = combos[0];
-      this.#tableCards = this.#tableCards.filter(c => !comboToTake.includes(c));
-
-      this.#cardNum[playerIndex]++;
-      if(playedCard.seme == 'D') this.#denari[playerIndex]++;
-      if(playedCard.seme == 'D' && playedCard.valore == 7) this.#points[playerIndex]++;
-      if(playedCard.seme == 'D' && playedCard.valore == 10) this.#points[playerIndex]++;
-      if(playedCard.valore == 7) this.#primiera[playerIndex]++;
-
-      comboToTake.forEach((card) => { 
-        this.#cardNum[playerIndex]++;
-        if(card.seme == 'D') this.#denari[playerIndex]++;
-        if(card.seme == 'D' && card.valore == 7) this.#points[playerIndex]++;
-        if(card.seme == 'D' && card.valore == 10) this.#points[playerIndex]++;
-        if(card.valore == 7) this.#primiera[playerIndex]++;
-      });
-
+      console.log(combos);
       return {
         taken: true,
-        cardsTaken: comboToTake
+        combosAvail: combos
       };
     }
 
@@ -244,6 +276,31 @@ class Partita {
   getCount() {
     return this.#cards.length;
   }
+
+  waitForResponse(playerIndex, combos) {
+    return new Promise((resolve, reject) => {
+      // Imposta un listener per la risposta del client
+      this.#players[playerIndex].once('message', (message) => {
+        try {
+          const response = JSON.parse(message);
+          
+          // Verifica che la risposta sia corretta
+          if (response.type === 'combo_response') {
+            resolve(response);  // Risposta ricevuta con successo
+          } else {
+            reject('Tipo di risposta errato');
+          }
+        } catch (error) {
+          reject('Errore nella risposta');
+        }
+      });
+  
+      // Invia il messaggio al client
+      this.#players[playerIndex].send(
+        JSON.stringify({ type: "remove_table_cards_combosAvail", combos: combos })
+      );
+    });
+  };
 }
 
 module.exports = Partita;
