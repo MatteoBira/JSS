@@ -1,3 +1,50 @@
+class Carta {
+  #div;
+  #valore;
+  #seme;
+
+  constructor(div, valore, seme) {
+    this.#div = div;
+    this.#valore = valore;
+    this.#seme = seme;
+  }
+
+  mostraCard() {
+    return `${this.#valore} di ${this.#seme}`;
+  }
+
+  getValore() {
+    return this.#valore;
+  }
+
+  getSeme() {
+    return this.#seme;
+  }
+
+  getDiv() {
+    return this.#div;
+  }
+
+  setDiv(div) {
+    this.#div = div;
+  }
+
+  setValore(valore) {
+    this.#valore = valore;
+  }
+
+  setSeme(seme) {
+    this.#seme = seme;
+  }
+
+  toJSON() {
+    return {
+      valore: this.#valore,
+      seme: this.#seme
+    };
+  }
+}
+
 let socket = null;
 let playerNumber;
 let myTurn = false;
@@ -15,13 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
 function playGame() {
   if (startButtonClick) {
     return;
-    /*
-    socket = null;
-    startButtonClick = false;
-    let btn = event.currentTarget;
-    btn.innerText = "Play";
-    btn.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-    */
   }
 
   startButtonClick = true;
@@ -38,22 +78,23 @@ function playGame() {
     
       case "startingCards":
         const handDiv = document.getElementById("player-hand");
-        myHand = data.arr.slice();
-        console.log(myHand);
+        const tempArray = data.arr.slice();
     
-        myHand.forEach((card) => {
+        tempArray.forEach((cardData) => {
           const cardDiv = document.createElement("div");
           cardDiv.classList.add("cards", "side-cards-adjustment");
-          cardDiv.onclick = function () {
-            playCard(card, this);
-          };
     
-          const imagePath = getCardImagePath(card);
+          let tempCard = new Carta(cardDiv, cardData.valore, cardData.seme);
+          const imagePath = getCardImagePath(tempCard);
           cardDiv.style.backgroundImage = `url('${imagePath}')`;
-    
+          myHand.push(tempCard);
+          cardDiv.onclick = function () {
+            playCard(tempCard);
+          };
           handDiv.appendChild(cardDiv);
           cardNumber++;
         });
+        console.log(myHand);
     
         let cardIdNumberCorrection = document.getElementById("player-hand").getElementsByTagName("div");
         cardIdNumberCorrection[0].id = "bot-card1";
@@ -66,16 +107,18 @@ function playGame() {
       case "tableCards":
         let tableDiv = document.getElementById("table");
         tableDiv.innerHTML = "";
-        tableHand = data.arr.slice();
-        tableHand.forEach((card) => {
-          const tableCardDiv = document.createElement("div");
-          tableCardDiv.classList.add("cards");
+        tableHand = data.arr.map(cardData => {
+          const cardDiv = document.createElement("div");
+          cardDiv.classList.add("cards");
     
+          let card = new Carta(cardDiv, cardData.valore, cardData.seme);
           const imagePath = getCardImagePath(card);
-          tableCardDiv.style.backgroundImage = `url('${imagePath}')`;
+          cardDiv.style.backgroundImage = `url('${imagePath}')`;
     
-          tableDiv.appendChild(tableCardDiv);
+          tableDiv.appendChild(cardDiv);
+          return card;
         });
+        console.log(tableHand);
         break;
     
       case "start":
@@ -92,10 +135,10 @@ function playGame() {
         break;
     
       case "remove_table_cards":
-        removeTableCards(data.card);
+        removeTableCards(data.card, data.cards);
         break;
     
-      case "turn":
+      case "turn": //turn cambiato solo su richiesta del server.
         myTurn = data.turn;
         updateStatus();
         break;
@@ -119,22 +162,6 @@ function updateStatus() {
 }
 
 function generateHand() {
-  /*myHand = ["1", "2", "3"];
-  const handDiv = document.getElementById("player-hand");
-  handDiv.innerHTML = "";
-
-  myHand.forEach((card) => {
-    if (cardNumber > 3) cardNumber = 1;
-    let idCard = "card" + cardNumber;
-    const cardDiv = document.createElement("div");
-    cardDiv.id = "bot-" + idCard;
-    cardDiv.classList.add("cards");
-    cardDiv.classList.add("side-cards-adjustment");
-    cardDiv.onclick = () => playCard(card);
-    handDiv.appendChild(cardDiv);
-    cardNumber++;
-  });*/
-
   opponentHand = ["1", "2", "3"];
   const oppponentHandDiv = document.getElementById("opponent-hand");
   oppponentHandDiv.innerHTML = "";
@@ -160,26 +187,28 @@ function generateDeck() {
   deckDiv.appendChild(deckCard);
 }
 
-function playCard(card, cardElement) {
+function playCard(card) {
   if (!myTurn) return;
 
-  socket.send(JSON.stringify({ type: "move", card: card }));
+  socket.send(JSON.stringify({ type: "move", card: card.toJSON() }));
   myTurn = false;
 
-  // Rimuove il div della carta giocata dal deck del player (credo)
-  cardElement.remove();
+  // Rimuovi la carta da myHand
+  myHand = myHand.filter(c => c !== card);
 
-  updateStatus();
-  updateTable(card);
+  card.getDiv().remove();
+  card.setDiv(null);
 }
 
-function updateTable(card) {
+function updateTable(cardData) {
   const tableDiv = document.getElementById("table");
   const cardDiv = document.createElement("div");
   cardDiv.classList.add("cards");
+  const card = new Carta(cardDiv, cardData.valore, cardData.seme);
   const imagePath = getCardImagePath(card);
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
   tableDiv.appendChild(cardDiv);
+  return card;
 }
 
 function removeOpponentCard() {
@@ -189,13 +218,40 @@ function removeOpponentCard() {
   }
 }
 
- function removeTableCards(card){
-  let tableDiv = document.getElementById("table"); //ottengo il div delle carte al centro
-  cardsToRemove = card.slice();
-  tableHand.forEach((card) => {
-    if (card.valore == cardsToRemove.valore && card.seme == cardsToRemove.seme)
-      tableDiv.removeChild(card); //cava la carta dal tavolo
+function removeSingleCard(cardToRemove) {
+  const tableDiv = document.getElementById("table");
+
+  tableHand = tableHand.filter((card) => {
+    if (card.getValore() == cardToRemove.getValore() && card.getSeme() == cardToRemove.getSeme()) {
+      console.log("Tolta la carta");
+      tableDiv.removeChild(card.getDiv());
+      return false; // elimina dal tableHand
+    }
+    return true;
   });
+}
+
+function removeTableCards(playedCard, cards) {
+  let tableDiv = document.getElementById("table");
+  let array = cards.slice(); //carte da rimuovere
+  console.log(array);
+
+  if (array.length == 1) {
+    let card = updateTable(playedCard);
+    tableHand.push(card);
+    setTimeout(() => {
+      removeSingleCard(card);
+      array.forEach((cardData) => {
+        tableHand = tableHand.filter((cardTable) => {
+          if (cardData.valore == cardTable.getValore() && cardData.seme == cardTable.getSeme()) {
+            tableDiv.removeChild(cardTable.getDiv());
+            return false; // rimuovilo da tableHand
+          }
+          return true;
+        });
+      });
+    }, 1500);
+  }
 }
 
 function exitGame() {
@@ -225,6 +281,8 @@ function avviaMusica() {
 
 function volumeChanger() {
   let volumeIcons = document.querySelectorAll(".volume-icon");
+
+  let audio = document.getElementById("audio");
 
   if (audio.muted) {
     audio.muted = false;
@@ -272,9 +330,6 @@ function closeGuide() {
   document.getElementById("pdfIframe").src = "";
 }
 
-
-
-
 function getCardImagePath(card) {
-  return `./img/cards/${card.valore}${card.seme}.svg`;
+  return `./img/cards/${card.getValore()}${card.getSeme()}.svg`;
 }

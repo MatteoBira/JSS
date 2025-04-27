@@ -78,11 +78,10 @@ class Partita {
                 }
               }
               else {
-                this.#players[opponentIndex].send(
-                  JSON.stringify({ type: "move", card: data.card }) //niente carte prese, fai aggiungere al giocatore opposto la carta al tavolo
-                );           
-              }
-            
+                this.#players.forEach((p) => {
+                  p.send(JSON.stringify({ type: "move", card: data.card })); //niente carte prese, fai aggiungere al giocatore opposto e anche all'iniziatore la carta al tavolo
+                });    
+              }           
             }
 
             if (this.#hands[0].length === 0 && this.#hands[1].length === 0 && this.#mazzo.getArray().length > 0) {

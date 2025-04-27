@@ -1,5 +1,5 @@
 const WebSocket = require("ws"); //web socket library
-require("./Card/index.js"); //get class card
+
 const Mazzo = require("./Mazzo/index.js"); //get deck card
 require("dotenv").config(); // load env variables from .env file
 const Partita = require("./Partita/index.js");
