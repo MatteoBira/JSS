@@ -192,6 +192,7 @@ class Partita {
 
       if(this.#tableCards.length == 0){ //tavolo vuoto = scopa
         this.#points[playerIndex]++;
+        this.#players[playerIndex].send(JSON.stringify({type: "scopa"}));
       }
 
       this.#cardNum[playerIndex] += 2;

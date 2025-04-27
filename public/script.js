@@ -65,12 +65,13 @@ function playGame() {
   }
 
   startButtonClick = true;
-  socket = new WebSocket("ws://10.0.0.8:8180");
+  socket = new WebSocket("ws://localhost:8080");
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-
+    console.log("Check crazyy pre: " + JSON.stringify(tableHand));
     switch (data.type) {
+      
       case "welcome":
         playerNumber = data.playerNumber;
         document.getElementById("status").innerText = `You are Player ${playerNumber}`;
@@ -128,6 +129,12 @@ function playGame() {
     
       case "move":
         updateTable(data.card);
+        console.log("Check crazyy post: " + JSON.stringify(tableHand));
+        break;
+
+      case "remove_table_cards_combosAvail":
+        let arrayDaPrendere = data.combos[0];
+        socket.send(JSON.stringify({ type: "combo_response", combo: arrayDaPrendere }));
         break;
     
       case "remove_opponent_card":
@@ -136,15 +143,21 @@ function playGame() {
     
       case "remove_table_cards":
         removeTableCards(data.card, data.cards);
+        console.log("Check crazyy post: " + JSON.stringify(tableHand));
         break;
     
       case "turn": //turn cambiato solo su richiesta del server.
         myTurn = data.turn;
         updateStatus();
         break;
+      
+      case "scopa":
+        alert("Hai fatto scopa!");
+        break;
     
       default:
         console.warn("Tipo di messaggio sconosciuto:", data);
+
     }
   }
 
@@ -208,6 +221,7 @@ function updateTable(cardData) {
   const imagePath = getCardImagePath(card);
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
   tableDiv.appendChild(cardDiv);
+  myHand.push(card);
   return card;
 }
 
@@ -234,14 +248,15 @@ function removeSingleCard(cardToRemove) {
 function removeTableCards(playedCard, cards) {
   let tableDiv = document.getElementById("table");
   let array = cards.slice(); //carte da rimuovere
-  console.log(array);
+  console.log("Carta presa: " + JSON.stringify(array));
 
-  if (array.length == 1) {
+  if (array) {
     let card = updateTable(playedCard);
     tableHand.push(card);
     setTimeout(() => {
       removeSingleCard(card);
       array.forEach((cardData) => {
+        console.log(cardData);
         tableHand = tableHand.filter((cardTable) => {
           if (cardData.valore == cardTable.getValore() && cardData.seme == cardTable.getSeme()) {
             tableDiv.removeChild(cardTable.getDiv());
