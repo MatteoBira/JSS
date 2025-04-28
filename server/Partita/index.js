@@ -135,7 +135,16 @@ class Partita {
 
   removeComboCards(combos, oppositeSocket, playedCard, playerIndex) { //1 array di carte. 1 solo scelto dall'utente
     const comboToTake = combos;
-    this.#tableCards = this.#tableCards.filter(c => !comboToTake.includes(c));
+    console.log("comboToTake: " + combos);
+    console.log("tableCards before: " + this.#tableCards);
+
+    this.#tableCards = this.#tableCards.filter( // Questa e' la parte di codice che dovrebbe fixare il problema delle carte che scompaiono a caso
+      (tableCard) => !comboToTake.some(
+        (comboCard) => comboCard.valore === tableCard.valore && comboCard.seme === tableCard.seme
+      )
+    );
+//    this.#tableCards = this.#tableCards.filter(c => !comboToTake.includes(c)); questa linea non toglieva correttamente le carte combo dal tavolo
+    console.log("tableCards after: " + this.#tableCards);
 
     this.#cardNum[playerIndex]++;
     if(playedCard.seme == 'D') this.#denari[playerIndex]++;

@@ -247,14 +247,11 @@ function removeSingleCard(cardToRemove) {
 
 function removeTableCards(playedCard, cards) {
   let tableDiv = document.getElementById("table");
-  let array = cards.slice(); //carte da rimuovere
+  let array = cards.slice(); // carte da rimuovere
   console.log("Carta presa: " + JSON.stringify(array));
 
   if (array) {
-    let card = updateTable(playedCard);
-    tableHand.push(card);
-    setTimeout(() => {
-      removeSingleCard(card);
+    if (array.length > 0) {
       array.forEach((cardData) => {
         console.log(cardData);
         tableHand = tableHand.filter((cardTable) => {
@@ -265,7 +262,10 @@ function removeTableCards(playedCard, cards) {
           return true;
         });
       });
-    }, 1500);
+    } else {
+      let card = updateTable(playedCard);
+      tableHand.push(card);
+    }
   }
 }
 
