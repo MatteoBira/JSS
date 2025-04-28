@@ -263,30 +263,38 @@ function removeSingleCard(cardToRemove) {
 }
 
 function removeTableCards(playedCard, cards) {
-  let tableDiv = document.getElementById("table");
-  let array = cards.slice(); // carte da rimuovere
-  console.log("Carta presa: " + JSON.stringify(array));
+  const tableDiv = document.getElementById("table");
+  const array = cards.slice(); // Copia delle carte da rimuovere
+  console.log("Carta presa:", JSON.stringify(array));
 
-  if (array) {
-    if (array.length > 0) {
-      array.forEach((cardData) => {
-        console.log(cardData);
-        tableHand = tableHand.filter((cardTable) => {
-          if (
-            cardData.valore == cardTable.getValore() &&
-            cardData.seme == cardTable.getSeme()
-          ) {
-            tableDiv.removeChild(cardTable.getDiv());
-            return false; // rimuovilo da tableHand
-          }
-          return true;
-        });
+  if (!array || array.length === 0) return;
+
+  const card = updateTable(playedCard); // Aggiunge la carta giocata al tavolo
+  card.getDiv().style.boxShadow = "0 0 10px red";
+
+  array.forEach((card) => {
+    tableHand.forEach((c) => {
+      if (card.valore == c.getValore() && card.seme == c.getSeme()) {
+        c.getDiv().style.boxShadow = "0 0 10px blue";
+      }
+    });
+  });
+
+  setTimeout(() => {
+    const carteDaRimuovere = [...array, playedCard]; // rimuoviamo sia le carte prese sia quella giocata
+    carteDaRimuovere.forEach((cardData) => {
+      tableHand = tableHand.filter((cardTable) => {
+        if (
+          cardTable.getValore() === cardData.valore &&
+          cardTable.getSeme() === cardData.seme
+        ) {
+          tableDiv.removeChild(cardTable.getDiv());
+          return false; // rimuovilo da tableHand
+        }
+        return true;
       });
-    } else {
-      let card = updateTable(playedCard);
-      tableHand.push(card);
-    }
-  }
+    });
+  }, 1500);
 }
 
 function exitGame() {
@@ -372,19 +380,19 @@ function getCardImagePath(card) {
 function mostraPopup() {
   const popup = document.getElementById('popup');
   popup.style.display = 'block';
-  
+
   // Forzare il ricalcolo per permettere l'animazione
   void popup.offsetWidth;
-  
+
   popup.style.transform = 'translate(-50%, -50%) scale(1)';
   popup.style.opacity = '1';
 
   setTimeout(() => {
     popup.style.display = 'none';
     nascondiPopup();
-    }, 5000);
-  }
-  
+  }, 5000);
+}
+
 function nascondiPopup() {
   const popup = document.getElementById('popup');
   popup.style.transform = 'translate(-50%, -50%) scale(0)';
