@@ -374,3 +374,7 @@ button:active {
     0%, 100% { transform: translateY(-5px) rotate(5deg); }
     50% { transform: translateY(-20px) rotate(5deg); }
 }
+
+.playedCard {
+    box-shadow: 0 0 10px red;
+}
