@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Scopa - Home</title>
 </head>
+
 <body>
-    <audio id="audio" >
+    <audio id="audio">
         <source src="music/Relaxing Jazz Music in the Rain - 30 Minutes.mp3" type="audio/mp3">
     </audio>
     <div id="main-container">
@@ -19,7 +20,7 @@
                 <button onclick="playGame()">Play</button>
                 <button onclick="apriImpostazioni()">Settings</button>
                 <button onclick="exitGame()">Exit</button>
-                <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>    
+                <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
             </div>
             <div id="settingsPopup">
                 <h2>Impostazioni</h2>
@@ -66,15 +67,16 @@ color: #333;
 transition: transform 0.4s ease, opacity 0.4s ease;
 opacity: 0;
 ">
-<p id="popupText"></p>
-</div>
+                    <p id="popupText"></p>
+                </div>
                 <div id="inGameSettings">
-                    <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="5">    
+                    <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)"
+                        value="5">
                     <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
                     <button onclick="openGuide()">Open Guide</button>
                     <button id="btn" onclick="chiudiIGImpostazioni()">Chiudi</button>
                 </div>
-                
+
                 <div id="pdfContainer" style="display:none;">
                     <div id="pdfContent">
                         <iframe id="pdfIframe" src="" width="80%" height="80%"></iframe>
@@ -100,4 +102,5 @@ opacity: 0;
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>

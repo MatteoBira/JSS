@@ -27,7 +27,7 @@ class Partita {
       players.forEach((p) => {
         p.send(JSON.stringify({type: "keepalive"}));
       });
-    }, 5000);
+    }, 10000);
   }
 
   startRound() {
