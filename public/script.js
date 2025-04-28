@@ -157,17 +157,17 @@ function playGame() {
         break;
 
       case "scopa":
-        setTimeout(mostraPopup, 1000);
         const scopaText = document.getElementById('popupText').textContent = "Scopa!";
+        mostraPopup();
         break;
 
       case "keepalive":
         break;
 
       case "matchEnd":
-      setTimeout(mostraPopup, 1000);
-      const endText = document.getElementById('popupText').textContent = "Fine Match!";
-      break;
+        const endText = document.getElementById('popupText').textContent = "Fine Match!";
+        mostraPopup();
+        break;
 
       default:
         console.warn("Tipo di messaggio sconosciuto:", data);
@@ -382,11 +382,11 @@ function mostraPopup() {
   setTimeout(() => {
     popup.style.display = 'none';
     nascondiPopup();
-    }, 2000); // stesso tempo della transizione
+    }, 5000);
   }
   
-  function nascondiPopup() {
+function nascondiPopup() {
   const popup = document.getElementById('popup');
   popup.style.transform = 'translate(-50%, -50%) scale(0)';
   popup.style.opacity = '0';
-  }
+}
