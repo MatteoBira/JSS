@@ -40,7 +40,7 @@ class Carta {
   toJSON() {
     return {
       valore: this.#valore,
-      seme: this.#seme
+      seme: this.#seme,
     };
   }
 }
@@ -65,26 +65,27 @@ function playGame() {
   }
 
   startButtonClick = true;
-  socket = new WebSocket("ws://localhost:8080");
+  socket = new WebSocket("wss://ws.alphvino.eu.org");
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     console.log("Check crazyy pre: " + JSON.stringify(tableHand));
     switch (data.type) {
-      
       case "welcome":
         playerNumber = data.playerNumber;
-        document.getElementById("status").innerText = `You are Player ${playerNumber}`;
+        document.getElementById(
+          "status"
+        ).innerText = `You are Player ${playerNumber}`;
         break;
-    
+
       case "startingCards":
         const handDiv = document.getElementById("player-hand");
         const tempArray = data.arr.slice();
-    
+
         tempArray.forEach((cardData) => {
           const cardDiv = document.createElement("div");
           cardDiv.classList.add("cards", "side-cards-adjustment");
-    
+
           let tempCard = new Carta(cardDiv, cardData.valore, cardData.seme);
           const imagePath = getCardImagePath(tempCard);
           cardDiv.style.backgroundImage = `url('${imagePath}')`;
@@ -96,70 +97,82 @@ function playGame() {
           cardNumber++;
         });
         console.log(myHand);
-    
-        let cardIdNumberCorrection = document.getElementById("player-hand").getElementsByTagName("div");
+
+        let cardIdNumberCorrection = document
+          .getElementById("player-hand")
+          .getElementsByTagName("div");
         cardIdNumberCorrection[0].id = "bot-card1";
         cardIdNumberCorrection[1].id = "bot-card2";
         cardIdNumberCorrection[2].id = "bot-card3";
-    
+
         generateHand();
         break;
-    
+
       case "tableCards":
         let tableDiv = document.getElementById("table");
         tableDiv.innerHTML = "";
-        tableHand = data.arr.map(cardData => {
+        tableHand = data.arr.map((cardData) => {
           const cardDiv = document.createElement("div");
           cardDiv.classList.add("cards");
-    
+
           let card = new Carta(cardDiv, cardData.valore, cardData.seme);
           const imagePath = getCardImagePath(card);
           cardDiv.style.backgroundImage = `url('${imagePath}')`;
-    
+
           tableDiv.appendChild(cardDiv);
           return card;
         });
         console.log(tableHand);
         break;
-    
+
       case "start":
         myTurn = data.turn;
         startGame();
         break;
-    
+
       case "move":
         updateTable(data.card);
-        console.log("Check crazyy post: " + JSON.stringify(tableHand));
+        console.log("Check array dopo 'move': " + JSON.stringify(tableHand));
         break;
 
       case "remove_table_cards_combosAvail":
         let arrayDaPrendere = data.combos[0];
-        socket.send(JSON.stringify({ type: "combo_response", combo: arrayDaPrendere }));
+        socket.send(
+          JSON.stringify({ type: "combo_response", combo: arrayDaPrendere })
+        );
         break;
-    
+
       case "remove_opponent_card":
         removeOpponentCard();
         break;
-    
+
       case "remove_table_cards":
         removeTableCards(data.card, data.cards);
         console.log("Check crazyy post: " + JSON.stringify(tableHand));
         break;
-    
+
       case "turn": //turn cambiato solo su richiesta del server.
         myTurn = data.turn;
         updateStatus();
         break;
-      
+
       case "scopa":
-        alert("Hai fatto scopa!");
+        setTimeout(mostraPopup, 1000);
+        const scopaText = document.getElementById('popupText').textContent = "Scopa!";
         break;
-    
+
+      case "keepalive":
+        break;
+
+      case "matchEnd":
+      setTimeout(mostraPopup, 1000);
+      const endText = document.getElementById('popupText').textContent = "Fine Match!";
+      break;
+
       default:
         console.warn("Tipo di messaggio sconosciuto:", data);
-
     }
-  }
+  };
 
   let btn = event.currentTarget;
   btn.innerText = "Searching for an opponent...";
@@ -207,7 +220,8 @@ function playCard(card) {
   myTurn = false;
 
   // Rimuovi la carta da myHand
-  myHand = myHand.filter(c => c !== card);
+  myHand = myHand.filter((c) => c !== card);
+  console.log(JSON.stringify(tableHand));
 
   card.getDiv().remove();
   card.setDiv(null);
@@ -221,7 +235,7 @@ function updateTable(cardData) {
   const imagePath = getCardImagePath(card);
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
   tableDiv.appendChild(cardDiv);
-  myHand.push(card);
+  tableHand.push(card);
   return card;
 }
 
@@ -236,7 +250,10 @@ function removeSingleCard(cardToRemove) {
   const tableDiv = document.getElementById("table");
 
   tableHand = tableHand.filter((card) => {
-    if (card.getValore() == cardToRemove.getValore() && card.getSeme() == cardToRemove.getSeme()) {
+    if (
+      card.getValore() == cardToRemove.getValore() &&
+      card.getSeme() == cardToRemove.getSeme()
+    ) {
       console.log("Tolta la carta");
       tableDiv.removeChild(card.getDiv());
       return false; // elimina dal tableHand
@@ -255,7 +272,10 @@ function removeTableCards(playedCard, cards) {
       array.forEach((cardData) => {
         console.log(cardData);
         tableHand = tableHand.filter((cardTable) => {
-          if (cardData.valore == cardTable.getValore() && cardData.seme == cardTable.getSeme()) {
+          if (
+            cardData.valore == cardTable.getValore() &&
+            cardData.seme == cardTable.getSeme()
+          ) {
             tableDiv.removeChild(cardTable.getDiv());
             return false; // rimuovilo da tableHand
           }
@@ -348,3 +368,25 @@ function closeGuide() {
 function getCardImagePath(card) {
   return `./img/cards/${card.getValore()}${card.getSeme()}.svg`;
 }
+
+function mostraPopup() {
+  const popup = document.getElementById('popup');
+  popup.style.display = 'block';
+  
+  // Forzare il ricalcolo per permettere l'animazione
+  void popup.offsetWidth;
+  
+  popup.style.transform = 'translate(-50%, -50%) scale(1)';
+  popup.style.opacity = '1';
+
+  setTimeout(() => {
+    popup.style.display = 'none';
+    nascondiPopup();
+    }, 2000); // stesso tempo della transizione
+  }
+  
+  function nascondiPopup() {
+  const popup = document.getElementById('popup');
+  popup.style.transform = 'translate(-50%, -50%) scale(0)';
+  popup.style.opacity = '0';
+  }
