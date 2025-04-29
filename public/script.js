@@ -69,7 +69,7 @@ function playGame() {
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    console.log("Check crazyy pre: " + JSON.stringify(tableHand));
+    let popupText;
     switch (data.type) {
       case "welcome":
         playerNumber = data.playerNumber;
@@ -109,6 +109,7 @@ function playGame() {
         break;
 
       case "tableCards":
+        console.log("Carte tavolo update: " + JSON.stringify(tableHand));
         let tableDiv = document.getElementById("table");
         tableDiv.innerHTML = "";
         tableHand = data.arr.map((cardData) => {
@@ -148,7 +149,6 @@ function playGame() {
 
       case "remove_table_cards":
         removeTableCards(data.card, data.cards);
-        console.log("Check crazyy post: " + JSON.stringify(tableHand));
         break;
 
       case "turn": //turn cambiato solo su richiesta del server.
@@ -157,16 +157,35 @@ function playGame() {
         break;
 
       case "scopa":
-        const scopaText = document.getElementById('popupText').textContent = "Scopa!";
+        document.getElementById('popupText').textContent = "Scopa!";
+        mostraPopup();
+        break;
+
+      case "progressResult":
+        popupText = "Hai " + data.verdict + " il match con " + data.points + " punti contro " + data.oppositePoints + " punti del tuo avversario!";
+        document.getElementById('popupText').textContent = popupText;
+        mostraPopup();
+        break;
+
+      case "matchResult":
+        popupText = "Hai " + data.verdict + " il match con " + data.points + " punti contro " + data.oppositePoints + " punti del tuo avversario! Partita FINITA!";
+        document.getElementById('popupText').textContent = popupText;
+        mostraPopup();
+        break;
+
+      case "tieResult":
+        popupText = "Hai " + data.verdict + " la partita con " + data.points + " punti! Partita FINITA!";
+        document.getElementById('popupText').textContent = popupText;
+        mostraPopup();
+        break;
+
+      case "matchTie":
+        popupText = "Hai " + data.verdict + " il match con " + data.points + " punti!";
+        document.getElementById('popupText').textContent = popupText;
         mostraPopup();
         break;
 
       case "keepalive":
-        break;
-
-      case "matchEnd":
-        const endText = document.getElementById('popupText').textContent = "Fine Match!";
-        mostraPopup();
         break;
 
       default:
@@ -265,12 +284,16 @@ function removeSingleCard(cardToRemove) {
 function removeTableCards(playedCard, cards) {
   const tableDiv = document.getElementById("table");
   const array = cards.slice(); // Copia delle carte da rimuovere
+  const carteDaRimuovere = [...array];
   console.log("Carta presa:", JSON.stringify(array));
 
   if (!array || array.length === 0) return;
 
-  const card = updateTable(playedCard); // Aggiunge la carta giocata al tavolo
-  card.getDiv().style.boxShadow = "0 0 10px red";
+  if (playedCard) { //remove_table_cards to clean table at the end with card = null, handling
+    const card = updateTable(playedCard); // Aggiunge la carta giocata al tavolo
+    card.getDiv().style.boxShadow = "0 0 10px red";
+    carteDaRimuovere.push(playedCard);
+  }
 
   array.forEach((card) => {
     tableHand.forEach((c) => {
@@ -281,8 +304,8 @@ function removeTableCards(playedCard, cards) {
   });
 
   setTimeout(() => {
-    const carteDaRimuovere = [...array, playedCard]; // rimuoviamo sia le carte prese sia quella giocata
-    carteDaRimuovere.forEach((cardData) => {
+    // rimuoviamo sia le carte prese sia quella giocata
+    carteDaRimuovere.forEach((cardData) => { // rimuoviamo sia le carte prese sia quella giocata
       tableHand = tableHand.filter((cardTable) => {
         if (
           cardTable.getValore() === cardData.valore &&

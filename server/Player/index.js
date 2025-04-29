@@ -3,12 +3,22 @@ class Player {
     #name; //for future use
     #hand = [];
     #points = 0;
+    #totalPoints = 0;
     #cardNum = 0;
     #denariNum = 0;
     #primieraNum = 0;
 
-    constructor(socket) {
+    constructor(socket, name) {
         this.setSocket(socket);
+        this.setName(name);
+    }
+
+    getName() {
+        return this.#name;
+    }
+
+    setName(name) {
+        this.#name = name;
     }
 
     getSocket() {
@@ -44,6 +54,7 @@ class Player {
         this.#hand = hand;
     }
 
+    //Points
     getPoints() {
         return this.#points;
     }
@@ -55,6 +66,19 @@ class Player {
 
     addPoint() {
         this.#points++;
+    }
+
+    updateTotalPoints() {
+        this.#totalPoints += this.getPoints();
+    }
+
+    cleanPoint() {
+        this.setPoints(0); //reset counter
+        this.resetExtra(); //reset other counters
+    }
+
+    getTotalPoints() {
+        return this.#totalPoints;
     }
 
     getCardNum() {
@@ -93,6 +117,12 @@ class Player {
 
     incrementPrimieraNum(n) {
         this.#primieraNum += n;
+    }
+
+    resetExtra() {
+        this.#cardNum = 0;
+        this.#denariNum = 0;
+        this.#primieraNum = 0;
     }
 }
 

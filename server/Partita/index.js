@@ -10,8 +10,8 @@ class Partita {
     #lastToGetCards; //self esplicative
 
     constructor(socketPlayer1, socketPlayer2, mazzo) {
-        this.setPlayer1(new Player(socketPlayer1));
-        this.setPlayer2(new Player(socketPlayer2));
+        this.setPlayer1(new Player(socketPlayer1, "Player1"));
+        this.setPlayer2(new Player(socketPlayer2, "Player2"));
         this.setMazzo(mazzo);
         this.setPlayersArray(this.getPlayer1(), this.getPlayer2());
         this.startRound();
@@ -37,8 +37,6 @@ class Partita {
                 console.log("A player disconnected from some match");
             });
         })
-
-
     }
 
     getOppositePlayer(playerBase) {
@@ -81,6 +79,10 @@ class Partita {
         })
     }
 
+    sendToSinglePlayer(player, msg) {
+        player.getSocket().send(JSON.stringify(msg));
+    }
+
     emptyPlayersHands() {
         this.#playersArray.forEach((player) => {
             player.emptyHand();
@@ -91,9 +93,10 @@ class Partita {
     // Most important method!
     handleMessages(message, player, oppositePlayer) {
         const data = JSON.parse(message);
-        console.log("kabuki: " + data.type);
+        console.log("\n");
         switch (data.type) {
             case "move":
+                console.log("Carte in tavola premossa: " + JSON.stringify(this.#tableCards));
                 const playedCard = data.card;
                 let take = this.managePresa(playedCard, player);
 
@@ -109,7 +112,7 @@ class Partita {
                         JSON.stringify({ type: "remove_opponent_card" }) //rimuove, dalla vista del giocatore opposto, 1 carta del giocatore che ha iniziato la mossa
                     );
                     if (take.taken == true) {
-                        this.#lastToGetCards = player;
+                        this.#lastToGetCards = player; //set last player to get cards from the table
                         if (take.combosAvail) {
                             console.log("Si ci sono combo");
                             this.waitForResponse(player, take.combosAvail)
@@ -135,39 +138,9 @@ class Partita {
                         this.sendToAllPlayers({ type: "move", card: data.card });
                     }
                 }
-
-                if (
-                    player.getHandLength() === 0 &&
-                    oppositePlayer.getHandLength() === 0 &&
-                    this.#mazzo.getArray().length > 0
-                ) {
-                    this.dealStartingCards();
-                } else if (
-                    player.getHandLength() === 0 &&
-                    oppositePlayer.getHandLength() === 0 &&
-                    this.#mazzo.getArray().length == 0
-                ) {
-                    this.gestisciUltimeCarte(); //gestisci le carte rimaste
-                    this.assignScore(player, oppositePlayer); //aggiunge punti ai player
-                    if (player.getPoints() > 11 || oppositePlayer.getPoints() > 11) {
-                        if (player.getPoints() > oppositePlayer.getPoints()) {
-                            console.log("player 1 won");
-                        } else if (player.getPoints() == oppositePlayer.getPoints()) {
-                            console.log("Tie");
-                        } else {
-                            console.log("player 2 won");
-                        }
-                    } else {
-                        this.#mazzo.rebuild(); //uguale al costruttore
-                        this.#mazzo.shuffle();
-                        this.sendToAllPlayers({ type: "matchEnd" });
-                        this.emptyPlayersHands();
-                        this.#tableCards.length = 0;//?
-                        this.dealTableCards();
-                        console.log("rimescolato: " + this.#mazzo.getArray().length);
-                        this.dealStartingCards();
-                    }
-                }
+                console.log("Carte in tavola postmossa: " + JSON.stringify(this.#tableCards));
+                //Check hands and table deck.
+                this.checkDecks(player, oppositePlayer);
 
                 //Switch turns
                 this.#playersArray.forEach((p, index) => {
@@ -186,20 +159,14 @@ class Partita {
 
     managePresa(playedCard, player) {
         // Cerca prima una carta dello stesso valore
-        const sameValueCard = this.#tableCards.find((c) => c.valore === playedCard.valore);
+        const sameValueCard = this.#tableCards.find((c) => c.valore == playedCard.valore);
+        let result = {};
 
         if (sameValueCard) {
             console.log("C'è una presa diretta: " + sameValueCard.valore + sameValueCard.seme);
 
             // Rimuove la carta dal tavolo memorizzato nel server
             this.delTableCard(sameValueCard);
-
-            if (this.getTableCards().length == 0) {
-                //tavolo vuoto = scopa
-                player.addPoint();
-                this.sendToAllPlayers({ type: "scopa" });
-            }
-
             player.incrementCardNum(2);
 
             if (playedCard.seme == "D") player.addDenariNum();
@@ -218,44 +185,53 @@ class Partita {
             if (playedCard.valore == 7) player.addPrimieraNum();
             if (sameValueCard.valore == 7) player.addPrimieraNum();
 
-            return {
+            result = {
                 taken: true,
                 cardsTaken: [sameValueCard],
             };
         }
-
-        // Se non esiste una carta con lo stesso valore, cerca combinazioni che sommano al valore giocato
-        console.log("Alla ricerca di combo");
-        const allCombos = (arr) => {
-            const results = [];
-            const recurse = (start, combo) => {
-                const sum = combo.reduce((acc, card) => acc + card.valore, 0);
-                if (sum === playedCard.valore) results.push([...combo]);
-                if (sum >= playedCard.valore) return;
-                for (let i = start; i < arr.length; i++) {
-                    recurse(i + 1, combo.concat(arr[i]));
-                }
+        else {
+            // Se non esiste una carta con lo stesso valore, cerca combinazioni che sommano al valore giocato
+            console.log("Alla ricerca di combo");
+            const allCombos = (arr) => {
+                const results = [];
+                const recurse = (start, combo) => {
+                    const sum = combo.reduce((acc, card) => acc + card.valore, 0);
+                    if (sum === playedCard.valore) results.push([...combo]);
+                    if (sum >= playedCard.valore) return;
+                    for (let i = start; i < arr.length; i++) {
+                        recurse(i + 1, combo.concat(arr[i]));
+                    }
+                };
+                recurse(0, []);
+                return results;
             };
-            recurse(0, []);
-            return results;
-        };
 
-        const combos = allCombos(this.#tableCards);
+            const combos = allCombos(this.#tableCards);
 
-        if (combos.length > 0) {
-            console.log(combos);
-            return {
-                taken: true,
-                combosAvail: combos,
-            };
+            if (combos.length > 0) {
+                console.log(combos);
+                result = {
+                    taken: true,
+                    combosAvail: combos,
+                };
+            } else {
+                // Se non può prendere niente, la carta rimane sul tavolo
+                this.addTableCard(playedCard);
+                result = {
+                    taken: false,
+                    cardsTaken: [],
+                };
+            }
         }
-
-        // Se non può prendere niente, la carta rimane sul tavolo
-        this.addTableCard(playedCard);
-        return {
-            taken: false,
-            cardsTaken: [],
-        };
+        if (this.getTableCards().length == 0) {
+            //tavolo vuoto = scopa
+            player.addPoint();
+            this.sendToSinglePlayer(player, { type: "scopa" });
+            console.log("Scopa NON da combo!");
+            //this.sendToAllPlayers({ type: "scopa" });
+        }
+        return result;
     }
 
     waitForResponse(player, combos) {
@@ -323,9 +299,6 @@ class Partita {
         } else if (player.getPrimieraNum() < oppositePlayer.getPrimieraNum()) {
             oppositePlayer.addPoint();
         }
-        console.log(
-            "player 1: " + player.getPoints() + " player 2: " + oppositePlayer.getPoints()
-        );
     }
 
     removeComboCards(combos, oppositePlayer, playedCard, player) {
@@ -376,13 +349,122 @@ class Partita {
                 cards: comboToTake,
             })
         );
+
+        if (this.getTableCards().length == 0) {
+            //tavolo vuoto = scopa
+            player.addPoint();
+            this.sendToSinglePlayer(player, { type: "scopa" });
+            console.log("Scopa SI da combo!");
+            //this.sendToAllPlayers({ type: "scopa" });
+        }
     }
 
+    checkDecks(player, oppositePlayer) {
+        if (player.getHandLength() === 0 &&
+            oppositePlayer.getHandLength() === 0 &&
+            this.#mazzo.getArray().length > 0
+        ) {
+            this.dealStartingCards();
+        } else if (
+            player.getHandLength() === 0 &&
+            oppositePlayer.getHandLength() === 0 &&
+            this.#mazzo.getArray().length == 0
+        ) {
+            this.gestisciUltimeCarte(); //gestisci le carte rimaste
+            this.assignScore(player, oppositePlayer); //aggiunge punti ai player
+            let continueGame = this.endMatch(player, oppositePlayer);
+            if (continueGame) {
+                this.#mazzo.rebuild(); //uguale al costruttore
+                this.#mazzo.shuffle();
+                this.emptyPlayersHands();
+                this.#tableCards.length = 0; // reset tableCards array
+                this.dealTableCards();
+                console.log("rimescolato: " + this.#mazzo.getArray().length);
+                this.dealStartingCards();
+            }
+            else {
+                //TBD
+            }
+        }
+    }
+
+    endMatch(player, oppositePlayer) {
+        // Sync puntitotali += punti match attuale
+        player.updateTotalPoints();
+        oppositePlayer.updateTotalPoints();
+
+        console.log(
+            "endMatch() Punti locali: " + player.getName() + player.getPoints() + " " + oppositePlayer.getName() + oppositePlayer.getPoints()
+        );
+        console.log(
+            "endMatch() Punti totali: " + player.getName() + player.getTotalPoints() + " " + oppositePlayer.getName() + oppositePlayer.getTotalPoints()
+        );
+
+        // Determina il vincitore del match attuale (non della serie)
+        let winner = player.getPoints() > oppositePlayer.getPoints() ? player : oppositePlayer;
+        let loser = winner === player ? oppositePlayer : player;
+
+        // Controlla se uno dei due ha raggiunto o superato 11 punti totali
+        if (player.getTotalPoints() >= 11 || oppositePlayer.getTotalPoints() >= 11) {
+
+            // pareggio 11-11
+            if (player.getTotalPoints() === oppositePlayer.getTotalPoints()) {
+                console.log("Tie");
+                this.sendToAllPlayers({ type: "tieResult", verdict: "Pareggio", points: player.getTotalPoints() });
+                player.cleanPoint();
+                oppositePlayer.cleanPoint();
+                return false; // partita finita
+            }
+
+            // Uno dei due ha vinto la serie
+            let finalWinner = player.getTotalPoints() > oppositePlayer.getTotalPoints() ? player : oppositePlayer;
+            let loserWinner = finalWinner === player ? oppositePlayer : player;
+
+            console.log(finalWinner.getName() + " won entire series!");
+            this.sendToSinglePlayer(finalWinner, {
+                type: "matchResult",
+                verdict: "vinto",
+                points: finalWinner.getTotalPoints(),
+                oppositePoints: loserWinner.getTotalPoints()
+            });
+            this.sendToSinglePlayer(loserWinner, {
+                type: "matchResult",
+                verdict: "perso",
+                points: loserWinner.getTotalPoints(),
+                oppositePoints: finalWinner.getTotalPoints()
+            });
+            return false; // partita finita
+        } else if (player.getPoints() === oppositePlayer.getPoints()) {
+            // Gestisce il pareggio nel match attuale
+            console.log("Match Tie");
+            this.sendToAllPlayers({ type: "matchTie", verdict: "pareggiato", points: player.getPoints() });
+            player.cleanPoint();
+            oppositePlayer.cleanPoint();
+            return true; // continua a dare altre carte, altro round da giocare
+        } else {
+            // Nessuno ha ancora vinto la serie, si continua
+            this.sendToSinglePlayer(winner, {
+                type: "progressResult",
+                verdict: "vinto",
+                points: winner.getPoints(),
+                oppositePoints: loser.getPoints()
+            });
+            this.sendToSinglePlayer(loser, {
+                type: "progressResult",
+                verdict: "perso",
+                points: loser.getPoints(),
+                oppositePoints: winner.getPoints()
+            });
+            player.cleanPoint();
+            oppositePlayer.cleanPoint();
+            return true; // altro round da giocare
+        }
+    }
 
     // Getter & Setter
 
     delTableCard(card) {
-        this.#tableCards = this.#tableCards.filter((c) => c.valore !== card.valore);
+        this.#tableCards = this.#tableCards.filter(c => !(c.valore === card.valore && c.seme === card.seme));
     }
 
     addTableCard(card) {
