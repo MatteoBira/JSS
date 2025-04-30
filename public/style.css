@@ -7,7 +7,6 @@ body, html {
     padding: 0;
     height: 100%;
     width: 100%;
-    min-width: 800px;
     min-height: 450px;
     overflow: hidden;
     display: flex;
@@ -195,10 +194,6 @@ p {
     width: 30%;
     color: white;
     background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
-    position: absolute;
-    top: 65%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     padding: 20px;
     text-align: center;
 }
@@ -280,18 +275,24 @@ button:hover {
     transition: transform 0.3s, color 0.3s ease-in-out;
 }
 
-.settings-popup {
-    position: absolute;
+#popup {
+    display: none;
+    width: 30%;
+    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    padding: 0.5%;
+    transform: translate(-50%, -50%) scale(0);
+    padding: 40px 60px;
     border-radius: 10px;
-    color: white;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    z-index: 1000;
     text-align: center;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    font-size: 32px;
+    color: white;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(41, 41, 41, 0.8));
+    transition: transform 0.4s ease, opacity 0.4s ease;
 }
-
 
 button p {
     font-size: 1.5rem;
@@ -315,13 +316,13 @@ button:active {
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 75%;
+    justify-content: center;
+    align-items: center;
 }
 
 #banner {
-    position: fixed;
-    top: 10%;
-    transform: translateX(-50%);
-    width: 15%;
+    width: 25%;
     height: 50%;
     background-image: url(img/banner.png);
     background-size: contain;
@@ -377,4 +378,21 @@ button:active {
 
 .playedCard {
     box-shadow: 0 0 10px red;
+}
+
+@media screen and (max-width: 768px) {
+    #main-container {
+        width: 100%;
+    }
+    #starting-menu {
+        width: 65%;
+    }
+    #banner {
+        width: 75%;
+    }
+    .cards {
+        width: 25%;
+        height: 25%;
+        
+    }
 }

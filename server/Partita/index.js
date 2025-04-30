@@ -21,7 +21,7 @@ class Partita {
     //Methods
     startRound() {
         // Invia lo stato iniziale ai player
-        this.#playersArray.forEach((p, index) => {
+        this.#playersArray.forEach((p, index) => { //turn da cambiare per i match restartati!!!!!!!!
             p.getSocket().send(JSON.stringify({ type: "start", turn: index === 0 }));
         });
         this.linkMessageEvent(); //linka un metodo apposito per gestire i messaggi ai 2 socket
@@ -52,7 +52,7 @@ class Partita {
 
         this.#playersArray.forEach((p) => {
             p.getSocket().send(JSON.stringify({ type: "startingCards", arr: p.getHand() }));
-            console.log(JSON.stringify(p.getHand()));
+            console.log("Starting cards " + p.getName() + ": " + JSON.stringify(p.getHand()));
         });
     }
 
@@ -151,6 +151,9 @@ class Partita {
                         })
                     );
                 })
+                break;
+            case "getcount":
+                this.sendToSinglePlayer(player, { type: "tableCount", count: this.#mazzo.getArray().length });
                 break;
             default:
                 console.log("Type non riconosciuto: " + JSON.stringify(data));
@@ -305,7 +308,7 @@ class Partita {
         //1 array di carte. 1 solo scelto dall'utente
         const comboToTake = combos;
         console.log("comboToTake: " + combos);
-        console.log("tableCards before: " + JSON.stringify(this.#tableCards));
+        //console.log("tableCards before: " + JSON.stringify(this.#tableCards));
 
         this.#tableCards = this.#tableCards.filter(
             // Questa e' la parte di codice che dovrebbe fixare il problema delle carte che scompaiono a caso
@@ -317,7 +320,7 @@ class Partita {
                 )
         );
         //    this.#tableCards = this.#tableCards.filter(c => !comboToTake.includes(c)); questa linea non toglieva correttamente le carte combo dal tavolo
-        console.log("tableCards after: " + JSON.stringify(this.#tableCards));
+        //console.log("tableCards after: " + JSON.stringify(this.#tableCards));
 
         player.addCardNum();
         if (playedCard.seme == "D") player.addDenariNum();

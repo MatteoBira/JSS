@@ -165,24 +165,28 @@ function playGame() {
         popupText = "Hai " + data.verdict + " il match con " + data.points + " punti contro " + data.oppositePoints + " punti del tuo avversario!";
         document.getElementById('popupText').textContent = popupText;
         mostraPopup();
+        tableHand.length = 0;
         break;
 
       case "matchResult":
         popupText = "Hai " + data.verdict + " il match con " + data.points + " punti contro " + data.oppositePoints + " punti del tuo avversario! Partita FINITA!";
         document.getElementById('popupText').textContent = popupText;
         mostraPopup();
+        tableHand.length = 0;
         break;
 
       case "tieResult":
         popupText = "Hai " + data.verdict + " la partita con " + data.points + " punti! Partita FINITA!";
         document.getElementById('popupText').textContent = popupText;
         mostraPopup();
+        tableHand.length = 0;
         break;
 
       case "matchTie":
         popupText = "Hai " + data.verdict + " il match con " + data.points + " punti!";
         document.getElementById('popupText').textContent = popupText;
         mostraPopup();
+        tableHand.length = 0;
         break;
 
       case "keepalive":
@@ -370,9 +374,8 @@ function volumeChanger() {
 }
 
 function startGame() {
-  document.getElementById("starting-menu").style.display = "none";
+  document.getElementById("main-container").style.display = "none";
   document.getElementById("content").style.display = "flex";
-  document.getElementById("banner").style.display = "none";
   updateStatus();
   generateDeck();
   generateHand();
