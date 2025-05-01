@@ -26,19 +26,40 @@
                 <h2>Impostazioni</h2>
                 <label>Volume:</label>
                 <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="5">
-                <button id="btn" onclick="chiudiImpostazioni()">Chiudi</button>
+                <button onclick="apriBackground()">Choose Background</button>
+                <button style="margin-top: 25px;" id="btn" onclick="chiudiImpostazioni()">Chiudi</button>
             </div>
+        </div>
+        <div id="backgroundPopup">
+            <div id="backgroundCards-menu">
+                <div class="backgroundCards">
+                    <img class="backgroundPreview" src="img/backgrounds/main-background.webp" onclick="cambiaBackground('img/backgrounds/main-background.webp')" alt="Opzione 1">
+                </div>
+                <div class="backgroundCards">
+                    <img class="backgroundPreview" src="img/backgrounds/orange-background.webp" onclick="cambiaBackground('img/backgrounds/orange-background.webp')" alt="Opzione 2">
+                </div>
+                <div class="backgroundCards">
+                    <img class="backgroundPreview" src="img/backgrounds/blue-background.webp" onclick="cambiaBackground('img/backgrounds/blue-background.webp')" alt="Opzione 3">
+                </div>
+                <div class="backgroundCards">
+                    <img class="backgroundPreview" src="img/backgrounds/black-background.webp" onclick="cambiaBackground('img/backgrounds/black-background.webp')" alt="Opzione 4">
+                </div>
+                <div class="backgroundCards">
+                    <img class="backgroundPreview" src="img/backgrounds/green-background.webp" onclick="cambiaBackground('img/backgrounds/green-background.webp')" alt="Opzione 5">
+                </div>
+            </div>
+            <button id="btn" onclick="chiudiBackground()">Chiudi</button>
         </div>
     </div>
 
     <div id="content">
         <div id="left-content">
             <div id="guide">
-                <img onclick="inGameSettings()" src="img/settings.png" alt="">
+                <img onclick="inGameSettings()" src="img/setting.png" alt="Settings icon">
             </div>
             <div class="icon-container">
                 <p id="status">Waiting for another player...</p>
-                <img id="icon-img" src="img/icon.png" alt="">
+                <img id="icon-img" src="img/icon.png" alt="Player's image">
                 <p id="player1ID">You</p>
             </div>
         </div>
@@ -56,9 +77,30 @@
                         value="5">
                     <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
                     <button onclick="openGuide()">Open Guide</button>
-                    <button id="btn" onclick="chiudiIGImpostazioni()">Chiudi</button>
+                    <button onclick="apriIGBackground()">Choose Background</button>
+                    <button onclick="backToMenu()">Exit Game</button>
+                    <button style="margin-top: 25px; width: 65%;" id="btn" onclick="chiudiIGImpostazioni()">Chiudi</button>
                 </div>
-
+                <div id="backgroundIGPopup">
+                    <div id="backgroundIGCards-menu">
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/main-background.webp" onclick="cambiaBackground('img/backgrounds/main-background.webp')" alt="Opzione 1">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/orange-background.webp" onclick="cambiaBackground('img/backgrounds/orange-background.webp')" alt="Opzione 2">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/blue-background.webp" onclick="cambiaBackground('img/backgrounds/blue-background.webp')" alt="Opzione 3">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/black-background.webp" onclick="cambiaBackground('img/backgrounds/black-background.webp')" alt="Opzione 4">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/green-background.webp" onclick="cambiaBackground('img/backgrounds/green-background.webp')" alt="Opzione 5">
+                        </div>
+                    </div>
+                    <button id="btn" onclick="chiudiIGBackground()">Chiudi</button>
+                </div>
                 <div id="pdfContainer" style="display:none;">
                         <embed  id="pdfIframe" src="pdf/guide.pdf" width="90%" height="100%">
                         <button onclick="closeGuide()">Close</button>
@@ -73,7 +115,7 @@
         <div id="right-content">
             <div class="icon-container">
                 <p id="opponent">Waiting for an opponent...</p>
-                <img id="icon-img" src="img/icon.png" alt="">
+                <img id="icon-img" src="img/icon.png" alt="Opponent's image">
                 <p id="player2ID">Opponent</p>
             </div>
             <div id="deck">
