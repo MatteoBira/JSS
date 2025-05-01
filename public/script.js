@@ -325,7 +325,9 @@ function removeTableCards(playedCard, cards) {
 }
 
 function exitGame() {
-  window.close();
+  if (confirm("Sei sicuro di voler uscire?")) {
+    window.location.href = "https://www.google.com/";
+  }
 }
 
 function apriImpostazioni() {
@@ -391,23 +393,20 @@ function chiudiIGImpostazioni() {
 
 function openGuide() {
   document.getElementById("pdfContainer").style.display = "flex";
-  document.getElementById("pdfIframe").src = "pdf/guide.pdf";
 }
 
 function closeGuide() {
   document.getElementById("pdfContainer").style.display = "none";
-  document.getElementById("pdfIframe").src = "";
 }
 
 function getCardImagePath(card) {
-  return `./img/cards/${card.getValore()}${card.getSeme()}.svg`;
+  return `./img/cards/${card.getValore()}${card.getSeme()}.webp`;
 }
 
 function mostraPopup() {
   const popup = document.getElementById('popup');
   popup.style.display = 'block';
 
-  // Forzare il ricalcolo per permettere l'animazione
   void popup.offsetWidth;
 
   popup.style.transform = 'translate(-50%, -50%) scale(1)';
