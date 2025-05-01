@@ -1,6 +1,6 @@
 body, html {
     font-family: 'Roboto', sans-serif;
-    background-image: url(img/sfondo.jpg);
+    background-image: url(img/backgrounds//main-background.webp);
     background-size: cover;
     background-repeat: no-repeat;
     margin: 0;
@@ -165,10 +165,24 @@ body, html {
 }
 
 #guide > img {
-    width: 30%;
-    margin-left: 5%;
-    margin-top: 5%;
+    width: 25%;
+    padding: 5px;
+    margin-left: 3%;
+    margin-top: 3%;
     cursor: pointer;
+    background: linear-gradient(to bottom, rgba(175, 175, 175, 0.8), rgba(95, 95, 95, 0.8));
+    border-radius: 5px;
+}
+
+#guide > img:hover {
+    background: linear-gradient(to bottom, rgba(175, 175, 175, 1), rgba(95, 95, 95, 1));
+    transform: scale(1.1);
+    transition: all 0.5s ease-in;
+}
+
+#guide > img:not(:hover) {
+    transform: scale(1);
+    transition: all 0.5s ease-out;
 }
 
 #deckCards, #top-card1, #top-card2, #top-card3 {
@@ -257,7 +271,8 @@ button {
     padding: 10px 20px;
     margin: 10px 0;
     border-radius: 5px;
-    width: 50%;
+    min-width: 50%;
+    width: fit-content;
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s, transform 0.2s ease-in-out;
@@ -266,6 +281,7 @@ button {
 button:hover {
     background-color: rgba(0, 0, 0, 0.9);
     transform: scale(1.1);
+    transition: all 0.5s ease;
 }
 
 #volume-icon {
@@ -288,6 +304,79 @@ button:hover {
     margin: 10px 0;
 }
 
+#backgroundPopup {
+    display: none;
+    padding: 21px;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.8));
+    position: fixed;
+    flex-direction: column;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+#backgroundCards-menu {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+}
+
+#backgroundIGPopup {
+    display: none;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 10px;
+    flex-direction: column;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+#backgroundIGPopup > button {
+    padding: 20px 10px;
+    margin-top: 25px;
+}
+
+#backgroundPopup > button {
+    margin-top: 25px;
+}
+
+#backgroundIGCards-menu {
+    display: flex;
+    justify-content: space-around;
+    padding: 50px;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.8));
+    gap: 20px;
+}
+
+.backgroundCards {
+    border: 2px solid #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.backgroundCards:hover {
+    transform: scale(1.1);
+}
+
+.backgroundPreview {
+    margin-bottom: -5px;
+    margin-top: -5px;
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
 #inGameSettings {
     position: absolute;
     top: 50%;
@@ -297,7 +386,7 @@ button:hover {
     justify-content: center;
     align-items: center;
     border-radius: 10px;
-    width: 30%;
+    width: 80%;
     color: white;
     background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
     padding: 20px;
@@ -444,6 +533,20 @@ button:active {
 
     #guide > img {
         width: 80%;
+    }
+
+    #backgroundCards-menu, #backgroundIGCards-menu {
+        flex-direction: column;
+    }
+
+    #backgroundIGPopup > button {
+        padding: 10px 5px;
+        margin-top: 5px;
+    }
+
+    #backgroundIGCards-menu {
+        padding: 25px;
+        gap: 10px;
     }
 }
 

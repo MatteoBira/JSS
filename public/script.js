@@ -337,7 +337,37 @@ function apriImpostazioni() {
 
 function chiudiImpostazioni() {
   document.getElementById("settingsPopup").style.display = "none";
-  document.getElementById("main-menu").style.display = "flex";
+  document.getElementById("main-menu").style.display = "block";
+}
+
+function apriBackground() {
+  document.getElementById("backgroundPopup").style.display = "flex";
+  document.getElementById("banner").style.display = "none";
+  document.getElementById("starting-menu").style.display = "none";
+}
+
+function chiudiBackground() {
+  document.getElementById("backgroundPopup").style.display = "none";
+  document.getElementById("banner").style.display = "block";
+  document.getElementById("starting-menu").style.display = "flex";
+}
+
+function apriIGBackground() {
+  document.getElementById("backgroundIGPopup").style.display = "flex";
+  document.getElementById("inGameSettings").style.display = "none";
+}
+
+function chiudiIGBackground() {
+  document.getElementById("backgroundIGPopup").style.display = "none";
+  document.getElementById("inGameSettings").style.display = "flex";
+}
+
+function cambiaBackground(sfondo) {
+  document.body.style.backgroundImage = `url(${sfondo})`;
+}
+
+function backToMenu(){
+
 }
 
 function cambiaVolume(value) {
@@ -353,7 +383,6 @@ function avviaMusica() {
 
 function volumeChanger() {
   let volumeIcons = document.querySelectorAll(".volume-icon");
-
   let audio = document.getElementById("audio");
 
   if (audio.muted) {
