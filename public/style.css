@@ -456,11 +456,14 @@ button:active {
 }
 
 #banner {
-    width: 25%;
-    height: 50%;
-    background-image: url(img/banner.png);
-    background-size: contain;
-    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#banner > img {
+    width: 70%;
+    max-width: 100%;
 }
 
 #pdfContainer {
@@ -512,6 +515,9 @@ button:active {
     }
     #banner {
         width: 75%;
+    }
+    #banner > img {
+        width: 100%;
     }
     .cards {
         width: 25%;
