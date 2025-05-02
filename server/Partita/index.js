@@ -61,8 +61,27 @@ class Partita {
             this.addTableCard(this.#mazzo.getArray().pop());
         }
         this.#playersArray.forEach((p) => {
-            p.getSocket().send(JSON.stringify({ type: "tableCards", arr: this.getTableCards() }));
+            p.getSocket().send(JSON.stringify({ 
+                type: "tableCards", 
+                arr: this.getTableCards() 
+            }));
+            
+            // Temporarily disable moves
+            p.getSocket().send(JSON.stringify({ 
+                type: "turn", 
+                turn: false 
+            }));
         });
+    
+        // Enable moves after a short delay
+        setTimeout(() => {
+            this.#playersArray.forEach((p, index) => {
+                p.getSocket().send(JSON.stringify({ 
+                    type: "turn", 
+                    turn: index === 0 // First player's turn
+                }));
+            });
+        }, 500); // 0.5 second delay
     }
 
     setKeepAlive() {
