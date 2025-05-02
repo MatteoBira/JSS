@@ -348,7 +348,7 @@ function apriBackground() {
 
 function chiudiBackground() {
   document.getElementById("backgroundPopup").style.display = "none";
-  document.getElementById("banner").style.display = "block";
+  document.getElementById("banner").style.display = "flex";
   document.getElementById("starting-menu").style.display = "flex";
 }
 
