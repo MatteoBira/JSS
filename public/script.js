@@ -65,7 +65,7 @@ function playGame() {
   }
 
   startButtonClick = true;
-  socket = new WebSocket("wss://ws.alphvino.eu.org");
+  socket = new WebSocket("wss://ws.playscopa.online");
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
