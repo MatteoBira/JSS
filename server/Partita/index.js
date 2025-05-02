@@ -416,10 +416,10 @@ class Partita {
         oppositePlayer.updateTotalPoints();
 
         console.log(
-            "endMatch() Punti locali: " + player.getName() + player.getPoints() + " " + oppositePlayer.getName() + oppositePlayer.getPoints()
+            "endMatch() Punti locali: " + player.getName() + " " + player.getPoints() + " " + oppositePlayer.getName() + oppositePlayer.getPoints()
         );
         console.log(
-            "endMatch() Punti totali: " + player.getName() + player.getTotalPoints() + " " + oppositePlayer.getName() + oppositePlayer.getTotalPoints()
+            "endMatch() Punti totali: " + player.getName() + " " + player.getTotalPoints() + " " + oppositePlayer.getName() + oppositePlayer.getTotalPoints()
         );
 
         // Determina il vincitore del match attuale (non della serie)
