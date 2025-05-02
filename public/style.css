@@ -506,6 +506,15 @@ button:active {
     box-shadow: 0 0 10px red;
 }
 
+@media screen and (max-width: 950px) {
+    #starting-menu {
+        margin-bottom: 10px;
+    }
+    #banner > img {
+        width: 30%;
+    }
+}
+
 @media screen and (max-width: 768px) {
     #main-container {
         width: 100%;
@@ -554,10 +563,8 @@ button:active {
         padding: 25px;
         gap: 10px;
     }
-}
-
-@media screen and (max-width: 950px) {
-    #starting-menu {
-        margin-bottom: 10px;
+    .backgroundPreview {
+        width: 150px;
+        height: 100px;
     }
 }
