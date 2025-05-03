@@ -54,10 +54,24 @@ let cardNumber = 1;
 let prevVolume;
 let music = 0.005;
 let startButtonClick = false;
+let heartbeat = false;
+let timeout;
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("content").style.display = "none";
 });
+
+function closeMatch(text) {
+  if (document.getElementById("content").style.display != "none") {
+    document.getElementById('popupText').textContent = text;
+    mostraPopup();
+  } else {
+    document.getElementById("play-button").innerText = text;
+  }
+  setTimeout(() => {
+    window.location.reload(); //reloada la schermata e torna al menu
+  }, 3500);
+}
 
 function playGame() {
   if (startButtonClick) {
@@ -67,15 +81,28 @@ function playGame() {
   startButtonClick = true;
   socket = new WebSocket("wss://ws.playscopa.online");
 
+
+  socket.onclose = () => {
+    closeMatch("Il server ha terminato la connessione oppure non è disponibile!"); //server closed "manually"
+    socket.close();
+  }
+
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     let popupText;
     switch (data.type) {
       case "welcome":
+        timeout = setInterval(() => {
+          if (heartbeat) {
+            console.log("Checko heartbeat: " + heartbeat);
+            heartbeat = false; // Reset for next cycle
+          } else {
+            closeMatch("Il server non risponde!"); // No ping in 7 seconds
+            clearInterval(timeout); // Stop checking
+          }
+        }, 7000);
         playerNumber = data.playerNumber;
-        document.getElementById(
-          "status"
-        ).innerText = `You are Player ${playerNumber}`;
+        document.getElementById("status").innerText = `You are Player ${playerNumber}`;
         break;
 
       case "startingCards":
@@ -171,6 +198,7 @@ function playGame() {
       case "matchResult":
         popupText = "Hai " + data.verdict + " il match con " + data.points + " punti contro " + data.oppositePoints + " punti del tuo avversario! Partita FINITA!";
         document.getElementById('popupText').textContent = popupText;
+        clearInterval(timeout);
         mostraPopup();
         tableHand.length = 0;
         break;
@@ -178,6 +206,7 @@ function playGame() {
       case "tieResult":
         popupText = "Hai " + data.verdict + " la partita con " + data.points + " punti! Partita FINITA!";
         document.getElementById('popupText').textContent = popupText;
+        clearInterval(timeout);
         mostraPopup();
         tableHand.length = 0;
         break;
@@ -189,7 +218,14 @@ function playGame() {
         tableHand.length = 0;
         break;
 
-      case "keepalive":
+      case "ping":
+        socket.send(JSON.stringify({ type: "pong" }));
+        heartbeat = true;
+        break;
+
+      case "close":
+        closeMatch("Il tuo avversario si è disconnesso!");
+        clearInterval(timeout);
         break;
 
       default:
@@ -231,8 +267,15 @@ function generateDeck() {
   let deckDiv = document.getElementById("deck");
   deckDiv.innerHTML = "";
   const deckCard = document.createElement("div");
+  const count = document.createElement("div");
+  count.id = "deckNumDiv";
+  const countP = document.createElement("p");
+  countP.id = "deckNum";
+  countP.textContent = "Prova";
   deckCard.classList.add("cards");
   deckCard.id = "deckCards";
+  count.appendChild(countP);
+  deckCard.appendChild(count);
   deckDiv.appendChild(deckCard);
 }
 
@@ -366,7 +409,7 @@ function cambiaBackground(sfondo) {
   document.body.style.backgroundImage = `url(${sfondo})`;
 }
 
-function backToMenu(){
+function backToMenu() {
 
 }
 
@@ -442,13 +485,89 @@ function mostraPopup() {
   popup.style.opacity = '1';
 
   setTimeout(() => {
-    popup.style.display = 'none';
     nascondiPopup();
-  }, 5000);
+  }, 3000);
 }
 
 function nascondiPopup() {
   const popup = document.getElementById('popup');
+  popup.style.display = 'none';
   popup.style.transform = 'translate(-50%, -50%) scale(0)';
   popup.style.opacity = '0';
 }
+
+function aggiungiCardOption(carte) {
+  const cardSelectionMenu = document.getElementById('cardSelectionMenu');
+
+  const cardOption = document.createElement('div');
+  cardOption.classList.add('cardOption');
+
+  const cardSet = document.createElement('div');
+  cardSet.classList.add('cardSet');
+  cardSet.onclick = () => selezionaSet();
+
+  carte.forEach(carta => {
+    const cardPreview = document.createElement('img');
+    cardPreview.classList.add('cardPreview');
+    cardPreview.src = carta.src;
+    cardPreview.alt = carta.alt;
+
+    cardSet.appendChild(cardPreview);
+  });
+  cardOption.appendChild(cardSet);
+  cardSelectionMenu.appendChild(cardOption);
+}
+
+function selezionaSet() {
+  console.log("Hai selezionato il set");
+  chiudiMenu();
+}
+
+function chiudiMenu() {
+  document.getElementById('cardSelectionPopup').style.display = 'none';
+}
+
+function apriMenu() {
+  document.getElementById('cardSelectionPopup').style.display = 'flex';
+}
+
+function inizializzaMenu() {
+  const carte1 = [
+    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
+    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
+    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' },
+    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
+    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
+    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' }
+  ];
+
+  const carte2 = [
+    { id: 'carta4', src: 'img/cards/10C.webp', alt: 'Carta 4' },
+    { id: 'carta5', src: 'img/cards/9C.webp', alt: 'Carta 5' }
+  ];
+  const carte3 = [
+    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
+    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
+    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' },
+    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
+    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
+    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' }
+  ];
+  const carte4 = [
+    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
+    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
+    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' },
+    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
+    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
+    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' }
+  ];
+
+  aggiungiCardOption(carte1);
+  aggiungiCardOption(carte2);
+  aggiungiCardOption(carte3);
+  aggiungiCardOption(carte4);
+}
+
+window.onload = function () {
+  inizializzaMenu();
+};

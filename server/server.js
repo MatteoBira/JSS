@@ -18,6 +18,11 @@ if (!serverPort || !serverHost) {
 
 let server = new WebSocket.Server({ host: serverHost, port: serverPort });
 
+const closeHandler = (socket) => {
+  console.log("Un player ha deciso di chiudere la connessione!"); // graceful closing
+  players = players.filter((p) => p !== socket); // Remove the socket from the players array
+};
+
 server.on("error", (err) => {
   if (err.code === "EADDRINUSE") {
     console.log("Errore binding su porta " + serverPort);
@@ -36,6 +41,8 @@ server.on("listening", () => {
 server.on("connection", (socket) => {
   console.log("A player connected");
 
+  socket.on("close", () => closeHandler(socket));
+
   //NOT enough players to start
   if (players.length < 2) {
     players.push(socket);
@@ -44,14 +51,26 @@ server.on("connection", (socket) => {
     );
   }
 
+  //Checks socket's status every second(prevent bad closing). If state is 2 or 3 then remove from array. => https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState
+  let intervalId = setInterval(() => {
+    players.forEach((p) => {
+      if (p.readyState == 2 || p.readyState == 3) {
+        players = players.filter((socket) => socket !== p);
+        console.log("Socket morto trovato");
+      }
+    })
+  }, 1000);
+
   //Enough players to start
   if (players.length === 2) {
     let mazzo = new Mazzo(); //ogni 2 persone creare mazzo nuovo, altrimenti stesso riferimento.
     mazzo.shuffle(); //mescola il mazzo per la partita che si viene a formare
     console.log(mazzo.getArray()); //debug line
+    players.forEach((p) => p.removeListener("close", closeHandler));
     let partita = new Partita(players[0], players[1], mazzo);
     matchArray.push(partita); //array con le partite aggiornato
     players.length = 0; //reset lunghezza
     console.log("Partita cooked");
+    clearInterval(intervalId);
   }
 });
