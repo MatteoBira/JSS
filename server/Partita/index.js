@@ -15,7 +15,7 @@ class Partita {
         this.setMazzo(mazzo);
         this.setPlayersArray(this.getPlayer1(), this.getPlayer2());
         this.startRound();
-        this.setKeepAlive();
+        this.setKeepAlive(); //ping-pong structure at application level
     }
 
     //Methods
@@ -33,8 +33,17 @@ class Partita {
         this.#playersArray.forEach((player) => {
             player.getSocket().on("message", (msg) => this.handleMessages(msg, player, this.getOppositePlayer(player)));
             player.getSocket().on("close", () => {
-                this.#playersArray = this.#playersArray.filter((p) => p !== player);
+                if (this.#playersArray.length === 2) {
+                    player.getSocket().close();
+                    this.removePlayerFromArray(player); //player closed the connection.
+                    this.sendToSinglePlayer(this.#playersArray[0], { type: "close" });
+                }
+                else {
+                    player.getSocket().close();
+                    this.removePlayerFromArray(player); //player closed the connection.
+                }
                 console.log("A player disconnected from some match");
+
             });
         })
     }
@@ -61,35 +70,32 @@ class Partita {
             this.addTableCard(this.#mazzo.getArray().pop());
         }
         this.#playersArray.forEach((p) => {
-            p.getSocket().send(JSON.stringify({ 
-                type: "tableCards", 
-                arr: this.getTableCards() 
-            }));
-            
-            // Temporarily disable moves
-            p.getSocket().send(JSON.stringify({ 
-                type: "turn", 
-                turn: false 
+            p.getSocket().send(JSON.stringify({
+                type: "tableCards",
+                arr: this.getTableCards()
             }));
         });
-    
-        // Enable moves after a short delay
-        setTimeout(() => {
-            this.#playersArray.forEach((p, index) => {
-                p.getSocket().send(JSON.stringify({ 
-                    type: "turn", 
-                    turn: index === 0 // First player's turn
-                }));
-            });
-        }, 500); // 0.5 second delay
     }
 
     setKeepAlive() {
         setInterval(() => {
             this.#playersArray.forEach((p) => {
-                p.getSocket().send(JSON.stringify({ type: "keepalive" }));
+                if (!p.isAlive()) {
+                    console.log(`Player ${p.getName()} did not respond to ping, terminating connection.`);
+                    p.getSocket().terminate();
+                    this.removePlayerFromArray(p);
+                    if (this.#playersArray.length != 0)
+                        this.sendToSinglePlayer(this.#playersArray[0], { type: "close" }); //send to the other player if he's still alive
+                    else
+                        return;
+                }
+                if (p) {
+                    p.setAlive(false);
+                    this.sendToSinglePlayer(p, { type: "ping" });
+                }
+
             });
-        }, 10000);
+        }, 5000);
     }
 
     sendToAllPlayers(msg) {
@@ -112,7 +118,6 @@ class Partita {
     // Most important method!
     handleMessages(message, player, oppositePlayer) {
         const data = JSON.parse(message);
-        console.log("\n");
         switch (data.type) {
             case "move":
                 console.log("Carte in tavola premossa: " + JSON.stringify(this.#tableCards));
@@ -173,6 +178,9 @@ class Partita {
                 break;
             case "getcount":
                 this.sendToSinglePlayer(player, { type: "tableCount", count: this.#mazzo.getArray().length });
+                break;
+            case "pong":
+                player.setAlive(true);
                 break;
             default:
                 console.log("Type non riconosciuto: " + JSON.stringify(data));
@@ -400,9 +408,11 @@ class Partita {
                 this.#mazzo.shuffle();
                 this.emptyPlayersHands();
                 this.#tableCards.length = 0; // reset tableCards array
-                this.dealTableCards();
-                console.log("rimescolato: " + this.#mazzo.getArray().length);
-                this.dealStartingCards();
+                setTimeout(() => {
+                    this.dealTableCards();
+                    console.log("rimescolato: " + this.#mazzo.getArray().length);
+                    this.dealStartingCards();
+                }, 3500);
             }
             else {
                 //TBD
@@ -481,6 +491,10 @@ class Partita {
             oppositePlayer.cleanPoint();
             return true; // altro round da giocare
         }
+    }
+
+    removePlayerFromArray(player) {
+        this.#playersArray = this.#playersArray.filter((p) => p !== player);
     }
 
     // Getter & Setter

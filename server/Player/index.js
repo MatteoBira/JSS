@@ -7,10 +7,19 @@ class Player {
     #cardNum = 0;
     #denariNum = 0;
     #primieraNum = 0;
+    #alive = true;
 
     constructor(socket, name) {
         this.setSocket(socket);
         this.setName(name);
+    }
+
+    isAlive() {
+        return this.#alive;
+    }
+
+    setAlive(bool) {
+        this.#alive = bool;
     }
 
     getName() {
