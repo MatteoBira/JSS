@@ -3,6 +3,7 @@ body, html {
     background-image: url(img/backgrounds//main-background.webp);
     background-size: cover;
     background-repeat: no-repeat;
+    background-position: center;
     margin: 0;
     padding: 0;
     height: 100%;
@@ -112,7 +113,8 @@ body, html {
 
 #deckCards:hover {
     transform: scale(1.1);
-    z-index: 10;
+    cursor: pointer;
+    z-index: 2;
 }
 
 .side-cards-adjustment {
@@ -145,13 +147,14 @@ body, html {
 }
 
 #icon-img {
+    border: 1px solid black;
     width: 30%;
-    border-radius: 10px;
+    border-radius: 5px;
     margin: 3%;
 }
 
 #deck {
-    z-index: 999;
+    z-index: 2;;
     height: 100%;
     margin-bottom: 5%;
     display: flex;
@@ -248,7 +251,7 @@ p {
     text-shadow: 0px 0.5px 5px white;
 }
 
-#starting-menu {
+#starting-menu {    
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -259,14 +262,16 @@ p {
     background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
     padding: 20px;
     text-align: center;
+    height: 40%;
+    transition: all 0.5s ease;
 }
 
-#main-menu {
+#main-menu {  
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    height: 100%;
+    height: auto;
 }
 
 button {
@@ -281,6 +286,10 @@ button {
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s, transform 0.2s ease-in-out;
+}
+
+#btn {
+    margin-top: 10px;
 }
 
 button:hover {
@@ -355,6 +364,8 @@ button:hover {
 
 #backgroundIGCards-menu {
     display: flex;
+    border-radius: 10px;
+    z-index: 999;
     justify-content: space-around;
     padding: 50px;
     background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.8));
@@ -362,6 +373,8 @@ button:hover {
 }
 
 .backgroundCards {
+    width: 100%;
+    background-color: white;
     border: 2px solid #fff;
     border-radius: 10px;
     overflow: hidden;
@@ -373,18 +386,15 @@ button:hover {
 }
 
 .backgroundPreview {
-    margin-bottom: -5px;
-    margin-top: -5px;
-    width: 200px;
-    height: 150px;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     cursor: pointer;
     border-radius: 10px;
 }
 
 #cardSelectionPopup {
-    display: flex
-;
+    display: none;
     position: fixed;
     top: 0px;
     left: 0px;
@@ -458,11 +468,11 @@ button:hover {
 }
 
 #opponentPointsDiv, #playerPointsDiv, #deckNumDiv {
-    z-index: 999;
+    z-index: 2;
     padding: 0px 15px;
     width: 25%;
     background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
-    border-radius: 10px;
+    border-radius: 5px;
 }
 
 #deckNumDiv {
@@ -569,21 +579,23 @@ button:active {
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 75%;
+    width: 100%;
     justify-content: center;
     align-items: center;
 }
 
 #banner {
+    background-image: url('img/banner.webp');
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-#banner > img {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
     width: 70%;
-    max-width: 100%;
-}
+    height: 200px; /* or use a fixed value */
+    margin: 0 auto;
+  }
 
 #pdfContainer {
     position: fixed;
@@ -625,33 +637,140 @@ button:active {
     box-shadow: 0 0 10px red;
 }
 
-@media screen and (max-width: 950px) {
-    #starting-menu {
-        margin-bottom: 10px;
-    }
-    #banner > img {
-        width: 30%;
-    }
-    #cardSelectionMenu {
-        height: 80%;
-    }
+#round-summary {
+    display: none;
+    min-height: fit-content;
+    min-width: fit-content;
+    color: white;
+    position: absolute;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(175, 175, 175, 1), rgba(95, 95, 95, 1));
+    border: 2px solid #000000;
+    border-radius: 10px;
+    padding: 20px;
+    width: 30%;
+    height: 50%;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
 }
 
-@media screen and (max-width: 768px) {
+#round-summary h3 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+#round-summary table {
+    width: 100%;
+    height: 80%;
+    border-collapse: collapse;
+}
+
+#round-summary th, #round-summary td {
+    border: 1px solid #000000;
+    padding: 10px;
+    text-align: center;
+}
+
+#round-summary th {
+    background-color: #292929;
+}
+
+#round-summary button {
+    display: block;
+    width: 100%;
+    height: 15%;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    margin-top: 15px;
+    border-radius: 5px;
+}
+
+#round-summary button:hover {
+    background-color: #000000;
+    transform: scale(1.05);
+}
+
+.intestazioneTable {
+    background-color: #474747;
+}
+
+#scopaCardContainer {
+    display: none;
+    position: fixed;
+    bottom: 40px;
+    right: 20%;
+    z-index: 9999;
+}
+
+#scopaCard {
+    display: flex;
+    position: fixed;
+    width: auto;
+    align-items: flex-start;
+    justify-content: flex-start;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: black;
+    padding: 10px;
+    box-sizing: border-box;
+    background-color: white;
+    background-image: url(img/cards/back.webp);
+}
+
+#scopaCardText {
+    color: white;
+    text-shadow: 2px 2px 2px black;
+}
+
+#scopaCardText:hover {
+    background: linear-gradient(to right, rgba(80, 80, 80, 0.8), rgba(32, 32, 32, 0.8));
+    padding: 5px;
+    transform: scale(1.05);
+    transition: all 0.3s ease-in;
+    
+}
+
+#scopaCard:hover {
+    transform: scale(1.05);
+    transition: all 0.3s ease-in;
+}
+#scopaCardText:not(:hover) {
+    transform: scale(1);
+    transition: all 0.3s ease-out;
+}
+#scopaCard:not(:hover) {
+    transform: scale(1);
+    transition: all 0.3s ease-out;
+}
+
+
+@media screen and (max-width: 650px) {
     #opponentPoints, #playerPoints, #deckNum {
         font-size: 10px;
+    }
+    #scopaCardContainer {
+        bottom: 35px;
+        right: 30%;
+    }
+    #scopaCardText {
+        font-size: 15px;
     }
     #main-container {
         width: 100%;
     }
     #starting-menu {
         width: 65%;
+        height: 40%;
     }
     #banner {
         width: 75%;
-    }
-    #banner > img {
-        width: 100%;
     }
     .cards {
         width: 25%;
@@ -672,11 +791,16 @@ button:active {
     }
 
     #guide > img {
-        width: 80%;
+        width: 50%;
     }
 
-    #backgroundCards-menu, #backgroundIGCards-menu {
-        flex-direction: column;
+    #backgroundCards-menu {
+        flex-direction: column;    
+        height: 80%;
+    }
+    #backgroundIGCards-menu {  
+        flex-direction: column;   
+        height: 200%;
     }
 
     #backgroundIGPopup > button {
@@ -709,9 +833,90 @@ button:active {
     .cardSet {
         gap: 5px;
     }
+    #deckNumDiv {
+        padding: 0px 5px;
+    }
+}
+
+@media screen and (min-width: 651px) and (max-width: 950px) {
+    
+    #cardSelectionMenu {
+        height: 80%;
+    }
+    #scopaCardContainer {
+        bottom: 35px;
+        right: 30%;
+    }
+    #scopaCardText {
+        font-size: 15px;
+    }
+    #starting-menu {
+        width: 60%;
+        padding: 10px;
+        height: auto;    
+        margin-bottom: 10px;
+    }
+    button {
+        padding: 5px 10px;
+        margin: 3px 0;
+    }
+    #volume-icon {
+        font-size: 20px;
+        margin-top: 5px;
+    }
+
+    #btn {
+        margin-top: 10px;
+    }
+    #settingsPopup {
+        padding: 0;
+    }
+
+    #backgroundCards-menu, #backgroundIGCards-menu {
+        flex-direction: row;
+        max-width: 100%;
+    }
+    #round-summary {
+        padding: 10px;
+    }
+    
+    #round-summary h3 {
+        text-align: center;
+        margin-bottom: 5px;
+    }
+    
+    #round-summary th, #round-summary td {
+        padding: 5px;
+    }
+    
+    #round-summary button {
+        height: 15%;
+        padding: 5px;
+        margin-top: 5px;
+    }
 }
 
 @media screen and (min-width: 3750px) {
+    p, h2 {
+        font-size: 35px;
+    }
+    #icon-img {
+        border: 3px solid black;
+        border-radius: 10px;
+    }
+    .icon-container > p {
+        font-size: 35px;
+    }
+    #scopaCardText {
+        font-size: 45px;
+    }
+    #scopaCardContainer {
+        bottom: 90px;
+        right: 30%;
+    }
+    label {
+        font-size: 30px;
+    }
     #volume-icon {
         font-size: 48px;
         margin-top: 20px;
@@ -720,11 +925,34 @@ button:active {
         width: 70%;
     }
     button {
+        border-radius: 15px;
         padding: 20px 40px;
         margin: 20px 0;
         font-size: 35px;
     }
-    #banner > img {
-        width: 100%;
+    #round-summary {
+        font-size: 40px;
+        padding: 40px;
+        width: 50%;
+        height: 70%;
+        border-radius: 30px;
     }
+    #round-summary button {
+        font-size: 40px;
+    }
+    #deckNum {
+        font-size: 40px;
+    }
+    #banner {
+        width: 75%;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    #banner {
+        height: 60%;
+    }
+    #starting-menu {
+        height: 30%;
+      }
 }

@@ -1,15 +1,17 @@
 const Player = require("../Player/index.js");
-const Card = require("../Card/index.js");
+const { EventEmitter } = require('events');
 
-class Partita {
+class Partita extends EventEmitter {
     #player1;
     #player2;
     #mazzo;
     #playersArray = []; //array per i 2 oggetti Player.
     #tableCards = []; //array carte del tavolo
     #lastToGetCards; //self esplicative
+    #pingInterval;
 
     constructor(socketPlayer1, socketPlayer2, mazzo) {
+        super(); //eventemitter
         this.setPlayer1(new Player(socketPlayer1, "Player1"));
         this.setPlayer2(new Player(socketPlayer2, "Player2"));
         this.setMazzo(mazzo);
@@ -25,7 +27,7 @@ class Partita {
             p.getSocket().send(JSON.stringify({ type: "start", turn: index === 0 }));
         });
         this.linkMessageEvent(); //linka un metodo apposito per gestire i messaggi ai 2 socket
-        this.dealStartingCards(); //3 carte per player
+        this.dealStartingCards(false); //3 carte per player
         this.dealTableCards(); //4 carte nel tavolo
     }
 
@@ -37,6 +39,7 @@ class Partita {
                     player.getSocket().close();
                     this.removePlayerFromArray(player); //player closed the connection.
                     this.sendToSinglePlayer(this.#playersArray[0], { type: "close" });
+                    this.destroy();
                 }
                 else {
                     player.getSocket().close();
@@ -53,17 +56,34 @@ class Partita {
         return this.#playersArray[0] === playerBase ? this.#playersArray[1] : this.#playersArray[0];
     }
 
-    dealStartingCards() { //3 per utente
-        for (let i = 0; i < 3; i++) {
-            this.#player1.addCard(this.#mazzo.getArray().pop());
-            this.#player2.addCard(this.#mazzo.getArray().pop());
-        }
+    dealStartingCards(wait) { //3 per utente
+        if (wait) {
+            setTimeout(() => {
+                for (let i = 0; i < 3; i++) {
+                    this.#player1.addCard(this.#mazzo.getArray().pop());
+                    this.#player2.addCard(this.#mazzo.getArray().pop());
+                }
 
-        this.#playersArray.forEach((p) => {
-            p.getSocket().send(JSON.stringify({ type: "startingCards", arr: p.getHand() }));
-            console.log("Starting cards " + p.getName() + ": " + JSON.stringify(p.getHand()));
-        });
+                this.#playersArray.forEach((p) => {
+                    p.getSocket().send(JSON.stringify({ type: "startingCards", arr: p.getHand() }));
+                    console.log("Starting cards " + p.getName() + ": " + JSON.stringify(p.getHand()));
+                });
+            }, 1500);
+        }
+        else {
+            for (let i = 0; i < 3; i++) {
+                this.#player1.addCard(this.#mazzo.getArray().pop());
+                this.#player2.addCard(this.#mazzo.getArray().pop());
+            }
+
+            this.#playersArray.forEach((p) => {
+                p.getSocket().send(JSON.stringify({ type: "startingCards", arr: p.getHand() }));
+                console.log("Starting cards " + p.getName() + ": " + JSON.stringify(p.getHand()));
+            });
+        }
     }
+
+
 
     dealTableCards() { //4 al tavolo
         for (let i = 0; i < 4; i++) {
@@ -78,22 +98,24 @@ class Partita {
     }
 
     setKeepAlive() {
-        setInterval(() => {
+        this.#pingInterval = setInterval(() => {
             this.#playersArray.forEach((p) => {
                 if (!p.isAlive()) {
                     console.log(`Player ${p.getName()} did not respond to ping, terminating connection.`);
                     p.getSocket().terminate();
                     this.removePlayerFromArray(p);
-                    if (this.#playersArray.length != 0)
-                        this.sendToSinglePlayer(this.#playersArray[0], { type: "close" }); //send to the other player if he's still alive
-                    else
-                        return;
+
+                    if (this.#playersArray.length !== 0) {
+                        this.sendToSinglePlayer(this.#playersArray[0], { type: "close" });
+                    }
+
+                    this.destroy();
+                    return;
                 }
                 if (p) {
                     p.setAlive(false);
                     this.sendToSinglePlayer(p, { type: "ping" });
                 }
-
             });
         }, 5000);
     }
@@ -129,7 +151,7 @@ class Partita {
                 console.log("Player deck: " + JSON.stringify(player.getHand()));
                 console.log("Opposite player deck: " + JSON.stringify(oppositePlayer.getHand()));
                 //Dimensione mazzo check
-                console.log("dimensione mazzo: " + this.#mazzo.getArray().length);
+                console.log("Dimensione mazzo: " + this.#mazzo.getArray().length);
 
                 if (oppositePlayer) {
                     oppositePlayer.getSocket().send(
@@ -157,24 +179,19 @@ class Partita {
                                 card: data.card,
                                 cards: take.cardsTaken,
                             });
+                            this.switchTurns(player, true);
                         }
                     } else {
                         this.sendToAllPlayers({ type: "move", card: data.card });
+                        this.switchTurns(player, false);
                     }
                 }
                 console.log("Carte in tavola postmossa: " + JSON.stringify(this.#tableCards));
                 //Check hands and table deck.
                 this.checkDecks(player, oppositePlayer);
-
-                //Switch turns
-                this.#playersArray.forEach((p, index) => {
-                    p.getSocket().send(
-                        JSON.stringify({
-                            type: "turn",
-                            turn: index !== this.#playersArray.indexOf(player),
-                        })
-                    );
-                })
+                break;
+            case "combo_response":
+                this.switchTurns(player, true);
                 break;
             case "getcount":
                 this.sendToSinglePlayer(player, { type: "tableCount", count: this.#mazzo.getArray().length });
@@ -187,38 +204,60 @@ class Partita {
         }
     }
 
+    switchTurns(player, wait) {
+        //Switch turns
+        if (wait) {
+            setTimeout(() => {
+                this.#playersArray.forEach((p, index) => {
+                    p.getSocket().send(
+                        JSON.stringify({
+                            type: "turn",
+                            turn: index !== this.#playersArray.indexOf(player),
+                        })
+                    );
+                })
+            }, 1500);
+        } else {
+            this.#playersArray.forEach((p, index) => {
+                p.getSocket().send(
+                    JSON.stringify({
+                        type: "turn",
+                        turn: index !== this.#playersArray.indexOf(player),
+                    })
+                );
+            })
+        }
+
+    }
+
     managePresa(playedCard, player) {
-        // Cerca prima una carta dello stesso valore
-        const sameValueCard = this.#tableCards.find((c) => c.valore == playedCard.valore);
+        // Cerca carte di stesso valore
+        let singlePresaArray = [];
         let result = {};
 
-        if (sameValueCard) {
-            console.log("C'è una presa diretta: " + sameValueCard.valore + sameValueCard.seme);
+        this.#tableCards.forEach((c) => {
+            if (c.valore === playedCard.valore)
+                singlePresaArray.push([c]);
+        })
 
-            // Rimuove la carta dal tavolo memorizzato nel server
-            this.delTableCard(sameValueCard);
-            player.incrementCardNum(2);
+        if (singlePresaArray.length > 0) {
+            if (singlePresaArray.length === 1) {
+                console.log("Carta singola disponibile: " + JSON.stringify(singlePresaArray[0]))
+                result = {
+                    taken: true,
+                    cardsTaken: singlePresaArray[0],
+                }
+                this.delTableCard(singlePresaArray[0][0]);
+                this.trackCardPoints(playedCard, player); //count the playedCard
+                this.trackCardPoints(singlePresaArray[0][0], player) //count the taken card
+            } else {
+                console.log("Carte singole disponibili: " + JSON.stringify(singlePresaArray));
+                result = {
+                    taken: true,
+                    combosAvail: singlePresaArray,
+                }
+            }
 
-            if (playedCard.seme == "D") player.addDenariNum();
-            if (sameValueCard.seme == "D") player.addDenariNum();
-
-            if (playedCard.seme == "D" && playedCard.valore == 7)
-                player.addPoint();
-            if (sameValueCard.seme == "D" && playedCard.valore == 7)
-                player.addPoint();
-
-            if (playedCard.seme == "D" && playedCard.valore == 10)
-                player.addPoint();
-            if (sameValueCard.seme == "D" && playedCard.valore == 10)
-                player.addPoint();
-
-            if (playedCard.valore == 7) player.addPrimieraNum();
-            if (sameValueCard.valore == 7) player.addPrimieraNum();
-
-            result = {
-                taken: true,
-                cardsTaken: [sameValueCard],
-            };
         }
         else {
             // Se non esiste una carta con lo stesso valore, cerca combinazioni che sommano al valore giocato
@@ -256,6 +295,7 @@ class Partita {
         }
         if (this.getTableCards().length == 0) {
             //tavolo vuoto = scopa
+            player.addScopeNum();
             player.addPoint();
             this.sendToSinglePlayer(player, { type: "scopa" });
             console.log("Scopa NON da combo!");
@@ -266,24 +306,26 @@ class Partita {
 
     waitForResponse(player, combos) {
         return new Promise((resolve, reject) => {
-            // Imposta un listener per la risposta del client
-            player.getSocket().once("message", (message) => {
+            const socket = player.getSocket();
+
+            const handler = (message) => {
                 try {
                     const response = JSON.parse(message);
 
-                    // Verifica che la risposta sia corretta
                     if (response.type === "combo_response") {
-                        resolve(response); // Risposta ricevuta con successo
-                    } else {
-                        reject("Tipo di risposta errato");
+                        socket.off("message", handler); // Remove listener after success
+                        resolve(response);
                     }
+                    // Ignore other message types (e.g., "pong")
                 } catch (error) {
+                    socket.off("message", handler);
                     reject("Errore nella risposta");
                 }
-            });
+            };
 
-            // Invia il messaggio al client
-            player.getSocket().send(
+            socket.on("message", handler);
+
+            socket.send(
                 JSON.stringify({
                     type: "remove_table_cards_combosAvail",
                     combos: combos,
@@ -296,13 +338,7 @@ class Partita {
         let arr = this.#tableCards.slice(); //copia
         let player = this.#lastToGetCards;
         arr.forEach((playedCard) => {
-            player.addCardNum();
-            if (playedCard.seme == "D") player.addDenariNum();
-            if (playedCard.seme == "D" && playedCard.valore == 7)
-                player.addPoint();
-            if (playedCard.seme == "D" && playedCard.valore == 10)
-                player.addPoint();
-            if (playedCard.valore == 7) player.addPrimieraNum();
+            this.trackCardPoints(playedCard, player);
         });
         this.sendToAllPlayers({
             type: "remove_table_cards",
@@ -334,7 +370,7 @@ class Partita {
     removeComboCards(combos, oppositePlayer, playedCard, player) {
         //1 array di carte. 1 solo scelto dall'utente
         const comboToTake = combos;
-        console.log("comboToTake: " + combos);
+        console.log("comboToTake: " + JSON.stringify(combos));
         //console.log("tableCards before: " + JSON.stringify(this.#tableCards));
 
         this.#tableCards = this.#tableCards.filter(
@@ -349,20 +385,10 @@ class Partita {
         //    this.#tableCards = this.#tableCards.filter(c => !comboToTake.includes(c)); questa linea non toglieva correttamente le carte combo dal tavolo
         //console.log("tableCards after: " + JSON.stringify(this.#tableCards));
 
-        player.addCardNum();
-        if (playedCard.seme == "D") player.addDenariNum();
-        if (playedCard.seme == "D" && playedCard.valore == 7)
-            player.addPoint();
-        if (playedCard.seme == "D" && playedCard.valore == 10)
-            player.addPoint();
-        if (playedCard.valore == 7) player.addPrimieraNum();
+        this.trackCardPoints(playedCard, player);
 
         comboToTake.forEach((card) => {
-            player.addCardNum();
-            if (card.seme == "D") player.addDenariNum();
-            if (card.seme == "D" && card.valore == 7) player.addPoint();
-            if (card.seme == "D" && card.valore == 10) player.addPoint();
-            if (card.valore == 7) player.addPrimieraNum();
+            this.trackCardPoints(card, player);
         });
 
         oppositePlayer.getSocket().send(
@@ -383,6 +409,7 @@ class Partita {
         if (this.getTableCards().length == 0) {
             //tavolo vuoto = scopa
             player.addPoint();
+            player.addScopeNum();
             this.sendToSinglePlayer(player, { type: "scopa" });
             console.log("Scopa SI da combo!");
             //this.sendToAllPlayers({ type: "scopa" });
@@ -394,7 +421,7 @@ class Partita {
             oppositePlayer.getHandLength() === 0 &&
             this.#mazzo.getArray().length > 0
         ) {
-            this.dealStartingCards();
+            this.dealStartingCards(true);
         } else if (
             player.getHandLength() === 0 &&
             oppositePlayer.getHandLength() === 0 &&
@@ -411,7 +438,7 @@ class Partita {
                 setTimeout(() => {
                     this.dealTableCards();
                     console.log("rimescolato: " + this.#mazzo.getArray().length);
-                    this.dealStartingCards();
+                    this.dealStartingCards(false);
                 }, 3500);
             }
             else {
@@ -442,10 +469,11 @@ class Partita {
             // pareggio 11-11
             if (player.getTotalPoints() === oppositePlayer.getTotalPoints()) {
                 console.log("Tie");
-                this.sendToAllPlayers({ type: "tieResult", verdict: "Pareggio", points: player.getTotalPoints() });
+                this.sendToAllPlayers({ type: "tieResult", verdict: "pareggiato", points: player.getTotalPoints() });
+                this.sendStatistics(player, oppositePlayer);
                 player.cleanPoint();
                 oppositePlayer.cleanPoint();
-                return false; // partita finita
+                return true;
             }
 
             // Uno dei due ha vinto la serie
@@ -465,11 +493,16 @@ class Partita {
                 points: loserWinner.getTotalPoints(),
                 oppositePoints: finalWinner.getTotalPoints()
             });
+            this.sendStatistics(player, oppositePlayer);
+            player.cleanPoint();
+            oppositePlayer.cleanPoint();
+            this.destroy();
             return false; // partita finita
         } else if (player.getPoints() === oppositePlayer.getPoints()) {
             // Gestisce il pareggio nel match attuale
             console.log("Match Tie");
             this.sendToAllPlayers({ type: "matchTie", verdict: "pareggiato", points: player.getPoints() });
+            this.sendStatistics(player, oppositePlayer);
             player.cleanPoint();
             oppositePlayer.cleanPoint();
             return true; // continua a dare altre carte, altro round da giocare
@@ -487,6 +520,7 @@ class Partita {
                 points: loser.getPoints(),
                 oppositePoints: winner.getPoints()
             });
+            this.sendStatistics(player, oppositePlayer);
             player.cleanPoint();
             oppositePlayer.cleanPoint();
             return true; // altro round da giocare
@@ -497,8 +531,43 @@ class Partita {
         this.#playersArray = this.#playersArray.filter((p) => p !== player);
     }
 
-    // Getter & Setter
+    sendStatistics(player, oppositePlayer) {
+        this.sendToSinglePlayer(player, { type: "stats", youStats: player.toStats(), oppositeStats: oppositePlayer.toStats() });
+        this.sendToSinglePlayer(oppositePlayer, { type: "stats", youStats: oppositePlayer.toStats(), oppositeStats: player.toStats() });
+    }
 
+    trackCardPoints(card, player) {
+        // ogni carta presa conta come “carta”
+        player.addCardNum();
+
+        // se è denari, conto denari e (se vale 7 o 10) punto + contatore specifico
+        if (card.seme === "D") {
+            player.addDenariNum();
+
+            if (card.valore === 7) {
+                player.addSetteDenariNum();
+                player.addPoint();
+            } else if (card.valore === 10) {
+                player.addReDenariNum();
+                player.addPoint();
+            }
+        }
+
+        // qualsiasi 7 vale per la primiera
+        if (card.valore === 7) {
+            player.addPrimieraNum();
+        }
+        console.log(`[TRACK] ${player.getName()} gets ${card.valore}${card.seme}. Player count: ${player.getCardNum()} `);
+    }
+
+
+    destroy() {
+        clearInterval(this.#pingInterval);
+        this.#playersArray.length = 0;
+        this.emit('end');
+    }
+
+    // Getter & Setter
     delTableCard(card) {
         this.#tableCards = this.#tableCards.filter(c => !(c.valore === card.valore && c.seme === card.seme));
     }
