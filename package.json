@@ -1,23 +1,29 @@
 {
   "name": "jss",
   "version": "1.0.0",
-  "description": "JavaScript-Scopa online\r ## SCOPA: THE GAME OF STRATEGY, PASSION, AND DOMINATION\r Welcome to Scopa, the legendary Italian card game where skill seduces, timing teases, and every victory feels better than it should. Play smart, play aggressive, and when the moment is right—go for the Scopa and leave your opponents begging for another round.",
-  "main": "index.js",
+  "description": "Javascript Scopa online",
+  "main": "./server/server.js",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "ws": "^8.18.1"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:server": "node --check ./server/server.js",
+    "test:client": "node --check ./public/script.js",
+    "start": "node ./server/server.js",
+    "build": "css-minify -f ./public/style.css -o ./dist"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/MatteoBira/JSS.git"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/MatteoBira/JSS/issues"
   },
   "homepage": "https://github.com/MatteoBira/JSS#readme",
-  "dependencies": {
-    "ws": "^8.18.1"
+  "devDependencies": {
+    "css-minify": "^2.1.0"
   }
 }

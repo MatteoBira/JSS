@@ -1,19 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scopa Multiplayer</title>
+    <meta name="description"
+        content="Gioca a Scopa online con amici e sfida avversari in tutto il mondo. Play Scopa online and challenge opponents worldwide in this classic Italian card game.">
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Font Awesome CDN -->
+
+    <link rel="icon" type="image/x-icon" href="img/pageIcon.ico">
+    <title>Scopa - Home</title>
 </head>
+
 <body>
-    <h1>Scopa Multiplayer</h1>
-    <div id="game">
-        <div id="table"></div>
-        <div id="player-hand"></div>
-        <p id="status">Waiting for another player...</p>
+    <audio id="audio">
+        <source src="music/backgroundMusic.mp3" type="audio/mp3">
+    </audio>
+    <audio id="dealCards">
+        <source src="soundEffects/dealCards.mp3" type="audio/mp3">
+    </audio>
+    <audio id="scopaSound">
+        <source src="soundEffects/scopaLaugh.mp3" type="audio/mp3">
+    </audio>
+    <audio id="playedCardSound">
+        <source src="soundEffects/playedCardSound.mp3" type="audio/mp3">
+    </audio>
+    <audio id="victorySound">
+        <source src="soundEffects/victorySound.mp3" type="audio/mp3">
+    </audio>
+    <div id="main-container">
+        <div id="banner"></div>
+        <div id="starting-menu">
+            <div id="main-menu">
+                <button id="play-button" onclick="playGame()">Play</button>
+                <button onclick="apriImpostazioni()">Settings</button>
+                <button onclick="exitGame()">Exit</button>
+                <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
+            </div>
+            <div id="settingsPopup">
+                <h2>Impostazioni</h2>
+                <label>Volume:</label>
+                <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)" value="5">
+                <button onclick="apriBackground()">Choose Background</button>
+                <button id="btn" onclick="chiudiImpostazioni()">Close</button>
+            </div>
+        </div>
+        <div id="backgroundPopup">
+            <div id="backgroundCards-menu">
+                <div class="backgroundCards">
+                    <img loading="lazy" class="backgroundPreview" src="img/backgrounds/main-background.webp"
+                        onclick="cambiaBackground('img/backgrounds/main-background.webp')" alt="Opzione 1">
+                </div>
+                <div class="backgroundCards">
+                    <img loading="lazy" class="backgroundPreview" src="img/backgrounds/red-background.webp"
+                        onclick="cambiaBackground('img/backgrounds/red-background.webp')" alt="Opzione 2">
+                </div>
+                <div class="backgroundCards">
+                    <img loading="lazy" class="backgroundPreview" src="img/backgrounds/orange-background.webp"
+                        onclick="cambiaBackground('img/backgrounds/orange-background.webp')" alt="Opzione 3">
+                </div>
+                <div class="backgroundCards">
+                    <img loading="lazy" class="backgroundPreview" src="img/backgrounds/green-background.webp"
+                        onclick="cambiaBackground('img/backgrounds/green-background.webp')" alt="Opzione 4">
+                </div>
+                <div class="backgroundCards">
+                    <img loading="lazy" class="backgroundPreview" src="img/backgrounds/wall.webp"
+                        onclick="cambiaBackground('img/backgrounds/wall.webp')" alt="Opzione 5">
+                </div>
+                <div class="backgroundCards">
+                    <img loading="lazy" class="backgroundPreview" src="img/backgrounds/wall2.webp"
+                        onclick="cambiaBackground('img/backgrounds/wall2.webp')" alt="Opzione 6">
+                </div>
+            </div>
+            <button id="btn" onclick="chiudiBackground()">Close</button>
+        </div>
+    </div>
+
+    <div id="content">
+        <div id="left-content">
+            <div id="guide">
+                <img onclick="inGameSettings()" src="img/setting.webp" alt="Settings icon">
+            </div>
+            <div class="icon-container">
+                <p id="status"></p>
+                <img id="icon-img" src="img/playerIcon.webp" alt="Player's image">
+                <p id="player1ID">You</p>
+            </div>
+        </div>
+        <div id="main-content">
+            <div id="scopaCardContainer">
+                <div class="cards" id="scopaCard">
+                    <span id="scopaCardText">Scopa x0</span>
+                </div>
+            </div>
+            <div id="round-summary">
+                <h3 id="result"></h3>
+                <table>
+                    <tr>
+                        <th>Players</th>
+                        <th>You</th>
+                        <th>Opponent</th>
+                    </tr>
+                    <tr>
+                        <td class="intestazioneTable">Scopes</td>
+                        <td id="scopesPlayer">0</td>
+                        <td id="scopesOpponent">0</td>
+                    </tr>
+                    <tr>
+                        <td class="intestazioneTable">Number of Cards</td>
+                        <td id="cardsPlayer">0</td>
+                        <td id="cardsOpponent">0</td>
+                    </tr>
+                    <tr>
+                        <td class="intestazioneTable">Number of Denari</td>
+                        <td id="denariPlayer">0</td>
+                        <td id="denariOpponent">0</td>
+                    </tr>
+                    <tr>
+                        <td class="intestazioneTable">Seven of Denari</td>
+                        <td id="settePlayer">0</td>
+                        <td id="setteOpponent">0</td>
+                    </tr>
+                    <tr>
+                        <td class="intestazioneTable">Ten of Denari</td>
+                        <td id="dieciPlayer">0</td>
+                        <td id="dieciOpponent">0</td>
+                    </tr>
+                    <tr>
+                        <td class="intestazioneTable">Primiera</td>
+                        <td id="primieraPlayer">0</td>
+                        <td id="primieraOpponent">0</td>
+                    </tr>
+                    <tr>
+                        <td class="intestazioneTable">This round</td>
+                        <td id="roundPlayer">0</td>
+                        <td id="roundOpponent">0</td>
+                    </tr>
+                    <tr>
+                        <th>Total Points</th>
+                        <th id="totPlayer">0</th>
+                        <th id="totOpponent">0</th>
+                    </tr>
+                </table>
+                <button id="fineGameButton" onclick="iniziaNuovoRound()">Continua</button>
+            </div>
+            <div id="cardSelectionPopup">
+                <div id="cardSelectionMenu">
+                </div>
+            </div>
+            <div id="top-content">
+                <div class="half-table" id="opponent-hand">
+                </div>
+            </div>
+            <div id="game">
+                <div id="popup">
+                    <p id="popupText"></p>
+                </div>
+                <div id="inGameSettings">
+                    <input type="range" id="volumeControl" min="0" max="100" oninput="cambiaVolume(this.value)"
+                        value="5">
+                    <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
+                    <button onclick="openGuide()">Open Guide</button>
+                    <button onclick="apriIGBackground()">Choose Background</button>
+                    <button onclick="location.reload()">Exit Game</button>
+                    <button style="margin-top: 25px; width: 65%;" id="btn"
+                        onclick="chiudiIGImpostazioni()">Close</button>
+                </div>
+
+                <div id="backgroundIGPopup">
+                    <div id="backgroundIGCards-menu">
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/main-background.webp"
+                                onclick="cambiaBackground('img/backgrounds/main-background.webp')" alt="Opzione 1">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/red-background.webp"
+                                onclick="cambiaBackground('img/backgrounds/red-background.webp')" alt="Opzione 2">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/orange-background.webp"
+                                onclick="cambiaBackground('img/backgrounds/orange-background.webp')" alt="Opzione 3">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/green-background.webp"
+                                onclick="cambiaBackground('img/backgrounds/green-background.webp')" alt="Opzione 4">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/wall.webp"
+                                onclick="cambiaBackground('img/backgrounds/wall.webp')" alt="Opzione 5">
+                        </div>
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/wall2.webp"
+                                onclick="cambiaBackground('img/backgrounds/wall2.webp')" alt="Opzione 6">
+                        </div>
+                    </div>
+                    <button id="btn" onclick="chiudiIGBackground()">Close</button>
+                </div>
+                <div id="pdfContainer" style="display:none;">
+                    <embed id="pdfIframe" src="pdf/guide.pdf" width="90%" height="100%">
+                    <button onclick="closeGuide()">Close</button>
+                </div>
+                <div id="table"></div>
+            </div>
+            <div id="bottom-content">
+                <div class="half-table" id="player-hand">
+                </div>
+            </div>
+        </div>
+        <div id="right-content">
+            <div class="icon-container">
+                <p id="opponent"></p>
+                <img id="icon-img" src="img/opponentIcon.webp" alt="Opponent's image">
+                <p id="player2ID">Opponent</p>
+            </div>
+            <div id="deck">
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
-</html>
 
+</html>
