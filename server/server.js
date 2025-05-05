@@ -68,6 +68,13 @@ server.on("connection", (socket) => {
     console.log(mazzo.getArray()); //debug line
     players.forEach((p) => p.removeListener("close", closeHandler));
     let partita = new Partita(players[0], players[1], mazzo);
+
+    partita.on("end", () => {
+      // rimuovi dal matchArray
+      matchArray = matchArray.filter(m => m !== partita);
+      console.log("Partita rimossa da matchArray");
+    });
+
     matchArray.push(partita); //array con le partite aggiornato
     players.length = 0; //reset lunghezza
     console.log("Partita cooked");

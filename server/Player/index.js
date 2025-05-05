@@ -3,10 +3,13 @@ class Player {
     #name; //for future use
     #hand = [];
     #points = 0;
+    #scopeNum = 0;
     #totalPoints = 0;
     #cardNum = 0;
     #denariNum = 0;
     #primieraNum = 0;
+    #settedenariNum = 0;
+    #redenariNum = 0;
     #alive = true;
 
     constructor(socket, name) {
@@ -128,10 +131,67 @@ class Player {
         this.#primieraNum += n;
     }
 
+    //Scope
+    getScopeNum() {
+        return this.#scopeNum;
+    }
+
+    addScopeNum() {
+        this.#scopeNum++;
+    }
+
+    incrementScopeNum(n) {
+        this.#scopeNum += n;
+    }
+
+    //7 denari
+    getSetteDenariNum() {
+        return this.#settedenariNum;
+    }
+
+    setSetteDenariNum(n) {
+        if (typeof n !== "number" || n < 0) throw new Error("Valore non valido per sette di denari");
+        this.#settedenariNum = n;
+    }
+
+    addSetteDenariNum() {
+        this.#settedenariNum++;
+    }
+
+    //Re denari
+    getReDenariNum() {
+        return this.#redenariNum;
+    }
+
+    setReDenariNum(n) {
+        if (typeof n !== "number" || n < 0) throw new Error("Valore non valido per re di denari");
+        this.#redenariNum = n;
+    }
+
+    addReDenariNum() {
+        this.#redenariNum++;
+    }
+
+    toStats() {
+        return {
+            totalPoints: this.getTotalPoints(),
+            scope: this.getScopeNum(),
+            cardNum: this.getCardNum(),
+            denariNum: this.getDenariNum(),
+            setteDenari: this.getSetteDenariNum(),
+            reDenari: this.getReDenariNum(),
+            primiera: this.getPrimieraNum(),
+            points: this.getPoints()
+        };
+    }
+
     resetExtra() {
         this.#cardNum = 0;
         this.#denariNum = 0;
         this.#primieraNum = 0;
+        this.#scopeNum = 0;
+        this.#settedenariNum = 0;
+        this.#redenariNum = 0;
     }
 }
 

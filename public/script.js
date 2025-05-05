@@ -52,10 +52,18 @@ let myHand = [];
 let tableHand = [];
 let cardNumber = 1;
 let prevVolume;
-let music = 0.005;
 let startButtonClick = false;
 let heartbeat = false;
 let timeout;
+let carteSelezionate = [];
+let scopeTotali = 0;
+let popupText;
+const resultMatch = document.getElementById('result');
+const showTablePoints = document.getElementById('round-summary')
+const playedCardSound = document.getElementById("playedCardSound");
+const scopaSound = document.getElementById("scopaSound");
+const victorySound = document.getElementById("victorySound");
+const dealingSound = document.getElementById("dealCards");
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("content").style.display = "none";
@@ -75,6 +83,8 @@ function closeMatch(text) {
 
 function playGame() {
   if (startButtonClick) {
+    startButtonClick = false;
+    socket.close();
     return;
   }
 
@@ -83,29 +93,23 @@ function playGame() {
 
 
   socket.onclose = () => {
+    if(!startButtonClick)
+    closeMatch("Annullamento del Matchmaking...");
+    else
     closeMatch("Il server ha terminato la connessione oppure non è disponibile!"); //server closed "manually"
     socket.close();
   }
 
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
-    let popupText;
     switch (data.type) {
       case "welcome":
-        timeout = setInterval(() => {
-          if (heartbeat) {
-            console.log("Checko heartbeat: " + heartbeat);
-            heartbeat = false; // Reset for next cycle
-          } else {
-            closeMatch("Il server non risponde!"); // No ping in 7 seconds
-            clearInterval(timeout); // Stop checking
-          }
-        }, 7000);
         playerNumber = data.playerNumber;
         document.getElementById("status").innerText = `You are Player ${playerNumber}`;
         break;
 
       case "startingCards":
+        dealingSound.play();
         const handDiv = document.getElementById("player-hand");
         const tempArray = data.arr.slice();
 
@@ -125,14 +129,20 @@ function playGame() {
         });
         console.log(myHand);
 
-        let cardIdNumberCorrection = document
-          .getElementById("player-hand")
-          .getElementsByTagName("div");
+        let cardIdNumberCorrection = document.getElementById("player-hand").getElementsByTagName("div");
         cardIdNumberCorrection[0].id = "bot-card1";
         cardIdNumberCorrection[1].id = "bot-card2";
         cardIdNumberCorrection[2].id = "bot-card3";
-
+/*
+        cardIdNumberCorrection[0].addEventListener('click', function() {
+        });
+        cardIdNumberCorrection[1].addEventListener('click', function() {
+        });
+        cardIdNumberCorrection[2].addEventListener('click', function() {
+        });
+*/
         generateHand();
+        socket.send(JSON.stringify({ type: "getcount" }));
         break;
 
       case "tableCards":
@@ -154,6 +164,15 @@ function playGame() {
         break;
 
       case "start":
+        timeout = setInterval(() => {
+          if (heartbeat) {
+            console.log("Checko heartbeat: " + heartbeat);
+            heartbeat = false; // Reset for next cycle
+          } else {
+            closeMatch("Il server non risponde!"); // No ping in 7 seconds
+            clearInterval(timeout); // Stop checking
+          }
+        }, 7000);
         myTurn = data.turn;
         startGame();
         break;
@@ -164,13 +183,15 @@ function playGame() {
         break;
 
       case "remove_table_cards_combosAvail":
-        let arrayDaPrendere = data.combos[0];
-        socket.send(
-          JSON.stringify({ type: "combo_response", combo: arrayDaPrendere })
-        );
+        let arrayDaPrendere = data.combos;
+        if (arrayDaPrendere.length > 1)
+          inizializzaMenu(arrayDaPrendere);
+        else
+          socket.send(JSON.stringify({ type: "combo_response", combo: data.combos[0] }));
         break;
 
       case "remove_opponent_card":
+        playedCardSound.play();
         removeOpponentCard();
         break;
 
@@ -185,36 +206,56 @@ function playGame() {
 
       case "scopa":
         document.getElementById('popupText').textContent = "Scopa!";
+        scopeTotali++;
+        aggiornaScopaDisplay();
         mostraPopup();
         break;
 
       case "progressResult":
-        popupText = "Hai " + data.verdict + " il match con " + data.points + " punti contro " + data.oppositePoints + " punti del tuo avversario!";
-        document.getElementById('popupText').textContent = popupText;
-        mostraPopup();
+        popupText = "Hai " + data.verdict + " il round!";
+        resultMatch.textContent = popupText;
+        if (data.verdict == "vinto")
+          {
+            scopaSound.play();
+          }
+        setResultColor(data.verdict);
+        showTablePoints.style.display = "block"
+        scopeTotali = 0;
+        aggiornaScopaDisplay();
         tableHand.length = 0;
         break;
 
       case "matchResult":
-        popupText = "Hai " + data.verdict + " il match con " + data.points + " punti contro " + data.oppositePoints + " punti del tuo avversario! Partita FINITA!";
-        document.getElementById('popupText').textContent = popupText;
-        clearInterval(timeout);
-        mostraPopup();
+        popupText = "Partita FINITA: Hai " + data.verdict + " il match!";
+        resultMatch.textContent = popupText;
+        setResultColor(data.verdict);
+        if (data.verdict == "vinto")
+          victorySound.play();
+        scopeTotali = 0;
+        aggiornaScopaDisplay();
+        fineGame();
+        showTablePoints.style.display = "block"
         tableHand.length = 0;
         break;
 
       case "tieResult":
-        popupText = "Hai " + data.verdict + " la partita con " + data.points + " punti! Partita FINITA!";
-        document.getElementById('popupText').textContent = popupText;
+        popupText = "Hai " + data.verdict + " la partita!";
+        resultMatch.textContent = popupText;
+        setResultColor(data.verdict);
+        showTablePoints.style.display = "block"
         clearInterval(timeout);
-        mostraPopup();
+        scopeTotali = 0;
+        aggiornaScopaDisplay();
         tableHand.length = 0;
         break;
-
+      case "stats":
+        setPoints(data);
+        break;
       case "matchTie":
-        popupText = "Hai " + data.verdict + " il match con " + data.points + " punti!";
-        document.getElementById('popupText').textContent = popupText;
-        mostraPopup();
+        popupText = "Hai " + data.verdict + " il round!";
+        resultMatch.textContent = popupText;
+        setResultColor(data.verdict);
+        showTablePoints.style.display = "block"
         tableHand.length = 0;
         break;
 
@@ -226,6 +267,9 @@ function playGame() {
       case "close":
         closeMatch("Il tuo avversario si è disconnesso!");
         clearInterval(timeout);
+        break;
+      case "tableCount":
+        deckNumberUpdate(data.count);
         break;
 
       default:
@@ -271,9 +315,10 @@ function generateDeck() {
   count.id = "deckNumDiv";
   const countP = document.createElement("p");
   countP.id = "deckNum";
-  countP.textContent = "Prova";
+  countP.textContent = "";
   deckCard.classList.add("cards");
   deckCard.id = "deckCards";
+
   count.appendChild(countP);
   deckCard.appendChild(count);
   deckDiv.appendChild(deckCard);
@@ -288,9 +333,11 @@ function playCard(card) {
   // Rimuovi la carta da myHand
   myHand = myHand.filter((c) => c !== card);
   console.log(JSON.stringify(tableHand));
-
-  card.getDiv().remove();
-  card.setDiv(null);
+  setTimeout(() => {
+    card.getDiv().remove();
+    card.setDiv(null);
+  }, "0");
+  playedCardSound.play();    
 }
 
 function updateTable(cardData) {
@@ -302,6 +349,21 @@ function updateTable(cardData) {
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
   tableDiv.appendChild(cardDiv);
   tableHand.push(card);
+  
+  let cardsAdjust = document.getElementById("player-hand").getElementsByTagName("div");
+  if(cardsAdjust.length == 1)
+    cardsAdjust[0].id = "bot-card2";
+  else if(cardsAdjust.length == 2){
+    cardsAdjust[0].id = "bot-card1";
+    cardsAdjust[1].id = "bot-card3";
+  }
+  let opponentCardsAdjust = document.getElementById("opponent-hand").getElementsByTagName("div");
+  if(opponentCardsAdjust.length == 1)
+    opponentCardsAdjust[0].id = "top-card2";
+  else if(opponentCardsAdjust.length == 2){
+    opponentCardsAdjust[0].id = "top-card1";
+    opponentCardsAdjust[1].id = "top-card3";
+  }
   return card;
 }
 
@@ -407,20 +469,20 @@ function chiudiIGBackground() {
 
 function cambiaBackground(sfondo) {
   document.body.style.backgroundImage = `url(${sfondo})`;
-}
-
-function backToMenu() {
-
+  localStorage.setItem('background', sfondo);
 }
 
 function cambiaVolume(value) {
-  let audio = document.getElementById("audio");
-  audio.volume = value / 100;
+  const audioElements = document.querySelectorAll('audio');
+    audioElements.forEach(audio => {
+        audio.volume = value / 100;
+    });
+
+  localStorage.setItem('volume', value);
 }
 
 function avviaMusica() {
   let audio = document.getElementById("audio");
-  audio.volume = music;
   audio.play().then(() => console.log("Musica avviata con successo."));
 }
 
@@ -433,17 +495,15 @@ function volumeChanger() {
     volumeIcons.forEach((icon) => {
       icon.classList.remove("fa-volume-mute");
       icon.classList.add("fa-volume-up");
+      localStorage.setItem('icon', "fa-volume-up");
     });
   } else {
     audio.muted = true;
     volumeIcons.forEach((icon) => {
       icon.classList.remove("fa-volume-up");
       icon.classList.add("fa-volume-mute");
+      localStorage.setItem('icon', "fa-volume-mute");
     });
-  }
-
-  if (!audio.muted) {
-    audio.volume = music;
   }
 }
 
@@ -496,33 +556,6 @@ function nascondiPopup() {
   popup.style.opacity = '0';
 }
 
-function aggiungiCardOption(carte) {
-  const cardSelectionMenu = document.getElementById('cardSelectionMenu');
-
-  const cardOption = document.createElement('div');
-  cardOption.classList.add('cardOption');
-
-  const cardSet = document.createElement('div');
-  cardSet.classList.add('cardSet');
-  cardSet.onclick = () => selezionaSet();
-
-  carte.forEach(carta => {
-    const cardPreview = document.createElement('img');
-    cardPreview.classList.add('cardPreview');
-    cardPreview.src = carta.src;
-    cardPreview.alt = carta.alt;
-
-    cardSet.appendChild(cardPreview);
-  });
-  cardOption.appendChild(cardSet);
-  cardSelectionMenu.appendChild(cardOption);
-}
-
-function selezionaSet() {
-  console.log("Hai selezionato il set");
-  chiudiMenu();
-}
-
 function chiudiMenu() {
   document.getElementById('cardSelectionPopup').style.display = 'none';
 }
@@ -531,43 +564,195 @@ function apriMenu() {
   document.getElementById('cardSelectionPopup').style.display = 'flex';
 }
 
-function inizializzaMenu() {
-  const carte1 = [
-    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
-    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
-    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' },
-    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
-    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
-    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' }
-  ];
 
-  const carte2 = [
-    { id: 'carta4', src: 'img/cards/10C.webp', alt: 'Carta 4' },
-    { id: 'carta5', src: 'img/cards/9C.webp', alt: 'Carta 5' }
-  ];
-  const carte3 = [
-    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
-    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
-    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' },
-    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
-    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
-    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' }
-  ];
-  const carte4 = [
-    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
-    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
-    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' },
-    { id: 'carta1', src: 'img/cards/10B.webp', alt: 'Carta 1' },
-    { id: 'carta2', src: 'img/cards/9B.webp', alt: 'Carta 2' },
-    { id: 'carta3', src: 'img/cards/8B.webp', alt: 'Carta 3' }
-  ];
+function inizializzaMenu(arrayDaPrendere) {
+  apriMenu();
+  const cardSelectionMenu = document.getElementById('cardSelectionMenu');
+  const cardSelectionPopup = document.getElementById("cardSelectionPopup");
 
-  aggiungiCardOption(carte1);
-  aggiungiCardOption(carte2);
-  aggiungiCardOption(carte3);
-  aggiungiCardOption(carte4);
+  cardSelectionMenu.innerHTML = "";
+  carteSelezionate = [];
+
+  arrayDaPrendere.forEach(combo => {
+    const comboText = combo.map(card => `${card.valore} di ${card.seme}`).join(', ');
+    aggiungiCardOption(comboText, cardSelectionMenu, combo);
+  });
+
+  if (!cardSelectionPopup.contains(cardSelectionMenu)) {
+    cardSelectionPopup.appendChild(cardSelectionMenu);
+  }
 }
 
-window.onload = function () {
-  inizializzaMenu();
+function aggiungiCardOption(carte, cardSelectionMenu, comboCards) {
+  console.log("Cosa trovo? " + carte);
+  const convertedCards = convertCarte(carte);
+
+  const cardOption = document.createElement('div');
+  cardOption.classList.add('cardOption');
+
+  cardOption.onclick = function () {
+    const isSelected = cardOption.classList.toggle('selected');
+    if (isSelected) {
+      comboCards.forEach(card => {
+        const cardString = card.valore + card.seme.toUpperCase();
+        if (!carteSelezionate.includes(cardString)) {
+          carteSelezionate.push(cardString);
+        }
+      });
+    } else {
+      comboCards.forEach(card => {
+        const cardString = card.valore + card.seme.toUpperCase();
+        const idx = carteSelezionate.indexOf(cardString);
+        if (idx > -1) {
+          carteSelezionate.splice(idx, 1);
+        }
+      });
+    }
+    selezionaSet();
+  };
+
+  const cardSet = document.createElement('div');
+  cardSet.classList.add('cardSet');
+
+  convertedCards.forEach((src, index) => {
+    const cardPreview = document.createElement('img');
+    cardPreview.classList.add('cardPreview');
+    cardPreview.src = `./img/cards/${src}.webp`;
+    cardPreview.alt = "Carta " + index;
+    cardSet.appendChild(cardPreview);
+  });
+
+  cardOption.appendChild(cardSet);
+  cardSelectionMenu.appendChild(cardOption);
+}
+
+function convertCarte(carte) {
+  let cardsArray;
+
+  if (Array.isArray(carte)) {
+    cardsArray = carte;
+  } else if (typeof carte === 'string') {
+    cardsArray = carte.split(',').map(s => s.trim());
+  } else {
+    console.error('Input must be an array or comma-separated string');
+    return [];
+  }
+
+  return cardsArray.map(item => {
+    const regex = /^(\d+)\s+di\s+([A-Za-z])$/;
+    const match = item.match(regex);
+    if (match) {
+      const number = match[1];
+      const suit = match[2].toUpperCase();
+      return number + suit;
+    }
+    console.error(`Formato carta non valido: ${item}`);
+    return null;
+  }).filter(x => x !== null);
+}
+
+function selezionaSet() {
+  console.log("Invio carte selezionate:", carteSelezionate);
+  const arrayDaPrendere = convertiCarte(carteSelezionate);
+  console.log("ArrayDaPrendere oggetti Carta:", arrayDaPrendere);
+  socket.send(JSON.stringify({ type: "combo_response", combo: arrayDaPrendere }));
+  chiudiMenu();
+}
+
+function convertiCarte(array) {
+  const cardDiv = document.createElement("div");
+  cardDiv.classList.add("cards");
+  return array.map(carta => {
+    const valore = parseInt(carta.slice(0, -1), 10);
+    const seme = carta.slice(-1);
+    return new Carta(cardDiv, valore, seme);
+  });
+}
+
+function deckNumberUpdate(deckCount) {
+  const deckNum = document.getElementById("deckNum");
+
+  deckNum.textContent = deckCount;
+}
+
+function iniziaNuovoRound() {
+  document.getElementById("round-summary").style.display = "none";
+}
+
+function fineGame() {
+  document.getElementById("fineGameButton").textContent = "Esci"
+  scopeTotali = 0;
+  document.getElementById("fineGameButton").onclick = function() {
+    window.location.reload();
 };
+
+}
+
+function setPoints(data) {
+  document.getElementById("totPlayer").textContent = data.youStats.totalPoints;
+  document.getElementById("totOpponent").textContent = data.oppositeStats.totalPoints;
+  document.getElementById("scopesPlayer").textContent = data.youStats.scope;
+  document.getElementById("scopesOpponent").textContent = data.oppositeStats.scope;
+  document.getElementById("cardsPlayer").textContent = data.youStats.cardNum;
+  document.getElementById("cardsOpponent").textContent = data.oppositeStats.cardNum;
+  document.getElementById("denariPlayer").textContent = data.youStats.denariNum;
+  document.getElementById("denariOpponent").textContent = data.oppositeStats.denariNum;
+  document.getElementById("settePlayer").textContent = data.youStats.setteDenari;
+  document.getElementById("setteOpponent").textContent = data.oppositeStats.setteDenari;
+  document.getElementById("dieciPlayer").textContent = data.youStats.reDenari;
+  document.getElementById("dieciOpponent").textContent = data.oppositeStats.reDenari;
+  document.getElementById("primieraPlayer").textContent = data.youStats.primiera;
+  document.getElementById("primieraOpponent").textContent = data.oppositeStats.primiera;
+  document.getElementById("roundPlayer").textContent = data.youStats.points;
+  document.getElementById("roundOpponent").textContent = data.oppositeStats.points;
+}
+
+function setResultColor(check) {
+  if (check == "vinto")
+  {
+    resultMatch.style.color = "green";
+    scopaSound.play();
+  }
+  else if (check == "perso")
+    resultMatch.style.color = "red";
+  else if (check == "pareggiato")
+    resultMatch.style.color = "whitesmoke";
+}
+
+window.onload = function() {
+  const icon = localStorage.getItem('icon');
+  let audio = document.getElementById("audio");
+  const savedVolume = localStorage.getItem('volume');
+  const savedBackground = localStorage.getItem('background');
+  const audioIcon = document.querySelectorAll(".volume-icon");
+  audioIcon.forEach((iconImage) => {
+    if (icon == "fa-volume-mute"){
+        iconImage.classList.remove("fa-volume-up");
+        iconImage.classList.add("fa-volume-mute");
+        audio.muted = true;
+      }
+  });
+
+  if (savedVolume) {
+      document.getElementById('volumeControl').value = savedVolume;
+      cambiaVolume(savedVolume);
+  }
+
+  if (savedBackground) {
+      document.body.style.backgroundImage = `url('${savedBackground}')`;
+  }
+};
+
+function aggiornaScopaDisplay() {
+    if(scopeTotali == 0){
+      document.getElementById("scopaCardContainer").style.display = "none";
+      return;
+    }
+    else {
+    document.getElementById("scopaCardContainer").style.display = "block";
+    const text = document.getElementById('scopaCardText');
+    text.textContent = `Scopa x${scopeTotali}`;
+
+    scopaSound.play();
+  }
+}
