@@ -11,11 +11,30 @@ class Player {
     #settedenariNum = 0;
     #redenariNum = 0;
     #alive = true;
+    #uuid = null; //if present, will be used for stats
+    statsObj = { roundwin: 0, roundlost: 0, roundtie: 0, partitewin: 0, partitelost: 0, scope: 0 };
 
-    constructor(socket, name) {
+    constructor(socket, name, uuid) {
         this.setSocket(socket);
         this.setName(name);
+        this.setUuid(uuid);
     }
+
+    setUuid(uuid) {
+        if (uuid)
+            this.#uuid = uuid;
+        else
+            this.#uuid = null;
+    }
+
+    getUuid() {
+        return this.#uuid;
+    }
+
+    isUuid() {
+        return this.#uuid != null;
+    }
+
 
     isAlive() {
         return this.#alive;
