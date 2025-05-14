@@ -58,6 +58,9 @@ let timeout;
 let carteSelezionate = [];
 let scopeTotali = 0;
 let popupText;
+
+let globalUsername;
+let globalUuid;
 const resultMatch = document.getElementById('result');
 const showTablePoints = document.getElementById('round-summary')
 const playedCardSound = document.getElementById("playedCardSound");
@@ -66,8 +69,36 @@ const victorySound = document.getElementById("victorySound");
 const dealingSound = document.getElementById("dealCards");
 
 document.addEventListener("DOMContentLoaded", () => {
+  checkCookieLogin();
   document.getElementById("content").style.display = "none";
 });
+
+function checkCookieLogin() {
+  fetch("https://api.playscopa.online/checkCookie", {
+    method: "GET",
+    credentials: 'include'
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Network response was not ok ' + res.statusText);
+      }
+      else {
+        return res.json();
+      }
+    })
+    .then((data) => {
+      globalUsername = data.user.username;
+      globalUuid = data.user.id;
+
+      document.getElementById("login-container").style.display = "none";
+
+      document.getElementById("player1ID").textContent = data.user.username;
+      let nick = document.getElementById("nicknameTag");
+      nick.textContent = data.user.username;
+      let dropdown = document.getElementById("dropdownList");
+      dropdown.removeAttribute("id");
+    });
+}
 
 function closeMatch(text) {
   if (document.getElementById("content").style.display != "none") {
@@ -93,10 +124,12 @@ function playGame() {
 
 
   socket.onclose = () => {
-    if(!startButtonClick)
-    closeMatch("Annullamento del Matchmaking...");
+    if (!startButtonClick) {
+      closeMatch("Annullamento del Matchmaking...");
+    }
     else
-    closeMatch("Il server ha terminato la connessione oppure non è disponibile!"); //server closed "manually"
+      closeMatch("Il server ha terminato la connessione oppure non è disponibile!"); //server closed "manually"
+    document.getElementById("play-button").removeEventListener("click", playGame(), false);
     socket.close();
   }
 
@@ -104,8 +137,24 @@ function playGame() {
     const data = JSON.parse(event.data);
     switch (data.type) {
       case "welcome":
+        if (globalUsername && globalUuid) { //se esistono i 2 valori (quindi c'è una sessione loggata)
+          socket.send(JSON.stringify({ type: "options", username: globalUsername, uuid: globalUuid }));
+        } else {
+          socket.send(JSON.stringify({ type: "options" })); //valori nulli, allora siamo dei guest.
+        }
+        break;
+
+      case "queue":
         playerNumber = data.playerNumber;
         document.getElementById("status").innerText = `You are Player ${playerNumber}`;
+        break;
+
+      case "oppositeName":
+        document.getElementById("player2ID").textContent = data.oppositeName;
+        break;
+
+      case "sameUser":
+        closeMatch("Errore! Non puoi giocare contro te stesso!");
         break;
 
       case "startingCards":
@@ -133,14 +182,14 @@ function playGame() {
         cardIdNumberCorrection[0].id = "bot-card1";
         cardIdNumberCorrection[1].id = "bot-card2";
         cardIdNumberCorrection[2].id = "bot-card3";
-/*
-        cardIdNumberCorrection[0].addEventListener('click', function() {
-        });
-        cardIdNumberCorrection[1].addEventListener('click', function() {
-        });
-        cardIdNumberCorrection[2].addEventListener('click', function() {
-        });
-*/
+        /*
+                cardIdNumberCorrection[0].addEventListener('click', function() {
+                });
+                cardIdNumberCorrection[1].addEventListener('click', function() {
+                });
+                cardIdNumberCorrection[2].addEventListener('click', function() {
+                });
+        */
         generateHand();
         socket.send(JSON.stringify({ type: "getcount" }));
         break;
@@ -214,10 +263,9 @@ function playGame() {
       case "progressResult":
         popupText = "Hai " + data.verdict + " il round!";
         resultMatch.textContent = popupText;
-        if (data.verdict == "vinto")
-          {
-            scopaSound.play();
-          }
+        if (data.verdict == "vinto") {
+          scopaSound.play();
+        }
         setResultColor(data.verdict);
         showTablePoints.style.display = "block"
         scopeTotali = 0;
@@ -337,7 +385,7 @@ function playCard(card) {
     card.getDiv().remove();
     card.setDiv(null);
   }, "0");
-  playedCardSound.play();    
+  playedCardSound.play();
 }
 
 function updateTable(cardData) {
@@ -349,18 +397,18 @@ function updateTable(cardData) {
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
   tableDiv.appendChild(cardDiv);
   tableHand.push(card);
-  
+
   let cardsAdjust = document.getElementById("player-hand").getElementsByTagName("div");
-  if(cardsAdjust.length == 1)
+  if (cardsAdjust.length == 1)
     cardsAdjust[0].id = "bot-card2";
-  else if(cardsAdjust.length == 2){
+  else if (cardsAdjust.length == 2) {
     cardsAdjust[0].id = "bot-card1";
     cardsAdjust[1].id = "bot-card3";
   }
   let opponentCardsAdjust = document.getElementById("opponent-hand").getElementsByTagName("div");
-  if(opponentCardsAdjust.length == 1)
+  if (opponentCardsAdjust.length == 1)
     opponentCardsAdjust[0].id = "top-card2";
-  else if(opponentCardsAdjust.length == 2){
+  else if (opponentCardsAdjust.length == 2) {
     opponentCardsAdjust[0].id = "top-card1";
     opponentCardsAdjust[1].id = "top-card3";
   }
@@ -438,6 +486,7 @@ function exitGame() {
 function apriImpostazioni() {
   document.getElementById("settingsPopup").style.display = "block";
   document.getElementById("main-menu").style.display = "none";
+  document.getElementById("login-container").style.display = "none";
 }
 
 function chiudiImpostazioni() {
@@ -472,23 +521,32 @@ function cambiaBackground(sfondo) {
   localStorage.setItem('background', sfondo);
 }
 
-function cambiaVolume(value) {
-  const audioElements = document.querySelectorAll('audio');
-    audioElements.forEach(audio => {
-        audio.volume = value / 100;
-    });
+function cambiaVolumeMusica(value) {
+  const audioMusic = document.getElementById('audioMusic');
+  audioMusic.volume = value / 100;
+  document.getElementById("volumeControlMusic").value = value;
 
-  localStorage.setItem('volume', value);
+  localStorage.setItem('volumeMusic', value);
+}
+
+function cambiaVolumeEffects(value) {
+  const audioEffects = document.querySelectorAll('.effects');
+  audioEffects.forEach((audio) => {
+    audio.volume = value / 100;
+  })
+  document.getElementById("volumeControlEffects").value = value;
+
+  localStorage.setItem('volumeEffects', value);
 }
 
 function avviaMusica() {
-  let audio = document.getElementById("audio");
+  let audio = document.getElementById("audioMusic");
   audio.play().then(() => console.log("Musica avviata con successo."));
 }
 
 function volumeChanger() {
   let volumeIcons = document.querySelectorAll(".volume-icon");
-  let audio = document.getElementById("audio");
+  let audio = document.getElementById("audioMusic");
 
   if (audio.muted) {
     audio.muted = false;
@@ -524,11 +582,40 @@ function chiudiIGImpostazioni() {
 }
 
 function openGuide() {
+  const pdfUrl = "pdf/guide.pdf";
+
+  if (isMobile()) {
+    window.open(pdfUrl, '_blank');
+    return;
+  }
+
   document.getElementById("pdfContainer").style.display = "flex";
+  document.getElementById("starting-menu").style.display = "none";
 }
 
 function closeGuide() {
   document.getElementById("pdfContainer").style.display = "none";
+}
+
+function openGuideMain() {
+  const pdfUrl = "pdf/guide.pdf";
+
+  if (isMobile()) {
+    window.open(pdfUrl, '_blank');
+    return;
+  }
+
+  document.getElementById("pdfMainMenu").style.display = "flex";
+  document.getElementById("starting-menu").style.display = "none";
+}
+
+function closeGuideMain() {
+  document.getElementById("pdfMainMenu").style.display = "none";
+  document.getElementById("starting-menu").style.display = "flex";
+}
+
+function isMobile() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 function getCardImagePath(card) {
@@ -682,9 +769,9 @@ function iniziaNuovoRound() {
 function fineGame() {
   document.getElementById("fineGameButton").textContent = "Esci"
   scopeTotali = 0;
-  document.getElementById("fineGameButton").onclick = function() {
+  document.getElementById("fineGameButton").onclick = function () {
     window.location.reload();
-};
+  };
 
 }
 
@@ -708,8 +795,7 @@ function setPoints(data) {
 }
 
 function setResultColor(check) {
-  if (check == "vinto")
-  {
+  if (check == "vinto") {
     resultMatch.style.color = "green";
     scopaSound.play();
   }
@@ -719,40 +805,294 @@ function setResultColor(check) {
     resultMatch.style.color = "whitesmoke";
 }
 
-window.onload = function() {
-  const icon = localStorage.getItem('icon');
-  let audio = document.getElementById("audio");
-  const savedVolume = localStorage.getItem('volume');
-  const savedBackground = localStorage.getItem('background');
-  const audioIcon = document.querySelectorAll(".volume-icon");
-  audioIcon.forEach((iconImage) => {
-    if (icon == "fa-volume-mute"){
-        iconImage.classList.remove("fa-volume-up");
-        iconImage.classList.add("fa-volume-mute");
-        audio.muted = true;
-      }
-  });
+function loginButton() {
+  document.getElementById("banner").style.display = "none";
+  document.getElementById("starting-menu").style.display = "none";
+  document.getElementById("login-container").style.display = "none";
 
-  if (savedVolume) {
-      document.getElementById('volumeControl').value = savedVolume;
-      cambiaVolume(savedVolume);
-  }
+  document.getElementById("loginPopup").style.display = "flex";
+  document.getElementById("loginMenu").style.display = "flex";
+  let errorText = document.getElementById("errorLog");
+  errorText.textContent = "";
+}
 
-  if (savedBackground) {
-      document.body.style.backgroundImage = `url('${savedBackground}')`;
-  }
-};
+function registerButton() {
+  document.getElementById("banner").style.display = "none";
+  document.getElementById("starting-menu").style.display = "none";
+  document.getElementById("login-container").style.display = "none";
+  document.getElementById("loginPopup").style.display = "flex";
+  document.getElementById("registerMenu").style.display = "flex";
+  let errorText = document.getElementById("errorLog");
+  errorText.textContent = "";
+
+}
+
+function exitLogin() {
+  document.getElementById("loginPopup").style.display = "none";
+  document.getElementById("registerMenu").style.display = "none";
+  document.getElementById("banner").style.display = "flex";
+  document.getElementById("starting-menu").style.display = "flex";
+  document.getElementById("login-container").style.display = "flex";
+}
 
 function aggiornaScopaDisplay() {
-    if(scopeTotali == 0){
-      document.getElementById("scopaCardContainer").style.display = "none";
-      return;
-    }
-    else {
+  if (scopeTotali == 0) {
+    document.getElementById("scopaCardContainer").style.display = "none";
+    return;
+  }
+  else {
     document.getElementById("scopaCardContainer").style.display = "block";
     const text = document.getElementById('scopaCardText');
     text.textContent = `Scopa x${scopeTotali}`;
 
     scopaSound.play();
   }
+}
+
+window.onload = function () {
+  const icon = localStorage.getItem('icon');
+  let audio = document.getElementById("audioMusic");
+  const savedVolumeMusic = localStorage.getItem('volumeMusic');
+  const savedVolumeEffects = localStorage.getItem('volumeEffects');
+  const savedBackground = localStorage.getItem('background');
+  const audioIcon = document.querySelectorAll(".volume-icon");
+  audioIcon.forEach((iconImage) => {
+    if (icon == "fa-volume-mute") {
+      iconImage.classList.remove("fa-volume-up");
+      iconImage.classList.add("fa-volume-mute");
+      audio.muted = true;
+    }
+  });
+
+  if (savedVolumeMusic) {
+    document.getElementById('volumeControlMusic').value = savedVolumeMusic;
+    cambiaVolumeMusica(savedVolumeMusic);
+  }
+
+  if (savedVolumeEffects) {
+    document.getElementById('volumeControlMusic').value = savedVolumeEffects;
+    cambiaVolumeEffects(savedVolumeEffects);
+  }
+
+  if (savedBackground) {
+    document.body.style.backgroundImage = `url('${savedBackground}')`;
+  }
+};
+
+function onSuccess(googleUser) {
+  const profile = googleUser.getBasicProfile();
+  console.log('Logged in as: ' + profile.getName());
+}
+
+function onFailure(error) {
+  console.log(error);
+}
+
+function renderGoogleButtons() {
+  gapi.signin2.render('my-signin2-login', {
+    'scope': 'profile email',
+    'width': 240,
+    'height': 50,
+    'longtitle': true,
+    'theme': 'dark',
+    'onsuccess': onSuccess,
+    'onfailure': onFailure
+  });
+  gapi.signin2.render('my-signin2-register', {
+    'scope': 'profile email',
+    'width': 240,
+    'height': 50,
+    'longtitle': true,
+    'theme': 'dark',
+    'onsuccess': onSuccess,
+    'onfailure': onFailure
+  });
+}
+
+function importLoginData(event) {
+  let feemail = document.getElementById("loginInput").value;
+  let fepassword = document.getElementById("loginPassword").value;
+  event.preventDefault();
+  fetch("https://api.playscopa.online/login", {
+    method: "POST",
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ email: feemail, password: fepassword })
+  })
+    .then((res) => {
+      if (!res.ok) {
+        document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
+        throw new Error('Network response was not ok ' + res.statusText);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      console.log("Vamos: " + JSON.stringify(data));
+      if (data.success) {
+        globalUsername = data.user.username;
+        globalUuid = data.user.id;
+        document.getElementById("loginPopup").style.display = "none";
+        const successMessage = document.getElementById("successMessage");
+        successMessage.style.display = "block";
+        successMessage.style.opacity = 1;
+
+        document.getElementById("login-container").style.display = "none";
+
+        document.getElementById("player1ID").textContent = data.user.username;
+        let nick = document.getElementById("nicknameTag");
+        nick.textContent = data.user.username;
+
+        document.getElementById("top-left-bar").style.cursor = "pointer";
+
+        setTimeout(() => {
+          successMessage.style.opacity = 0;
+          setTimeout(() => {
+            successMessage.style.display = "none";
+            exitLogin();
+            document.getElementById("login-container").style.display = "none";
+            let dropdown = document.getElementById("dropdownList");
+            dropdown.removeAttribute("id");
+          }, 500);
+        }, 3000);
+      }
+    })
+    .catch((err) => {
+      let errorText = document.getElementById("errorLog");
+      errorText.textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
+      console.log("Non vamos: " + err.message);
+    });
+
+}
+
+
+function validatePassword() {
+  let password = document.getElementById("registerPassword");
+  let confirm_password = document.getElementById("confirmRegisterPassword");
+
+  if (password.value !== confirm_password.value) {
+    password.setCustomValidity("Le password inserite non corrispondono.");
+  } else {
+    password.setCustomValidity("");
+  }
+  password.reportValidity();
+}
+
+document.getElementById("confirmButton").addEventListener("click", function (event) {
+  validatePassword();
+
+  let password = document.getElementById("registerPassword");
+
+  if (!password.checkValidity()) {
+    event.preventDefault();
+    return;
+  }
+
+  event.preventDefault();
+
+  let feusername = document.getElementById("registerUsername").value;
+  let feemail = document.getElementById("registerEmail").value;
+  let fepassword = document.getElementById("registerPassword").value;
+
+  fetch("https://api.playscopa.online/register", {
+    method: "POST",
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username: feusername, email: feemail, password: fepassword })
+  })
+    .then((res) => {
+      if (!res.ok) {
+        document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
+        throw new Error('Network response was not ok ' + res.statusText);
+      }
+      return res.json();
+    })
+    .then((data) => {
+      if (data.success) {
+        globalUsername = data.user.username;
+        globalUuid = data.user.id;
+        document.getElementById("loginPopup").style.display = "none";
+        const successMessage = document.getElementById("successMessage");
+        successMessage.style.display = "block";
+        successMessage.style.opacity = 1;
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("player1ID").textContent = data.user.username;
+        document.getElementById("nicknameTag").textContent = data.user.username;
+        document.getElementById("top-left-bar").style.cursor = "pointer";
+
+        setTimeout(() => {
+          successMessage.style.opacity = 0;
+          setTimeout(() => {
+            successMessage.style.display = "none";
+            exitLogin();
+            document.getElementById("login-container").style.display = "none";
+            document.getElementById("dropdownList").removeAttribute("id");
+          }, 500);
+        }, 2500);
+      }
+    })
+    .catch((err) => {
+      document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante la registrazione ⚠️";
+      console.log("Non vamos: " + err.message);
+    });
+});
+
+
+
+document.getElementById("loginForm").addEventListener("submit", importLoginData);
+
+document.getElementById("disconnectDiv").addEventListener("click", (event) => {
+  fetch("https://api.playscopa.online/logout", {
+    method: "GET",
+    credentials: 'include'
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Network response was not ok ' + res.statusText);
+      }
+      else {
+        return res.json();
+      }
+    })
+    .then(() => {
+      location.reload();
+    });
+});
+
+document.getElementById('closeStatsBtn').addEventListener('click', () => {
+  const popup = document.getElementById('statsPopup');
+  popup.style.display = 'none';
+});
+document.getElementById('statsDiv').addEventListener('click', () => {
+  fetch("https://api.playscopa.online/getStats", {
+    method: "GET",
+    credentials: 'include'
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error('Network response was not ok ' + res.statusText);
+      }
+      else {
+        return res.json();
+      }
+    })
+    .then((data) => {
+      if (data.success) {
+        console.log("Stats: " + JSON.stringify(data.user.stats));
+        updateStatisticsAllTime(data.user.stats);
+      }
+    });
+  const popup = document.getElementById('statsPopup');
+  popup.style.display = 'flex';
+});
+
+function updateStatisticsAllTime(stats) {
+  document.getElementById("roundWin").textContent = stats.roundwin ?? 0;
+  document.getElementById("roundLost").textContent = stats.roundlost ?? 0;
+  document.getElementById("roundTotal").textContent = stats.roundtotal ?? 0;
+  document.getElementById("partiteWin").textContent = stats.partitewin ?? 0;
+  document.getElementById("partiteLost").textContent = stats.partitelost ?? 0;
+  document.getElementById("partiteTotal").textContent = stats.partitetotal ?? 0;
+  document.getElementById("scopeCount").textContent = stats.scope ?? 0;
 }

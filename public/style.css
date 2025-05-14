@@ -262,8 +262,9 @@ p {
     background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
     padding: 20px;
     text-align: center;
-    height: 40%;
-    transition: all 0.5s ease;
+    height: fit-content;
+    margin-bottom: 10px;
+    transition: all 1s ease;
 }
 
 #main-menu {  
@@ -315,7 +316,6 @@ button:hover {
 
 #settingsPopup label {
     display: block;
-    margin: 10px 0;
 }
 
 #backgroundPopup {
@@ -593,8 +593,10 @@ button:active {
     background-repeat: no-repeat;
     background-position: center;
     width: 70%;
-    height: 200px; /* or use a fixed value */
+    height: 200px;
+    min-height: 100px;
     margin: 0 auto;
+    transition: all 1s ease;
   }
 
 #pdfContainer {
@@ -604,6 +606,24 @@ button:active {
     transform: translate(-50%, -50%);
     width: 80%;
     height: 400%;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
+    display: none;
+    z-index: 10;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#pdfMainMenu {
+
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 80%;
     background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
     display: none;
     z-index: 10;
@@ -750,6 +770,361 @@ button:active {
     transition: all 0.3s ease-out;
 }
 
+#login-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    z-index: 9999;
+    max-width: 90vw;
+}   
+
+#login-hud, #register-hud {
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0px 20px;
+    border-radius: 0;
+    border-bottom-right-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+    background: linear-gradient(45deg,rgb(190, 150, 38),rgb(107, 84, 21),rgb(190, 150, 38));
+    font-size: 100%;
+}
+
+#login-hud:hover, #register-hud:hover {
+    background: linear-gradient(45deg,rgb(97, 76, 18),rgb(172, 135, 33),rgb(97, 76, 18));
+    transition: all 0.5s all;
+}
+
+#login-hud:not(:hover), #register-hud:not(:hover) {
+    transition: all 0.5s all;
+}
+
+#loginPopup {
+    display: none;
+    padding: 21px;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.8));
+    position: fixed;
+    flex-direction: column;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+#loginMenu, #registerMenu {
+    color: white;
+    display: none;
+    flex-direction: column;
+    padding: 21px;
+    background: linear-gradient(45deg,rgb(133, 110, 52),rgb(110, 87, 24),rgb(133, 110, 52));
+    position: fixed;
+    width: 50%; 
+    top: 50;
+    left: 50;
+    border-radius: 20px;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center; 
+    min-height: fit-content;
+    min-width: fit-content;
+}
+
+form > input, #rememberMeDiv > input, #buttonSide > input  {
+    color: white;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(41, 41, 41, 0.8));
+    margin: 10px;
+    border-radius: 10px;
+    font-size: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border: 2px solid #000000;
+}
+
+#inGameSettings > input {
+    color: white;
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.8), rgba(41, 41, 41, 0.8));
+    border-radius: 10px;
+    font-size: 30px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border: 2px solid #000000;  
+    width: 100%;
+}
+
+#settingsPopup > input {
+    width: 100%;  
+    height: 1%;
+}
+
+.confirmButton:hover, .exitButton:hover {
+    cursor: pointer;
+}
+
+.confirmButton:active, .exitButton:active {
+    opacity: 1;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+#buttonSide {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    margin-top: 5px;
+}
+#rememberMeDiv{
+    width: 100%;
+    gap: 10px;
+    margin-top: 5px;
+    justify-content: flex-start;
+}
+
+#buttonSide > input, #buttonSide > button {
+    width: 50%;
+    text-align: center;
+}
+
+#loginMenu > h2, #registerMenu > h2 {
+    font-size: 35px;
+}
+
+form > input:hover {
+    background: linear-gradient(to bottom, rgba(26, 26, 26, 1), rgba(41, 41, 41, 1));
+}
+
+.buttonLogin{
+    display: flex;
+
+}
+
+.buttonLogin > p {
+    font-size: 100%;  
+    align-self: center;
+}
+
+#errorLog {
+    color: red;
+    text-shadow: none;
+  }
+
+  .fixed-social {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: #24292e;
+    padding: 0.5rem 0.75rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+  }
+
+  .fixed-social:hover {
+    background: #57606a;
+  }
+
+  .fixed-social a {
+    color: white;
+    font-size: 1.75rem;
+    transition: color 0.3s ease;
+    text-decoration: none;
+  }
+
+  .fixed-social a:hover {
+    color: #000000;
+  }
+
+  #successMessage {
+    display: none; 
+    text-align: center; 
+    color: white; 
+    background: rgba(0, 0, 0, 0.7); 
+    border-radius: 10px; 
+    padding: 10%; 
+    margin: 20px;
+    transition: all 0.5s ease;
+}
+
+#top-left-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(45deg, rgb(190, 150, 38), rgb(107, 84, 21), rgb(190, 150, 38));
+    padding: 0.5rem 1rem;
+    color: white;
+    font-weight: 600;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    border-bottom-right-radius: 0.5rem;
+    z-index: 9999;
+    max-width: 90vw;
+    cursor: pointer;
+  }
+  #top-left-bar .icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    fill: white;
+  }
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .dropbtn {
+    color: white;
+    padding: 0;
+    font-size: 1rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0;
+    background: linear-gradient(45deg, rgb(190, 150, 38), rgb(107, 84, 21), rgb(190, 150, 38));
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-radius: 0.3rem;
+    z-index: 10000;
+  }
+  .dropdown-content div {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .dropdown-content div:hover {
+    background: linear-gradient(45deg, rgb(122, 110, 75), rgb(107, 93, 54), rgb(97, 76, 18));
+    border-radius: 0.3rem;
+    transition: all 0.5s ease;
+  }
+
+  .dropdown-content div:not(:hover) {
+    transition: all 0.5s ease;
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+
+  .dropdown:hover #nicknameTag {
+    border-radius: 0.3rem;
+    padding: 0.3rem 0.6rem;
+    transition: all 0.5s ease;
+  }
+
+  .dropdown:not(:hover) #nicknameTag {
+    transition: all 0.5s ease;
+  }
+
+  .dropdown-content i {
+    font-style: normal;
+    width: 1.1rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  #dropdownList {
+    display: none;
+  }
+  
+#statsPopup {
+    color: white;
+    display: none;
+    flex-direction: column;
+    padding: 21px;
+    background: linear-gradient(45deg, rgb(133, 110, 52), rgb(110, 87, 24), rgb(133, 110, 52));
+    position: fixed;
+    width: 50%;
+    max-width: 600px;
+    top: 50%;
+    left: 50%;
+    border-radius: 20px;
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    min-height: fit-content;
+    min-width: fit-content;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  #statsPopup h2 {
+    margin: 0 0 15px 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+    text-align: center;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+  }
+  #statsPopup .stats-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  #statsPopup .stats-list div {
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 2px 2px 10px black;
+  }
+
+  #statsPopup .stats-list div:hover {
+    transform: scale(1.04);
+    transition: all 0.5s ease;
+  }
+  #statsPopup .stats-list div:not(:hover) {
+    transform: scale(1);
+    transition: all 0.5s ease;
+  }
+
+  #statsPopup .stats-list div span.value {
+    font-weight: 700;
+  }
+  #closeStatsBtn {
+    margin-top: 20px;
+    padding: 8px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    background: rgb(110, 87, 24);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 3px 5px rgba(0,0,0,0.5);
+    transition: all 0.25s ease;
+  }
+  #closeStatsBtn:hover {
+    background: rgb(133, 110, 52);
+  }
 
 @media screen and (max-width: 650px) {
     #opponentPoints, #playerPoints, #deckNum {
@@ -766,8 +1141,8 @@ button:active {
         width: 100%;
     }
     #starting-menu {
-        width: 65%;
-        height: 40%;
+        width: 65%;    
+        height: fit-content;
     }
     #banner {
         width: 75%;
@@ -836,10 +1211,56 @@ button:active {
     #deckNumDiv {
         padding: 0px 5px;
     }
+
+    input, form > input, #buttonSide > input, #rememberMeDiv > input {
+        margin: 5px;
+        border-radius: 5px;
+        font-size: 10px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border: 2px solid #000000;
+    }
+
+    form > label {
+        font-size: 10px;
+    }
+
+    #login-hud, #register-hud {
+        font-size: 10px;    
+    }
+
+    #loginMenu > h2, #registerMenu > h2 {
+        font-size: 20px;
+    }
+    .buttonLogin {
+        border-radius: 5px;
+    }
+    .fixed-social {
+      padding: 0.4rem 0.6rem;
+      gap: 0.7rem;
+    }
+    .fixed-social a {
+      font-size: 1.5rem;
+    }
+    #top-left-bar {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.85rem;
+      max-width: 95vw;
+    }
+    #top-left-bar .icon {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
 }
 
 @media screen and (min-width: 651px) and (max-width: 950px) {
-    
+    #statsPopup {
+        width: 50%;
+        padding: 16px;
+      }
+      #statsPopup .stats-list div {
+        font-size: 1rem;
+      }
     #cardSelectionMenu {
         height: 80%;
     }
@@ -894,9 +1315,47 @@ button:active {
         padding: 5px;
         margin-top: 5px;
     }
+
+    .buttonLogin > p {
+        font-size: 10px;
+        border-radius: 5px;
+    }
+    #loginMenu > h2, #registerMenu > h2 {
+        font-size: 25px;
+    }
+
+    input {
+        font-size: 20px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    form > label {
+        font-size: 15px;
+    }
+    #statsPopup .stats-list div {
+        padding: 4px;
+    }
+    #statsPopup h2 {
+        margin: 0 0 5px 0;
+        font-size: 1.4rem;
+    }
 }
 
 @media screen and (min-width: 3750px) {
+    #top-left-bar {
+        width: 5%;
+        height: 3%;
+    }
+    #top-left-bar .icon {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    #nicknameTag {
+        font-size: 200%;
+    }
+
     p, h2 {
         font-size: 35px;
     }
@@ -946,13 +1405,13 @@ button:active {
     #banner {
         width: 75%;
     }
+    .buttonLogin > p {
+        font-size: 200%;
+    }
 }
 
 @media screen and (min-width: 1200px) {
     #banner {
         height: 60%;
     }
-    #starting-menu {
-        height: 30%;
-      }
 }
