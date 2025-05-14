@@ -1,5 +1,6 @@
 const Player = require("../Player/index.js");
 const { EventEmitter } = require('events');
+require("dotenv").config(); // load env variables from .env file
 
 class Partita extends EventEmitter {
     #player1;
@@ -9,11 +10,12 @@ class Partita extends EventEmitter {
     #tableCards = []; //array carte del tavolo
     #lastToGetCards; //self esplicative
     #pingInterval;
+    #API_TOKEN = process.env.WS_SERVER_API_TOKEN;
 
-    constructor(socketPlayer1, socketPlayer2, mazzo) {
+    constructor(player1, player2, mazzo) { //player1-2 miniPlayer class
         super(); //eventemitter
-        this.setPlayer1(new Player(socketPlayer1, "Player1"));
-        this.setPlayer2(new Player(socketPlayer2, "Player2"));
+        this.setPlayer1(new Player(player1.getSocket(), player1.getUsername(), player1.getUuid()));
+        this.setPlayer2(new Player(player2.getSocket(), player2.getUsername(), player2.getUuid()));
         this.setMazzo(mazzo);
         this.setPlayersArray(this.getPlayer1(), this.getPlayer2());
         this.startRound();
@@ -23,12 +25,19 @@ class Partita extends EventEmitter {
     //Methods
     startRound() {
         // Invia lo stato iniziale ai player
-        this.#playersArray.forEach((p, index) => { //turn da cambiare per i match restartati!!!!!!!!
+        this.#playersArray.forEach((p, index) => {
             p.getSocket().send(JSON.stringify({ type: "start", turn: index === 0 }));
         });
+        this.sendOpponentName();
         this.linkMessageEvent(); //linka un metodo apposito per gestire i messaggi ai 2 socket
         this.dealStartingCards(false); //3 carte per player
         this.dealTableCards(); //4 carte nel tavolo
+    }
+
+    sendOpponentName() {
+        this.#playersArray.forEach((p) => {
+            p.getSocket().send(JSON.stringify({ type: "oppositeName", oppositeName: this.getOppositePlayer(p).getName() }));
+        });
     }
 
     linkMessageEvent() {
@@ -144,51 +153,55 @@ class Partita extends EventEmitter {
             case "move":
                 console.log("Carte in tavola premossa: " + JSON.stringify(this.#tableCards));
                 const playedCard = data.card;
-                let take = this.managePresa(playedCard, player);
+                if (!this.checkPlayerCard(player, playedCard)) {
+                    this.sendToSinglePlayer(player, { type: "info", message: "Stai giocando una carta che non ti appartiene!" });
+                } else {
+                    let take = this.managePresa(playedCard, player);
 
-                // Rimuovi carta dalla mano del player
-                player.delCard(playedCard);
-                console.log("Player deck: " + JSON.stringify(player.getHand()));
-                console.log("Opposite player deck: " + JSON.stringify(oppositePlayer.getHand()));
-                //Dimensione mazzo check
-                console.log("Dimensione mazzo: " + this.#mazzo.getArray().length);
+                    // Rimuovi carta dalla mano del player
+                    player.delCard(playedCard);
+                    console.log("Player deck: " + JSON.stringify(player.getHand()));
+                    console.log("Opposite player deck: " + JSON.stringify(oppositePlayer.getHand()));
+                    //Dimensione mazzo check
+                    console.log("Dimensione mazzo: " + this.#mazzo.getArray().length);
 
-                if (oppositePlayer) {
-                    oppositePlayer.getSocket().send(
-                        JSON.stringify({ type: "remove_opponent_card" }) //rimuove, dalla vista del giocatore opposto, 1 carta del giocatore che ha iniziato la mossa
-                    );
-                    if (take.taken == true) {
-                        this.#lastToGetCards = player; //set last player to get cards from the table
-                        if (take.combosAvail) {
-                            console.log("Si ci sono combo");
-                            this.waitForResponse(player, take.combosAvail)
-                                .then((response) => {
-                                    this.removeComboCards(
-                                        response.combo,
-                                        oppositePlayer,
-                                        playedCard,
-                                        player
-                                    );
-                                })
-                                .catch((error) => {
-                                    console.log("Errore nella risposta:", error);
+                    if (oppositePlayer) {
+                        oppositePlayer.getSocket().send(
+                            JSON.stringify({ type: "remove_opponent_card" }) //rimuove, dalla vista del giocatore opposto, 1 carta del giocatore che ha iniziato la mossa
+                        );
+                        if (take.taken == true) {
+                            this.#lastToGetCards = player; //set last player to get cards from the table
+                            if (take.combosAvail) {
+                                console.log("Si ci sono combo");
+                                this.waitForResponse(player, take.combosAvail)
+                                    .then((response) => {
+                                        this.removeComboCards(
+                                            response.combo,
+                                            oppositePlayer,
+                                            playedCard,
+                                            player
+                                        );
+                                    })
+                                    .catch((error) => {
+                                        console.log("Errore nella risposta:", error);
+                                    });
+                            } else {
+                                this.sendToAllPlayers({
+                                    type: "remove_table_cards",
+                                    card: data.card,
+                                    cards: take.cardsTaken,
                                 });
+                                this.switchTurns(player, true);
+                            }
                         } else {
-                            this.sendToAllPlayers({
-                                type: "remove_table_cards",
-                                card: data.card,
-                                cards: take.cardsTaken,
-                            });
-                            this.switchTurns(player, true);
+                            this.sendToAllPlayers({ type: "move", card: data.card });
+                            this.switchTurns(player, false);
                         }
-                    } else {
-                        this.sendToAllPlayers({ type: "move", card: data.card });
-                        this.switchTurns(player, false);
                     }
+                    console.log("Carte in tavola postmossa: " + JSON.stringify(this.#tableCards));
+                    //Check hands and table deck.
+                    this.checkDecks(player, oppositePlayer);
                 }
-                console.log("Carte in tavola postmossa: " + JSON.stringify(this.#tableCards));
-                //Check hands and table deck.
-                this.checkDecks(player, oppositePlayer);
                 break;
             case "combo_response":
                 this.switchTurns(player, true);
@@ -448,29 +461,59 @@ class Partita extends EventEmitter {
     }
 
     endMatch(player, oppositePlayer) {
+        // Inizializza le statistiche del round
+        player.statsObj = { roundwin: 0, roundlost: 0, roundtie: 0, partitewin: 0, partitelost: 0, scope: 0 };
+        oppositePlayer.statsObj = { roundwin: 0, roundlost: 0, roundtie: 0, partitewin: 0, partitelost: 0, scope: 0 };
+        let winner;
+        let loser;
+        //Aggiornamento scope - works
+        player.statsObj.scope = player.getScopeNum();
+        oppositePlayer.statsObj.scope = oppositePlayer.getScopeNum();
+
         // Sync puntitotali += punti match attuale
         player.updateTotalPoints();
         oppositePlayer.updateTotalPoints();
 
         console.log(
-            "endMatch() Punti locali: " + player.getName() + " " + player.getPoints() + " " + oppositePlayer.getName() + oppositePlayer.getPoints()
+            "endMatch() Punti locali: " + player.getName() + " " + player.getPoints() + " " + oppositePlayer.getName() + " " + oppositePlayer.getPoints()
         );
         console.log(
-            "endMatch() Punti totali: " + player.getName() + " " + player.getTotalPoints() + " " + oppositePlayer.getName() + oppositePlayer.getTotalPoints()
+            "endMatch() Punti totali: " + player.getName() + " " + player.getTotalPoints() + " " + oppositePlayer.getName() + " " + oppositePlayer.getTotalPoints()
         );
 
         // Determina il vincitore del match attuale (non della serie)
-        let winner = player.getPoints() > oppositePlayer.getPoints() ? player : oppositePlayer;
-        let loser = winner === player ? oppositePlayer : player;
+        if (player.getPoints() === oppositePlayer.getPoints()) {
+            // Pareggio nel round
+            console.log("Match Tie");
+            player.statsObj.roundtie += 1;
+            oppositePlayer.statsObj.roundtie += 1;
+            this.sendToAllPlayers({ type: "matchTie", verdict: "pareggiato", points: player.getPoints() });
+            this.sendStatistics(player, oppositePlayer);
+            player.cleanPoint();
+            oppositePlayer.cleanPoint();
+            this.fetchUpdateStats();
+            return true;
+        } else {
+            winner = player.getPoints() > oppositePlayer.getPoints() ? player : oppositePlayer;
+            loser = winner === player ? oppositePlayer : player;
+
+            // Aggiorna roundwin e roundlost
+
+            winner.statsObj.roundwin += 1;
+            loser.statsObj.roundlost += 1;
+            console.log("Winner rounds:" + winner.statsObj.roundwin);
+            console.log("Loser rounds:" + loser.statsObj.roundlost);
+        }
+
 
         // Controlla se uno dei due ha raggiunto o superato 11 punti totali
         if (player.getTotalPoints() >= 11 || oppositePlayer.getTotalPoints() >= 11) {
-
-            // pareggio 11-11
             if (player.getTotalPoints() === oppositePlayer.getTotalPoints()) {
+                // Pareggio finale
                 console.log("Tie");
                 this.sendToAllPlayers({ type: "tieResult", verdict: "pareggiato", points: player.getTotalPoints() });
                 this.sendStatistics(player, oppositePlayer);
+                this.fetchUpdateStats();
                 player.cleanPoint();
                 oppositePlayer.cleanPoint();
                 return true;
@@ -478,34 +521,33 @@ class Partita extends EventEmitter {
 
             // Uno dei due ha vinto la serie
             let finalWinner = player.getTotalPoints() > oppositePlayer.getTotalPoints() ? player : oppositePlayer;
-            let loserWinner = finalWinner === player ? oppositePlayer : player;
+            let finalLoser = finalWinner === player ? oppositePlayer : player;
 
             console.log(finalWinner.getName() + " won entire series!");
+
+            // Aggiorna partite vinte/perso
+            finalWinner.statsObj.partitewin += 1;
+            finalLoser.statsObj.partitelost += 1;
+
             this.sendToSinglePlayer(finalWinner, {
                 type: "matchResult",
                 verdict: "vinto",
                 points: finalWinner.getTotalPoints(),
-                oppositePoints: loserWinner.getTotalPoints()
+                oppositePoints: finalLoser.getTotalPoints()
             });
-            this.sendToSinglePlayer(loserWinner, {
+            this.sendToSinglePlayer(finalLoser, {
                 type: "matchResult",
                 verdict: "perso",
-                points: loserWinner.getTotalPoints(),
+                points: finalLoser.getTotalPoints(),
                 oppositePoints: finalWinner.getTotalPoints()
             });
+
             this.sendStatistics(player, oppositePlayer);
+            this.fetchUpdateStats();
             player.cleanPoint();
             oppositePlayer.cleanPoint();
             this.destroy();
             return false; // partita finita
-        } else if (player.getPoints() === oppositePlayer.getPoints()) {
-            // Gestisce il pareggio nel match attuale
-            console.log("Match Tie");
-            this.sendToAllPlayers({ type: "matchTie", verdict: "pareggiato", points: player.getPoints() });
-            this.sendStatistics(player, oppositePlayer);
-            player.cleanPoint();
-            oppositePlayer.cleanPoint();
-            return true; // continua a dare altre carte, altro round da giocare
         } else {
             // Nessuno ha ancora vinto la serie, si continua
             this.sendToSinglePlayer(winner, {
@@ -520,7 +562,9 @@ class Partita extends EventEmitter {
                 points: loser.getPoints(),
                 oppositePoints: winner.getPoints()
             });
+
             this.sendStatistics(player, oppositePlayer);
+            this.fetchUpdateStats();
             player.cleanPoint();
             oppositePlayer.cleanPoint();
             return true; // altro round da giocare
@@ -529,6 +573,39 @@ class Partita extends EventEmitter {
 
     removePlayerFromArray(player) {
         this.#playersArray = this.#playersArray.filter((p) => p !== player);
+    }
+
+    fetchUpdateStats() {
+        this.#playersArray.forEach((p) => {
+            if (p.isUuid()) { //update stats only for people who have UUID
+                console.log(p.getName() + " stats adding in progress");
+                let stats = p.statsObj;
+                stats.uuid = p.getUuid();
+                console.log("------------------------------------------------");
+                console.log("ARTICOLO 5 CHECK: " + JSON.stringify(stats));
+                fetch("https://api.playscopa.online/updateStats?token=" + this.#API_TOKEN, {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(stats)
+                }).then((res) => {
+                    if (!res.ok) {
+                        console.error(res.status + "Errore verificato durante l'accesso ad updateStats:", res);
+                    }
+                    return res.json(); // Se la risposta è ok, restituisci il body JSON
+                })
+                    .then((body) => {
+                        if (body.success) {
+                            console.log("Stats cucinate");
+                        } else {
+                            console.log("Errore aggiunta stats");
+                        }
+                    })
+                    .catch(error => {
+                        // Gestisci gli errori qui
+                        console.error("Errore update stats:", error);
+                    });
+            }
+        })
     }
 
     sendStatistics(player, oppositePlayer) {
@@ -560,6 +637,15 @@ class Partita extends EventEmitter {
         console.log(`[TRACK] ${player.getName()} gets ${card.valore}${card.seme}. Player count: ${player.getCardNum()} `);
     }
 
+    checkPlayerCard(player, playedCard) {
+        console.log("bro playing: " + playedCard);
+        let card = player.getHand().find((card) => { return card.valore === playedCard.valore && card.seme === playedCard.seme });
+        console.log("FKJNDSKJNFDSKJN: " + card);
+        if (card) //card found, okay.
+            return true;
+        else //playing a card not part of the player hand!
+            return false;
+    }
 
     destroy() {
         clearInterval(this.#pingInterval);
@@ -614,6 +700,7 @@ class Partita extends EventEmitter {
     setMazzo(mazzo) {
         this.#mazzo = mazzo;
     }
+
 }
 
 module.exports = Partita;

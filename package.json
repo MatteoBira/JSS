@@ -4,14 +4,28 @@
   "description": "Javascript Scopa online",
   "main": "./server/server.js",
   "dependencies": {
-    "dotenv": "^16.4.7",
+    "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-session": "^1.18.1",
+    "jsonwebtoken": "^9.0.2",
+    "minify": "^14.0.0",
+    "pg": "^8.16.0",
+    "uuid": "^11.1.0",
     "ws": "^8.18.1"
   },
   "scripts": {
     "test:server": "node --check ./server/server.js",
     "test:client": "node --check ./public/script.js",
     "start": "node ./server/server.js",
-    "build": "css-minify -f ./public/style.css -o ./dist"
+    "minify:html": "npx minify public/index.html > dist/index.html",
+    "minify:css": "npx minify public/style.css > dist/style.css",
+    "minify:js": "npx minify public/script.js > dist/script.js",
+    "build": "npm run minify:html && npm run minify:css && npm run minify:js",
+    "db:create": "node scripts/create-db.js"
   },
   "repository": {
     "type": "git",
