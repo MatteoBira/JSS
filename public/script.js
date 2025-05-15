@@ -448,14 +448,14 @@ function removeTableCards(playedCard, cards) {
 
   if (playedCard) { //remove_table_cards to clean table at the end with card = null, handling
     const card = updateTable(playedCard); // Aggiunge la carta giocata al tavolo
-    card.getDiv().style.boxShadow = "0 0 10px red";
+    card.getDiv().style.boxShadow = "0 0 30px red";
     carteDaRimuovere.push(playedCard);
   }
 
   array.forEach((card) => {
     tableHand.forEach((c) => {
       if (card.valore == c.getValore() && card.seme == c.getSeme()) {
-        c.getDiv().style.boxShadow = "0 0 10px blue";
+        c.getDiv().style.boxShadow = "0 0 30px blue";
       }
     });
   });
@@ -492,6 +492,8 @@ function apriImpostazioni() {
 function chiudiImpostazioni() {
   document.getElementById("settingsPopup").style.display = "none";
   document.getElementById("main-menu").style.display = "block";
+  if (globalUuid == undefined)
+    document.getElementById("login-container").style.display = "flex";
 }
 
 function apriBackground() {
@@ -1088,11 +1090,11 @@ document.getElementById('statsDiv').addEventListener('click', () => {
 });
 
 function updateStatisticsAllTime(stats) {
-  document.getElementById("roundWin").textContent = stats.roundwin ?? 0;
-  document.getElementById("roundLost").textContent = stats.roundlost ?? 0;
-  document.getElementById("roundTotal").textContent = stats.roundtotal ?? 0;
-  document.getElementById("partiteWin").textContent = stats.partitewin ?? 0;
-  document.getElementById("partiteLost").textContent = stats.partitelost ?? 0;
-  document.getElementById("partiteTotal").textContent = stats.partitetotal ?? 0;
-  document.getElementById("scopeCount").textContent = stats.scope ?? 0;
+  document.getElementById("roundWin").textContent = stats.roundwin ?? "Can't Load stats";
+  document.getElementById("roundLost").textContent = stats.roundlost ?? "Can't Load stats";
+  document.getElementById("roundTotal").textContent = stats.roundtotal ?? "Can't Load stats";
+  document.getElementById("partiteWin").textContent = stats.partitewin ?? "Can't Load stats";
+  document.getElementById("partiteLost").textContent = stats.partitelost ?? "Can't Load stats";
+  document.getElementById("partiteTotal").textContent = stats.partitetotal ?? "Can't Load stats";
+  document.getElementById("scopeCount").textContent = stats.scope ?? "Can't Load stats";
 }

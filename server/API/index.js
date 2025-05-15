@@ -116,8 +116,6 @@ app.post('/checkUid', checkAdmin, async (req, res) => {
 })
 
 
-
-
 // --- UPDATE STATS ---
 app.post('/updateStats', checkAdmin, async (req, res) => {
     try {
@@ -241,7 +239,7 @@ app.get('/checkCookie', async (req, res) => {
 
 // --- REGISTER ---
 app.post('/register', async (req, res) => {
-    console.log(req.body);
+    //console.log(req.body); debug only.
     const { email, password, username } = req.body;
     if (!email || !password || !username) {
         return res.status(400).json({ success: false, code: 'ERR_MISSING_PARAM', error: 'Email, password e username sono obbligatori.' });
@@ -277,7 +275,6 @@ app.post('/register', async (req, res) => {
             email: user.email
         };
 
-        console.log("io sono qui");
         return res.status(201).json({
             success: true,
             message: 'Registrazione completata con successo!',

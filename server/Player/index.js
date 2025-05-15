@@ -10,6 +10,8 @@ class Player {
     #primieraNum = 0;
     #settedenariNum = 0;
     #redenariNum = 0;
+    #seiNum = 0; //primiera fix
+    #assoNum = 0; //primiera fix
     #alive = true;
     #uuid = null; //if present, will be used for stats
     statsObj = { roundwin: 0, roundlost: 0, roundtie: 0, partitewin: 0, partitelost: 0, scope: 0 };
@@ -191,6 +193,34 @@ class Player {
         this.#redenariNum++;
     }
 
+    // Asso
+    getAssoNum() {
+        return this.#assoNum;
+    }
+
+    setAssoNum(n) {
+        if (typeof n !== "number" || n < 0) throw new Error("Valore non valido per asso");
+        this.#assoNum = n;
+    }
+
+    addAssoNum() {
+        this.#assoNum++;
+    }
+
+    // Sei
+    getSeiNum() {
+        return this.#seiNum;
+    }
+
+    setSeiNum(n) {
+        if (typeof n !== "number" || n < 0) throw new Error("Valore non valido per sei");
+        this.#seiNum = n;
+    }
+
+    addSeiNum() {
+        this.#seiNum++;
+    }
+
     toStats() {
         return {
             totalPoints: this.getTotalPoints(),
@@ -211,6 +241,8 @@ class Player {
         this.#scopeNum = 0;
         this.#settedenariNum = 0;
         this.#redenariNum = 0;
+        this.#seiNum = 0;
+        this.#assoNum = 0;
     }
 }
 
