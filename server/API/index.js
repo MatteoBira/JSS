@@ -187,7 +187,7 @@ app.get('/getStats', async (req, res) => {
         } else { //sessione assente-invalida-altro
             req.session.destroy((err) => {
                 if (err) {
-                    console.error("Errore durante la distruzione della sessione con checkcookie:", err);
+                    console.error("Errore durante la distruzione della sessione con getStats:", err);
                     return res.status(500).json({ success: false, error: 'Errore interno durante il getStats' });
                 }
                 res.clearCookie(SESSION_COOKIE);

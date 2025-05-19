@@ -659,8 +659,7 @@ button:active {
 
 #round-summary {
     display: none;
-    min-height: fit-content;
-    min-width: fit-content;
+    flex-direction: column;
     color: white;
     position: absolute;
     z-index: 999;
@@ -672,8 +671,9 @@ button:active {
     border: 2px solid #000000;
     border-radius: 10px;
     padding: 20px;
-    width: 30%;
-    height: 50%;
+    width: 75%;
+    min-height: fit-content;
+    min-width: fit-content;
     margin: 20px auto;
     font-family: Arial, sans-serif;
 }
@@ -714,7 +714,7 @@ button:active {
 
 #round-summary button:hover {
     background-color: #000000;
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
 .intestazioneTable {
@@ -930,8 +930,8 @@ form > input:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     display: flex;
     gap: 1rem;
-    align-items: center;
-    z-index: 1000;
+    align-items: center;        
+    z-index: 100;
     transition: background-color 0.3s ease;
   }
 
@@ -1127,6 +1127,10 @@ form > input:hover {
   }
 
 @media screen and (max-width: 650px) {
+    #round-summary th, #round-summary td {
+        padding: 2px;
+        font-size: small;
+    }
     #opponentPoints, #playerPoints, #deckNum {
         font-size: 10px;
     }
@@ -1296,9 +1300,6 @@ form > input:hover {
     #backgroundCards-menu, #backgroundIGCards-menu {
         flex-direction: row;
         max-width: 100%;
-    }
-    #round-summary {
-        padding: 10px;
     }
     
     #round-summary h3 {

@@ -73,31 +73,29 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("content").style.display = "none";
 });
 
-function checkCookieLogin() {
+async function checkCookieLogin() {
   fetch("https://api.playscopa.online/checkCookie", {
     method: "GET",
     credentials: 'include'
   })
-    .then((res) => {
+    .then(async (res) => {
       if (!res.ok) {
-        throw new Error('Network response was not ok ' + res.statusText);
+        console.log("Cookie not found");
       }
       else {
-        return res.json();
+        data = await res.json();
+        globalUsername = data.user.username;
+        globalUuid = data.user.id;
+
+        document.getElementById("login-container").style.display = "none";
+
+        document.getElementById("player1ID").textContent = data.user.username;
+        let nick = document.getElementById("nicknameTag");
+        nick.textContent = data.user.username;
+        let dropdown = document.getElementById("dropdownList");
+        dropdown.removeAttribute("id");
       }
     })
-    .then((data) => {
-      globalUsername = data.user.username;
-      globalUuid = data.user.id;
-
-      document.getElementById("login-container").style.display = "none";
-
-      document.getElementById("player1ID").textContent = data.user.username;
-      let nick = document.getElementById("nicknameTag");
-      nick.textContent = data.user.username;
-      let dropdown = document.getElementById("dropdownList");
-      dropdown.removeAttribute("id");
-    });
 }
 
 function closeMatch(text) {
@@ -245,7 +243,7 @@ function playGame() {
         break;
 
       case "remove_table_cards":
-        removeTableCards(data.card, data.cards);
+        removeTableCards(data.card, data.cards, data.final); //final = true se è il gestisciUltimeCarte
         break;
 
       case "turn": //turn cambiato solo su richiesta del server.
@@ -260,6 +258,11 @@ function playGame() {
         mostraPopup();
         break;
 
+      case "opponentScopa":
+        document.getElementById('popupText').textContent = "Il tuo avversario ha fatto Scopa!";
+        mostraPopup();
+        break;
+
       case "progressResult":
         popupText = "Hai " + data.verdict + " il round!";
         resultMatch.textContent = popupText;
@@ -267,7 +270,7 @@ function playGame() {
           scopaSound.play();
         }
         setResultColor(data.verdict);
-        showTablePoints.style.display = "block"
+        showTablePoints.style.display = "flex"
         scopeTotali = 0;
         aggiornaScopaDisplay();
         tableHand.length = 0;
@@ -438,7 +441,7 @@ function removeSingleCard(cardToRemove) {
   });
 }
 
-function removeTableCards(playedCard, cards) {
+function removeTableCards(playedCard, cards, final) {
   const tableDiv = document.getElementById("table");
   const array = cards.slice(); // Copia delle carte da rimuovere
   const carteDaRimuovere = [...array];
@@ -455,7 +458,10 @@ function removeTableCards(playedCard, cards) {
   array.forEach((card) => {
     tableHand.forEach((c) => {
       if (card.valore == c.getValore() && card.seme == c.getSeme()) {
-        c.getDiv().style.boxShadow = "0 0 30px blue";
+        if (final)
+          c.getDiv().style.boxShadow = "0 0 30px green";
+        else
+          c.getDiv().style.boxShadow = "0 0 30px blue";
       }
     });
   });
@@ -573,6 +579,12 @@ function startGame() {
   updateStatus();
   generateDeck();
   generateHand();
+  turnState();
+}
+
+function turnState() {
+  document.getElementById('popupText').innerText = myTurn ? "Your Turn!": "Opponent's Turn!";
+  mostraPopup();
 }
 
 function inGameSettings() {
@@ -1098,3 +1110,8 @@ function updateStatisticsAllTime(stats) {
   document.getElementById("partiteTotal").textContent = stats.partitetotal ?? "Can't Load stats";
   document.getElementById("scopeCount").textContent = stats.scope ?? "Can't Load stats";
 }
+
+document.addEventListener("keyup", (event) => {
+  if (event.keyCode == 27)
+    exitLogin();
+});
