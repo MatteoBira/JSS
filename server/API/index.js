@@ -41,15 +41,12 @@ app.use(cookieParser());
 app.use(session({
     name: SESSION_COOKIE,
     secret: process.env.COOKIE_SECRET,
-    httpOnly: true,
-    maxAge: SESSION_TTL,
-    sameSite: 'lax',
     resave: false,
     saveUninitialized: false,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'Lax',
         maxAge: SESSION_TTL
     },
     store: new pgSession({

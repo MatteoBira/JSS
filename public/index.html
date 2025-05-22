@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Gioca a Scopa online con amici e sfida avversari in tutto il mondo. Play Scopa online and challenge opponents worldwide in this classic Italian card game.">
     <link rel="stylesheet" href="style.css">
+    <!--
     <meta name="google-signin-client_id" content="ID.apps.googleusercontent.com">
+    -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
     <link rel="icon" type="image/x-icon" href="img/pageIcon.ico">
@@ -74,6 +76,7 @@
                     <input type="text" name="loginInput" id="loginInput" placeholder="Email" required>
                     <label for="loginPassword">Insert Password:</label>
                     <input type="password" name="loginPassword" id="loginPassword" placeholder="Password" required>
+                    <p id="errorLog"></p>
                     <div id="rememberMeDiv">
                         <input type="checkbox" value="lsRememberMe" id="rememberMe"> 
                         <label for="rememberMe">Remember me</label>
@@ -82,9 +85,11 @@
                         <input type="button" onclick="exitLogin()" class="exitButton" value="Exit">
                         <input type="submit" class="confirmButton" value="Confirm">
                     </div>
+                    <!--
                     <div id="google-login" style="margin-top: 20px; text-align: center;">
                         <div id="my-signin2-login"></div>
                     </div>
+                -->
                 </form>
             </div>
 
@@ -104,9 +109,12 @@
                         <input type="button" onclick="exitLogin()" class="exitButton" value="Exit">
                         <input type="submit" class="confirmButton" id="confirmButton" value="Confirm">
                     </div>
+                    <!--
                     <div id="google-register" style="margin-top: 20px; text-align: center;">
                         <div id="my-signin2-register"></div>
+                    
                     </div>
+                    -->
                 </form>
             </div>
         </div>

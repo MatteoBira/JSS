@@ -918,6 +918,7 @@ form > input:hover {
 #errorLog {
     color: red;
     text-shadow: none;
+    display: none;
   }
 
   .fixed-social {
@@ -1416,3 +1417,25 @@ form > input:hover {
         height: 60%;
     }
 }
+
+.animate {
+  animation: moveAndFadeBeforeCenter 1.5s forwards;
+  pointer-events: none;
+}
+
+@keyframes moveAndFadeBeforeCenter {
+    0% {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    60% {
+      bottom: 30%;
+      opacity: 0;
+      transform: translateX(-50%) translateY(-40%);
+    }
+    100% {
+      bottom: 40%;
+      opacity: 0;
+      transform: translateX(-50%) translateY(-50%);
+    }
+  }

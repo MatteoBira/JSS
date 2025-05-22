@@ -81,6 +81,7 @@ async function checkCookieLogin() {
     .then(async (res) => {
       if (!res.ok) {
         console.log("Cookie not found");
+
       }
       else {
         data = await res.json();
@@ -270,7 +271,9 @@ function playGame() {
           scopaSound.play();
         }
         setResultColor(data.verdict);
-        showTablePoints.style.display = "flex"
+        setTimeout(() => {
+          showTablePoints.style.display = "flex"
+        }, 2500);
         scopeTotali = 0;
         aggiornaScopaDisplay();
         tableHand.length = 0;
@@ -285,7 +288,9 @@ function playGame() {
         scopeTotali = 0;
         aggiornaScopaDisplay();
         fineGame();
-        showTablePoints.style.display = "block"
+        setTimeout(() => {
+          showTablePoints.style.display = "flex"
+        }, 2500);
         tableHand.length = 0;
         break;
 
@@ -293,7 +298,9 @@ function playGame() {
         popupText = "Hai " + data.verdict + " la partita!";
         resultMatch.textContent = popupText;
         setResultColor(data.verdict);
-        showTablePoints.style.display = "block"
+        setTimeout(() => {
+          showTablePoints.style.display = "flex"
+        }, 2500);
         clearInterval(timeout);
         scopeTotali = 0;
         aggiornaScopaDisplay();
@@ -306,7 +313,9 @@ function playGame() {
         popupText = "Hai " + data.verdict + " il round!";
         resultMatch.textContent = popupText;
         setResultColor(data.verdict);
-        showTablePoints.style.display = "block"
+        setTimeout(() => {
+          showTablePoints.style.display = "flex"
+        }, 2500);
         tableHand.length = 0;
         break;
 
@@ -387,7 +396,7 @@ function playCard(card) {
   setTimeout(() => {
     card.getDiv().remove();
     card.setDiv(null);
-  }, "0");
+  },0);
   playedCardSound.play();
 }
 
@@ -583,7 +592,7 @@ function startGame() {
 }
 
 function turnState() {
-  document.getElementById('popupText').innerText = myTurn ? "Your Turn!": "Opponent's Turn!";
+  document.getElementById('popupText').innerText = myTurn ? "Your Turn!" : "Opponent's Turn!";
   mostraPopup();
 }
 
@@ -647,7 +656,7 @@ function mostraPopup() {
 
   setTimeout(() => {
     nascondiPopup();
-  }, 3000);
+  }, 2500);
 }
 
 function nascondiPopup() {
@@ -844,6 +853,7 @@ function registerButton() {
 function exitLogin() {
   document.getElementById("loginPopup").style.display = "none";
   document.getElementById("registerMenu").style.display = "none";
+  document.getElementById("errorLog").style.display = "none";
   document.getElementById("banner").style.display = "flex";
   document.getElementById("starting-menu").style.display = "flex";
   document.getElementById("login-container").style.display = "flex";
@@ -893,10 +903,11 @@ window.onload = function () {
   }
 };
 
-function onSuccess(googleUser) {
-  const profile = googleUser.getBasicProfile();
-  console.log('Logged in as: ' + profile.getName());
-}
+/*
+  function onSuccess(googleUser) {
+    const profile = googleUser.getBasicProfile();
+    console.log('Logged in as: ' + profile.getName());
+  }
 
 function onFailure(error) {
   console.log(error);
@@ -922,7 +933,7 @@ function renderGoogleButtons() {
     'onfailure': onFailure
   });
 }
-
+*/
 function importLoginData(event) {
   let feemail = document.getElementById("loginInput").value;
   let fepassword = document.getElementById("loginPassword").value;
@@ -937,6 +948,7 @@ function importLoginData(event) {
   })
     .then((res) => {
       if (!res.ok) {
+        document.getElementById("errorLog").style.display = "block";
         document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
         throw new Error('Network response was not ok ' + res.statusText);
       }
@@ -973,8 +985,8 @@ function importLoginData(event) {
       }
     })
     .catch((err) => {
-      let errorText = document.getElementById("errorLog");
-      errorText.textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
+      document.getElementById("errorLog").style.display = "block";
+      document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
       console.log("Non vamos: " + err.message);
     });
 
@@ -993,12 +1005,26 @@ function validatePassword() {
   password.reportValidity();
 }
 
+function validateEmail() {
+  let email = document.getElementById("registerEmail");
+  let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex per validare l'email
+
+  if (!emailPattern.test(email.value)) {
+    email.setCustomValidity("Inserisci un'email valida.");
+  } else {
+    email.setCustomValidity("");
+  }
+  email.reportValidity();
+}
+
+
 document.getElementById("confirmButton").addEventListener("click", function (event) {
   validatePassword();
+  validateEmail();
 
   let password = document.getElementById("registerPassword");
-
-  if (!password.checkValidity()) {
+  let email = document.getElementById("registerEmail");
+  if (!password.checkValidity() || !email.checkValidity()) {
     event.preventDefault();
     return;
   }
@@ -1047,7 +1073,7 @@ document.getElementById("confirmButton").addEventListener("click", function (eve
       }
     })
     .catch((err) => {
-      document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante la registrazione ⚠️";
+      document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
       console.log("Non vamos: " + err.message);
     });
 });
@@ -1115,3 +1141,4 @@ document.addEventListener("keyup", (event) => {
   if (event.keyCode == 27)
     exitLogin();
 });
+
