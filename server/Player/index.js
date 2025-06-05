@@ -1,6 +1,7 @@
 class Player {
     #socket = null;
-    #name; //for future use
+    #name; //stores the username of the user
+    #cards = []; //stores all cards taken by the user. Needed for point calculation.
     #hand = [];
     #points = 0;
     #scopeNum = 0;
@@ -18,6 +19,18 @@ class Player {
         this.setSocket(socket);
         this.setName(name);
         this.setUuid(uuid);
+    }
+
+    addCards(card) {
+        this.#cards.push(card);
+    }
+
+    cleanCards() {
+        this.#cards.length = 0;
+    }
+
+    getCards() {
+        return this.#cards;
     }
 
     setUuid(uuid) {
@@ -205,6 +218,7 @@ class Player {
     }
 
     resetExtra() {
+        this.cleanCards();
         this.#cardNum = 0;
         this.#denariNum = 0;
         this.#primieraNum = 0;

@@ -41,15 +41,12 @@ app.use(cookieParser());
 app.use(session({
     name: SESSION_COOKIE,
     secret: process.env.COOKIE_SECRET,
-    httpOnly: true,
-    maxAge: SESSION_TTL,
-    sameSite: 'lax',
     resave: false,
     saveUninitialized: false,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'Lax',
         maxAge: SESSION_TTL
     },
     store: new pgSession({
@@ -114,8 +111,6 @@ app.post('/checkUid', checkAdmin, async (req, res) => {
         return res.status(500).json({ success: false, error: 'Errore interno del server.' });
     }
 })
-
-
 
 
 // --- UPDATE STATS ---
@@ -189,7 +184,7 @@ app.get('/getStats', async (req, res) => {
         } else { //sessione assente-invalida-altro
             req.session.destroy((err) => {
                 if (err) {
-                    console.error("Errore durante la distruzione della sessione con checkcookie:", err);
+                    console.error("Errore durante la distruzione della sessione con getStats:", err);
                     return res.status(500).json({ success: false, error: 'Errore interno durante il getStats' });
                 }
                 res.clearCookie(SESSION_COOKIE);
@@ -241,7 +236,7 @@ app.get('/checkCookie', async (req, res) => {
 
 // --- REGISTER ---
 app.post('/register', async (req, res) => {
-    console.log(req.body);
+    //console.log(req.body); debug only.
     const { email, password, username } = req.body;
     if (!email || !password || !username) {
         return res.status(400).json({ success: false, code: 'ERR_MISSING_PARAM', error: 'Email, password e username sono obbligatori.' });
@@ -277,7 +272,6 @@ app.post('/register', async (req, res) => {
             email: user.email
         };
 
-        console.log("io sono qui");
         return res.status(201).json({
             success: true,
             message: 'Registrazione completata con successo!',
