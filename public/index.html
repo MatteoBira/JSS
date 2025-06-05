@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Gioca a Scopa online con amici e sfida avversari in tutto il mondo. Play Scopa online and challenge opponents worldwide in this classic Italian card game.">
+    <meta name="description"
+        content="Gioca a Scopa online con amici e sfida avversari in tutto il mondo. Play Scopa online and challenge opponents worldwide in this classic Italian card game.">
     <link rel="stylesheet" href="style.css">
     <!--
     <meta name="google-signin-client_id" content="ID.apps.googleusercontent.com">
@@ -32,16 +34,16 @@
     </audio>
     <div id="main-container">
         <div id="successMessage">
-           <p>Login/Registrazione eseguita con successo</p> 
+            <p>Login/Registrazione eseguita con successo</p>
         </div>
         <div id="top-left-bar" class="dropdown">
             <img class="icon" src="https://cdn-icons-png.flaticon.com/512/1077/1077012.png" alt="Icona Nickname" />
             <span id="nicknameTag" class="dropbtn">Guest</span>
             <div class="dropdown-content" id="dropdownList">
-              <div id="statsDiv"><i class="fas fa-chart-bar"></i> Statistics</div>
-              <div id="disconnectDiv"><i class="fas fa-sign-out-alt"></i> Logout</div>
+                <div id="statsDiv"><i class="fas fa-chart-bar"></i> Statistics</div>
+                <div id="disconnectDiv"><i class="fas fa-sign-out-alt"></i> Logout</div>
             </div>
-          </div>
+        </div>
         <div id="login-container">
             <button id="login-hud" onclick="loginButton()">
                 <div class="buttonLogin">
@@ -58,13 +60,13 @@
         <div id="statsPopup">
             <h2 id="statsPopupTitle">Your statistics All-Time</h2>
             <div class="stats-list">
-              <div><span>Rounds Won:</span> <span class="value" id="roundWin">0</span></div>
-              <div><span>Rounds Lost:</span> <span class="value" id="roundLost">0</span></div>
-              <div><span>Total Rounds:</span> <span class="value" id="roundTotal">0</span></div>
-              <div><span>Matches Won:</span> <span class="value" id="partiteWin">0</span></div>
-              <div><span>Matches Lost:</span> <span class="value" id="partiteLost">0</span></div>
-              <div><span>Total Matches:</span> <span class="value" id="partiteTotal">0</span></div>
-              <div><span>Scopes:</span> <span class="value" id="scopeCount">0</span></div>
+                <div><span>Rounds Won:</span> <span class="value" id="roundWin">0</span></div>
+                <div><span>Rounds Lost:</span> <span class="value" id="roundLost">0</span></div>
+                <div><span>Total Rounds:</span> <span class="value" id="roundTotal">0</span></div>
+                <div><span>Matches Won:</span> <span class="value" id="partiteWin">0</span></div>
+                <div><span>Matches Lost:</span> <span class="value" id="partiteLost">0</span></div>
+                <div><span>Total Matches:</span> <span class="value" id="partiteTotal">0</span></div>
+                <div><span>Scopes:</span> <span class="value" id="scopeCount">0</span></div>
             </div>
             <button id="closeStatsBtn" type="button">Close</button>
         </div>
@@ -78,7 +80,7 @@
                     <input type="password" name="loginPassword" id="loginPassword" placeholder="Password" required>
                     <p id="errorLog"></p>
                     <div id="rememberMeDiv">
-                        <input type="checkbox" value="lsRememberMe" id="rememberMe"> 
+                        <input type="checkbox" value="lsRememberMe" id="rememberMe">
                         <label for="rememberMe">Remember me</label>
                     </div>
                     <div id="buttonSide">
@@ -101,9 +103,11 @@
                     <label for="registerEmail">Insert Email:</label>
                     <input type="email" name="registerEmail" id="registerEmail" placeholder="Email" required>
                     <label for="registerPassword">Insert Password:</label>
-                    <input type="password" name="registerPassword" id="registerPassword" placeholder="Password" required>                    
+                    <input type="password" name="registerPassword" id="registerPassword" placeholder="Password"
+                        required>
                     <label for="confirmRegisterPassword">Confirm Password:</label>
-                    <input type="password" name="confirmRegisterPassword" id="confirmRegisterPassword" placeholder="Confirm Password" required>
+                    <input type="password" name="confirmRegisterPassword" id="confirmRegisterPassword"
+                        placeholder="Confirm Password" required>
                     <p id="errorLog"></p>
                     <div id="buttonSide">
                         <input type="button" onclick="exitLogin()" class="exitButton" value="Exit">
@@ -128,14 +132,17 @@
                 <button id="play-button" onclick="playGame()">Play</button>
                 <button onclick="apriImpostazioni()">Settings</button>
                 <button onclick="exitGame()">Exit</button>
+                <!--<span><b>Game is under development. Working gameplay is NOT guaranteed at all times.</b></span>-->
                 <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
             </div>
             <div id="settingsPopup">
                 <h2>Impostazioni</h2>
                 <label for="volumeControlMusic">Volume Musica:</label>
-                <input type="range" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)" value="5">
+                <input type="range" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)"
+                    value="5">
                 <label for="volumeControlEffects">Volume Effetti:</label>
-                <input type="range" id="volumeControlEffects" min="0" max="100" oninput="cambiaVolumeEffects(this.value)" value="5">
+                <input type="range" id="volumeControlEffects" min="0" max="100"
+                    oninput="cambiaVolumeEffects(this.value)" value="5">
                 <button onclick="openGuideMain()">Open Guide</button>
                 <button onclick="apriBackground()">Choose Background</button>
                 <button id="btn" onclick="chiudiImpostazioni()">Close</button>
@@ -164,18 +171,19 @@
         </div>
         <div class="fixed-social" aria-label="Social links">
             <a href="https://github.com/MatteoBira/JSS" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-              <i class="fab fa-github"></i>
+                <i class="fab fa-github"></i>
             </a>
-            <a href="https://www.instagram.com/playscopa.online?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <i class="fab fa-instagram"></i>
+            <a href="https://www.instagram.com/playscopa.online?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
             </a>
             <a href="https://status.playscopa.online/" target="_blank" rel="noopener noreferrer" aria-label="Status">
                 <i class="fa-solid fa-server"></i>
             </a>
             <a href="" target="_blank" rel="noopener noreferrer" aria-label="Bug Report">
-              <i class="fa fa-bug"></i>
+                <i class="fa fa-bug"></i>
             </a>
-          </div>
+        </div>
     </div>
 
     <div id="content">
@@ -260,9 +268,11 @@
                 </div>
                 <div id="inGameSettings">
                     <label for="volumeControlMusic">Volume Musica:</label>
-                    <input type="range" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)" value="5">
+                    <input type="range" id="volumeControlMusic" min="0" max="100"
+                        oninput="cambiaVolumeMusica(this.value)" value="5">
                     <label for="volumeControlEffects">Volume Effetti:</label>
-                    <input type="range" id="volumeControlEffects" min="0" max="100" oninput="cambiaVolumeEffects(this.value)" value="5">
+                    <input type="range" id="volumeControlEffects" min="0" max="100"
+                        oninput="cambiaVolumeEffects(this.value)" value="5">
                     <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
                     <button onclick="openGuide()">Open Guide</button>
                     <button onclick="apriIGBackground()">Choose Background</button>

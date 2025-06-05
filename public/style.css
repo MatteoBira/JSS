@@ -182,7 +182,7 @@ body, html {
     border-radius: 5px;
 }
 
-#guide > img:hover {
+#guide > img {
     background: linear-gradient(to bottom, rgba(175, 175, 175, 1), rgba(95, 95, 95, 1));
     transform: scale(1.1);
     transition: all 0.5s ease-in;
@@ -233,16 +233,19 @@ body, html {
 }
 
 #bot-card1:hover {
+    cursor: pointer;
     z-index: 4;
     animation: bounceBot1 1.5s infinite;
 }
 
 #bot-card2:hover {
+    cursor: pointer;
     z-index: 4;
     animation: bounceBot2 1.5s infinite;
 }
 
 #bot-card3:hover {
+    cursor: pointer;
     z-index: 4;
     animation: bounceBot3 1.5s infinite;
 }
@@ -1153,10 +1156,10 @@ form > input:hover {
         width: 75%;
     }
     .cards {
-        width: 25%;
+        width: 15%;
     }
     .side-cards-adjustment {
-        width: 20%;
+        width: 15%;
     }
     #pdfContainer {
         height: 120%;
@@ -1418,24 +1421,24 @@ form > input:hover {
     }
 }
 
-.animate {
-  animation: moveAndFadeBeforeCenter 1.5s forwards;
-  pointer-events: none;
-}
-
 @keyframes moveAndFadeBeforeCenter {
     0% {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+        opacity: 1;
+        transform: translateY(0);
     }
     60% {
-      bottom: 30%;
-      opacity: 0;
-      transform: translateX(-50%) translateY(-40%);
+        bottom: 30%;
+        opacity: 0.8;
+        transform: translateY(-40%);
     }
     100% {
-      bottom: 40%;
-      opacity: 0;
-      transform: translateX(-50%) translateY(-50%);
+        bottom: 40%;
+        opacity: 0;
+        transform: translateY(-50%);
     }
-  }
+}
+
+#animateCards {
+    animation-delay: 0ms;
+    animation: moveAndFadeBeforeCenter 1s;
+}

@@ -241,6 +241,7 @@ function playGame() {
       case "remove_opponent_card":
         playedCardSound.play();
         removeOpponentCard();
+        cardsAdjust();
         break;
 
       case "remove_table_cards":
@@ -389,15 +390,23 @@ function playCard(card) {
 
   socket.send(JSON.stringify({ type: "move", card: card.toJSON() }));
   myTurn = false;
+  playedCardSound.play();
 
   // Rimuovi la carta da myHand
+  let element = card.getDiv();
   myHand = myHand.filter((c) => c !== card);
   console.log(JSON.stringify(tableHand));
+  
+    element.id = "animateCards";
+    console.log(element);
+
   setTimeout(() => {
     card.getDiv().remove();
     card.setDiv(null);
-  },0);
-  playedCardSound.play();
+  }, 1000);
+  
+  cardsAdjust();
+  
 }
 
 function updateTable(cardData) {
@@ -407,24 +416,37 @@ function updateTable(cardData) {
   const card = new Carta(cardDiv, cardData.valore, cardData.seme);
   const imagePath = getCardImagePath(card);
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
-  tableDiv.appendChild(cardDiv);
-  tableHand.push(card);
-
-  let cardsAdjust = document.getElementById("player-hand").getElementsByTagName("div");
-  if (cardsAdjust.length == 1)
-    cardsAdjust[0].id = "bot-card2";
-  else if (cardsAdjust.length == 2) {
-    cardsAdjust[0].id = "bot-card1";
-    cardsAdjust[1].id = "bot-card3";
-  }
-  let opponentCardsAdjust = document.getElementById("opponent-hand").getElementsByTagName("div");
-  if (opponentCardsAdjust.length == 1)
-    opponentCardsAdjust[0].id = "top-card2";
-  else if (opponentCardsAdjust.length == 2) {
-    opponentCardsAdjust[0].id = "top-card1";
-    opponentCardsAdjust[1].id = "top-card3";
-  }
+  setTimeout(()=> {
+    tableDiv.appendChild(cardDiv);
+    tableHand.push(card);
+  
+  },1000);
+  
   return card;
+}
+
+function cardsAdjust(){
+  setTimeout(()=> {
+    let cardsAdjust = document.getElementById("player-hand").getElementsByTagName("div");
+    console.log(cardsAdjust)
+    if (cardsAdjust.length == 1){
+      console.log("Giocata Una Carta Qualsiasi");
+      cardsAdjust[0].id = "bot-card2";
+    }
+    else if (cardsAdjust.length == 2) {
+      console.log("Giocata Una Carta ");
+      cardsAdjust[0].id = "bot-card1";
+      cardsAdjust[1].id = "bot-card3";
+    }
+  
+    let opponentCardsAdjust = document.getElementById("opponent-hand").getElementsByTagName("div");
+    if (opponentCardsAdjust.length == 1)
+      opponentCardsAdjust[0].id = "top-card2";
+    else if (opponentCardsAdjust.length == 2) {
+      opponentCardsAdjust[0].id = "top-card1";
+      opponentCardsAdjust[1].id = "top-card3";
+    }
+  },1000);
 }
 
 function removeOpponentCard() {
@@ -467,10 +489,12 @@ function removeTableCards(playedCard, cards, final) {
   array.forEach((card) => {
     tableHand.forEach((c) => {
       if (card.valore == c.getValore() && card.seme == c.getSeme()) {
-        if (final)
-          c.getDiv().style.boxShadow = "0 0 30px green";
-        else
-          c.getDiv().style.boxShadow = "0 0 30px blue";
+        setTimeout(()=>{
+          if (final)
+            c.getDiv().style.boxShadow = "0 0 30px green";
+          else
+            c.getDiv().style.boxShadow = "0 0 30px blue";
+        },1000);
       }
     });
   });
@@ -489,7 +513,7 @@ function removeTableCards(playedCard, cards, final) {
         return true;
       });
     });
-  }, 1500);
+  }, 2500);
 }
 
 function exitGame() {
@@ -1141,4 +1165,3 @@ document.addEventListener("keyup", (event) => {
   if (event.keyCode == 27)
     exitLogin();
 });
-

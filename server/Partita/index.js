@@ -154,7 +154,7 @@ class Partita extends EventEmitter {
         const data = JSON.parse(message);
         switch (data.type) {
             case "move":
-                //console.log("Carte in tavola premossa: " + JSON.stringify(this.#tableCards));
+                console.log("Carte player: " + JSON.stringify(player.getCards()));
                 const playedCard = data.card;
                 if (playedCard) {
                     this.#backPlayedCard = data.card;
@@ -320,13 +320,16 @@ class Partita extends EventEmitter {
             }
         }
         if (this.getTableCards().length == 0) {
-            //tavolo vuoto = scopa
-            player.addScopeNum();
-            player.addPoint();
-            this.sendToSinglePlayer(player, { type: "scopa" });
-            this.sendToSinglePlayer(oppositePlayer, { type: "opponentScopa" });
-            //console.log("Scopa NON da combo!");
-            //this.sendToAllPlayers({ type: "scopa" });
+            if (!(player.getHandLength() === 0 && oppositePlayer.getHandLength() === 0 && this.#mazzo.getArray().length == 0)) { //calcola la scopa solamente quando non si è all'ultima mano
+                player.addPoint();
+                player.addScopeNum();
+                this.sendToSinglePlayer(player, { type: "scopa" });
+                this.sendToSinglePlayer(oppositePlayer, { type: "opponentScopa" });
+                //console.log("Scopa SI da combo!");
+                //this.sendToAllPlayers({ type: "scopa" });
+            } else {
+                console.log("Scopa all'ultima non contata a carta singola");
+            }
         }
         return result;
     }
@@ -346,6 +349,39 @@ class Partita extends EventEmitter {
     }
 
     assignScore(player, oppositePlayer) {
+        player.getCards().forEach((card) => {
+            if (card.seme === "D") {
+                player.addDenariNum();
+                if (card.valore === 7) {
+                    player.addSetteDenariNum();
+                    player.addPoint();
+                } else if (card.valore === 10) {
+                    player.addReDenariNum();
+                    player.addPoint();
+                }
+            }
+            // qualsiasi 7 vale per la primiera
+            if (card.valore === 7) {
+                player.addPrimieraNum();
+            }
+        })
+        oppositePlayer.getCards().forEach((card) => {
+            if (card.seme === "D") {
+                oppositePlayer.addDenariNum();
+                if (card.valore === 7) {
+                    oppositePlayer.addSetteDenariNum();
+                    oppositePlayer.addPoint();
+                } else if (card.valore === 10) {
+                    oppositePlayer.addReDenariNum();
+                    oppositePlayer.addPoint();
+                }
+            }
+            // qualsiasi 7 vale per la primiera
+            if (card.valore === 7) {
+                oppositePlayer.addPrimieraNum();
+            }
+        })
+
         if (player.getCardNum() > oppositePlayer.getCardNum()) {
             player.addPoint();
         } else if (player.getCardNum() < oppositePlayer.getCardNum()) {
@@ -434,7 +470,7 @@ class Partita extends EventEmitter {
             console.log("Ora siamo nel check decks finale");
             console.log("In teoria rimangono queste carte da prendere: " + JSON.stringify(this.#tableCards));
             this.gestisciUltimeCarte(); //gestisci le carte rimaste
-            this.assignScore(player, oppositePlayer); //aggiunge punti ai player
+            //this.assignScore(player, oppositePlayer); //aggiunge punti ai player
             let continueGame = this.endMatch(player, oppositePlayer);
             if (continueGame) {
                 this.#mazzo.rebuild(); //uguale al costruttore
@@ -459,6 +495,10 @@ class Partita extends EventEmitter {
         oppositePlayer.statsObj = { roundwin: 0, roundlost: 0, roundtie: 0, partitewin: 0, partitelost: 0, scope: 0 };
         let winner;
         let loser;
+
+        //Calcolo punti denari, settebello, rebello, primiera
+        this.assignScore(player, oppositePlayer);
+
         //Aggiornamento scope - works
         player.statsObj.scope = player.getScopeNum();
         oppositePlayer.statsObj.scope = oppositePlayer.getScopeNum();
@@ -605,11 +645,11 @@ class Partita extends EventEmitter {
     }
 
     trackCardPoints(card, player) {
-        // ogni carta presa conta come “carta”
-        player.addCardNum();
+        player.addCardNum(); // ogni carta presa conta come “carta”
+        player.addCards(card); //add the actual card object to the player's array.
 
         // se è denari, conto denari e (se vale 7 o 10) punto + contatore specifico
-        if (card.seme === "D") {
+        /*if (card.seme === "D") {
             player.addDenariNum();
 
             if (card.valore === 7) {
@@ -624,7 +664,7 @@ class Partita extends EventEmitter {
         // qualsiasi 7 vale per la primiera
         if (card.valore === 7) {
             player.addPrimieraNum();
-        }
+        }*/
         console.log(`[TRACK] ${player.getName()} gets ${card.valore}${card.seme}. Player count: ${player.getCardNum()} `);
     }
 
