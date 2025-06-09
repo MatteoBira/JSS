@@ -88,8 +88,6 @@ async function checkCookieLogin() {
         globalUsername = data.user.username;
         globalUuid = data.user.id;
 
-        document.getElementById("login-container").style.display = "none";
-
         document.getElementById("player1ID").textContent = data.user.username;
         let nick = document.getElementById("nicknameTag");
         nick.textContent = data.user.username;
