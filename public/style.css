@@ -1426,9 +1426,9 @@ form > input:hover {
         opacity: 1;
         transform: translateY(0);
     }
-    60% {
-        bottom: 30%;
-        opacity: 0.8;
+    50% {
+        bottom: 20%;
+        opacity: 0.6;
         transform: translateY(-40%);
     }
     100% {
@@ -1440,5 +1440,5 @@ form > input:hover {
 
 #animateCards {
     animation-delay: 0ms;
-    animation: moveAndFadeBeforeCenter 1s;
+    animation: moveAndFadeBeforeCenter 1.1s;
 }

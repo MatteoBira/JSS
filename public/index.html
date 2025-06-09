@@ -34,7 +34,7 @@
     </audio>
     <div id="main-container">
         <div id="successMessage">
-            <p>Login/Registrazione eseguita con successo</p>
+            <p>Login/Registration successful</p>
         </div>
         <div id="top-left-bar" class="dropdown">
             <img class="icon" src="https://cdn-icons-png.flaticon.com/512/1077/1077012.png" alt="Icona Nickname" />
@@ -79,10 +79,12 @@
                     <label for="loginPassword">Insert Password:</label>
                     <input type="password" name="loginPassword" id="loginPassword" placeholder="Password" required>
                     <p id="errorLog"></p>
+                    <!--
                     <div id="rememberMeDiv">
                         <input type="checkbox" value="lsRememberMe" id="rememberMe">
                         <label for="rememberMe">Remember me</label>
                     </div>
+                    -->
                     <div id="buttonSide">
                         <input type="button" onclick="exitLogin()" class="exitButton" value="Exit">
                         <input type="submit" class="confirmButton" value="Confirm">
@@ -136,11 +138,11 @@
                 <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
             </div>
             <div id="settingsPopup">
-                <h2>Impostazioni</h2>
-                <label for="volumeControlMusic">Volume Musica:</label>
+                <h2>Settings</h2>
+                <label for="volumeControlMusic">Music Volume:</label>
                 <input type="range" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)"
                     value="5">
-                <label for="volumeControlEffects">Volume Effetti:</label>
+                <label for="volumeControlEffects">Effects Volume:</label>
                 <input type="range" id="volumeControlEffects" min="0" max="100"
                     oninput="cambiaVolumeEffects(this.value)" value="5">
                 <button onclick="openGuideMain()">Open Guide</button>
@@ -200,7 +202,7 @@
         <div id="main-content">
             <div id="scopaCardContainer">
                 <div class="cards" id="scopaCard">
-                    <span id="scopaCardText">Scopa x0</span>
+                    <span id="scopaCardText">Scope x0</span>
                 </div>
             </div>
             <div id="round-summary">
@@ -267,10 +269,10 @@
                     <p id="popupText"></p>
                 </div>
                 <div id="inGameSettings">
-                    <label for="volumeControlMusic">Volume Musica:</label>
+                    <label for="volumeControlMusic">Music Volume:</label>
                     <input type="range" id="volumeControlMusic" min="0" max="100"
                         oninput="cambiaVolumeMusica(this.value)" value="5">
-                    <label for="volumeControlEffects">Volume Effetti:</label>
+                    <label for="volumeControlEffects">Effects Volume:</label>
                     <input type="range" id="volumeControlEffects" min="0" max="100"
                         oninput="cambiaVolumeEffects(this.value)" value="5">
                     <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>

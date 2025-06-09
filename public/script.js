@@ -403,7 +403,7 @@ function playCard(card) {
   setTimeout(() => {
     card.getDiv().remove();
     card.setDiv(null);
-  }, 1000);
+  }, 1100);
   
   cardsAdjust();
   
@@ -523,12 +523,14 @@ function exitGame() {
 }
 
 function apriImpostazioni() {
+  document.title = "Scopa - Settings";
   document.getElementById("settingsPopup").style.display = "block";
   document.getElementById("main-menu").style.display = "none";
   document.getElementById("login-container").style.display = "none";
 }
 
 function chiudiImpostazioni() {
+  document.title = "Scopa - Home";
   document.getElementById("settingsPopup").style.display = "none";
   document.getElementById("main-menu").style.display = "block";
   if (globalUuid == undefined)
@@ -609,6 +611,7 @@ function volumeChanger() {
 function startGame() {
   document.getElementById("main-container").style.display = "none";
   document.getElementById("content").style.display = "flex";
+  document.title = "Scopa - Game";
   updateStatus();
   generateDeck();
   generateHand();
@@ -814,6 +817,7 @@ function iniziaNuovoRound() {
 }
 
 function fineGame() {
+  document.title = "Scopa - Home";
   document.getElementById("fineGameButton").textContent = "Esci"
   scopeTotali = 0;
   document.getElementById("fineGameButton").onclick = function () {
@@ -853,6 +857,7 @@ function setResultColor(check) {
 }
 
 function loginButton() {
+  document.title = "Scopa - Login";
   document.getElementById("banner").style.display = "none";
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("login-container").style.display = "none";
@@ -864,6 +869,7 @@ function loginButton() {
 }
 
 function registerButton() {
+  document.title = "Scopa - Register";
   document.getElementById("banner").style.display = "none";
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("login-container").style.display = "none";
@@ -875,6 +881,7 @@ function registerButton() {
 }
 
 function exitLogin() {
+  document.title ="Scopa - Home";
   document.getElementById("loginPopup").style.display = "none";
   document.getElementById("registerMenu").style.display = "none";
   document.getElementById("errorLog").style.display = "none";
@@ -1125,6 +1132,7 @@ document.getElementById("disconnectDiv").addEventListener("click", (event) => {
 });
 
 document.getElementById('closeStatsBtn').addEventListener('click', () => {
+  document.title = "Scopa - Home";
   const popup = document.getElementById('statsPopup');
   popup.style.display = 'none';
 });
@@ -1147,6 +1155,7 @@ document.getElementById('statsDiv').addEventListener('click', () => {
         updateStatisticsAllTime(data.user.stats);
       }
     });
+    document.title = "Scopa - Statistics";
   const popup = document.getElementById('statsPopup');
   popup.style.display = 'flex';
 });
