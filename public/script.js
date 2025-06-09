@@ -181,14 +181,6 @@ function playGame() {
         cardIdNumberCorrection[0].id = "bot-card1";
         cardIdNumberCorrection[1].id = "bot-card2";
         cardIdNumberCorrection[2].id = "bot-card3";
-        /*
-                cardIdNumberCorrection[0].addEventListener('click', function() {
-                });
-                cardIdNumberCorrection[1].addEventListener('click', function() {
-                });
-                cardIdNumberCorrection[2].addEventListener('click', function() {
-                });
-        */
         generateHand();
         socket.send(JSON.stringify({ type: "getcount" }));
         break;
@@ -526,12 +518,14 @@ function apriImpostazioni() {
   document.title = "Scopa - Settings";
   document.getElementById("settingsPopup").style.display = "block";
   document.getElementById("main-menu").style.display = "none";
+  document.getElementById("banner").style.display = "none";
   document.getElementById("login-container").style.display = "none";
 }
 
 function chiudiImpostazioni() {
   document.title = "Scopa - Home";
   document.getElementById("settingsPopup").style.display = "none";
+  document.getElementById("banner").style.display = "block";
   document.getElementById("main-menu").style.display = "block";
   if (globalUuid == undefined)
     document.getElementById("login-container").style.display = "flex";
@@ -539,13 +533,11 @@ function chiudiImpostazioni() {
 
 function apriBackground() {
   document.getElementById("backgroundPopup").style.display = "flex";
-  document.getElementById("banner").style.display = "none";
   document.getElementById("starting-menu").style.display = "none";
 }
 
 function chiudiBackground() {
   document.getElementById("backgroundPopup").style.display = "none";
-  document.getElementById("banner").style.display = "flex";
   document.getElementById("starting-menu").style.display = "flex";
 }
 
@@ -609,6 +601,7 @@ function volumeChanger() {
 }
 
 function startGame() {
+  document.body.style.backgroundImage = "url('img/backgrounds/main-background.webp')";
   document.getElementById("main-container").style.display = "none";
   document.getElementById("content").style.display = "flex";
   document.title = "Scopa - Game";
@@ -870,9 +863,10 @@ function loginButton() {
 
 function registerButton() {
   document.title = "Scopa - Register";
-  document.getElementById("banner").style.display = "none";
+  document.getElementById("banner").style.display = "none";loginMenu
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("login-container").style.display = "none";
+  document.getElementById("loginMenu").style.display = "none";
   document.getElementById("loginPopup").style.display = "flex";
   document.getElementById("registerMenu").style.display = "flex";
   let errorText = document.getElementById("errorLog");
@@ -1174,3 +1168,41 @@ document.addEventListener("keyup", (event) => {
   if (event.keyCode == 27)
     exitLogin();
 });
+
+let sliderMusicMain = document.getElementById("volumeControlMusic");
+let sliderEffectsMain = document.getElementById("volumeControlEffects");
+
+function calcValueMusic() {
+  valuePercentageMusic = (sliderMusicMain.value / sliderMusicMain.max)*100;
+    sliderMusicMain.style.background = `linear-gradient(to right,rgb(255, 230, 0) ${valuePercentageMusic}%, #ebe9e7 ${valuePercentageMusic}%)`;
+}
+sliderMusicMain.addEventListener('input', function(){
+  calcValueMusic();
+});
+
+function calcValueEffects() {
+  valuePercentageEffects = (sliderEffectsMain.value / sliderEffectsMain.max)*100;
+    sliderEffectsMain.style.background = `linear-gradient(to right,rgb(255, 230, 0) ${valuePercentageEffects}%, #ebe9e7 ${valuePercentageEffects}%)`;
+}
+sliderEffectsMain.addEventListener('input', function(){
+  calcValueEffects();
+});
+
+calcValueMusic();
+calcValueEffects();
+
+function setSliderInitialVisual(slider) {
+    const percentage = (slider.value / slider.max) * 100;
+    slider.style.background = `linear-gradient(to right, rgb(255, 230, 0) ${percentage}%, #ebe9e7 ${percentage}%)`;
+
+    // Forza il "reflow" visivo
+    slider.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  window.addEventListener("DOMContentLoaded", function () {
+    const musicSlider = document.getElementById("volumeControlMusic");
+    const effectsSlider = document.getElementById("volumeControlEffects");
+
+    setSliderInitialVisual(musicSlider);
+    setSliderInitialVisual(effectsSlider);
+  });
