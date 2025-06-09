@@ -683,7 +683,7 @@ button:active {
     width: 75%;
     min-height: fit-content;
     min-width: fit-content;
-    margin: 20px auto;
+    margin: auto;
     font-family: Arial, sans-serif;
 }
 
