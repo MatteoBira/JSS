@@ -1,6 +1,6 @@
 body, html {
-    font-family: 'Roboto', sans-serif;
-    background-image: url(img/backgrounds//main-background.webp);
+    font-family: 'Poppins', sans-serif;
+    background-image: url(img/backgrounds/mainmenu.webp);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -256,13 +256,11 @@ p {
 
 #starting-menu {    
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     border-radius: 10px;
-    width: 30%;
+    width: 100%;
     color: white;
-    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
     padding: 20px;
     text-align: center;
     height: fit-content;
@@ -274,8 +272,9 @@ p {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100%;
+    width: 25%;
     height: auto;
+    margin: 0 auto;
 }
 
 button {
@@ -285,7 +284,7 @@ button {
     padding: 10px 20px;
     margin: 10px 0;
     border-radius: 5px;
-    min-width: 50%;
+    min-width: 100%;
     width: fit-content;
     cursor: pointer;
     font-size: 16px;
@@ -309,12 +308,17 @@ button:hover {
 }
 
 #settingsPopup {
+    background-color: rgb(94, 94, 94, 0.1);
+    backdrop-filter: blur(20px);
+    box-shadow: 50px 50px 100px #000000;
+    border-radius: 35px;
+    border: 1px solid rgb(255 255 255 / 20%);
     display: none;
-    padding: 21px;
+    padding: 35px;
 }
 
 #settingsPopup h2 {
-    margin-bottom: 10px;
+    font-size: 32px;
 }
 
 #settingsPopup label {
@@ -363,6 +367,7 @@ button:hover {
 
 #backgroundPopup > button {
     margin-top: 25px;
+    min-width: 75%
 }
 
 #backgroundIGCards-menu {
@@ -595,8 +600,8 @@ button:active {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
-    width: 70%;
-    height: 200px;
+    width: 75%;
+    height: 200%;
     min-height: 100px;
     margin: 0 auto;
     transition: all 1s ease;
@@ -609,7 +614,6 @@ button:active {
     transform: translate(-50%, -50%);
     width: 80%;
     height: 400%;
-    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
     display: none;
     z-index: 10;
     justify-content: center;
@@ -620,14 +624,12 @@ button:active {
 }
 
 #pdfMainMenu {
-
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 80%;
     height: 80%;
-    background: linear-gradient(to bottom, rgba(26, 26, 26, 0.5), rgba(41, 41, 41, 0.5));
     display: none;
     z-index: 10;
     justify-content: center;
@@ -635,6 +637,10 @@ button:active {
     flex-direction: column;
     padding: 20px;
     border-radius: 10px;
+}
+
+#pdfMainMenu > button {
+    min-width: 70%;
 }
 
 #pdfIframe {
@@ -775,8 +781,8 @@ button:active {
 
 #login-container {
     position: fixed;
-    top: 0;
-    right: 0;
+    top: 1%;
+    right: 1%;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -982,7 +988,7 @@ form > input:hover {
     max-width: 90vw;
     cursor: pointer;
   }
-  #top-left-bar .icon {
+  #login-container .icon {
     width: 1.5rem;
     height: 1.5rem;
     flex-shrink: 0;
@@ -1004,15 +1010,16 @@ form > input:hover {
     display: none;
     position: absolute;
     top: 100%;
-    left: 0;
-    margin-top: 0;
-    background: linear-gradient(45deg, rgb(190, 150, 38), rgb(107, 84, 21), rgb(190, 150, 38));
+    right: 0;
+    margin-top: 2px;
     min-width: 160px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     border-radius: 0.3rem;
     z-index: 10000;
   }
   .dropdown-content div {
+    border: 1px solid #e3a51c;
+    background: linear-gradient(to right, #ce9211, #e3a51c);
     color: white;
     padding: 12px 16px;
     text-decoration: none;
@@ -1024,8 +1031,8 @@ form > input:hover {
     transition: all 0.3s ease;
   }
   .dropdown-content div:hover {
-    background: linear-gradient(45deg, rgb(122, 110, 75), rgb(107, 93, 54), rgb(97, 76, 18));
-    border-radius: 0.3rem;
+    color: #000000;
+    background: #e3a51c;
     transition: all 0.5s ease;
   }
 
@@ -1063,7 +1070,7 @@ form > input:hover {
     display: none;
     flex-direction: column;
     padding: 21px;
-    background: linear-gradient(45deg, rgb(133, 110, 52), rgb(110, 87, 24), rgb(133, 110, 52));
+    background: linear-gradient(to right, #86600c, #e3a51c);
     position: fixed;
     width: 50%;
     max-width: 600px;
@@ -1076,7 +1083,7 @@ form > input:hover {
     min-height: fit-content;
     min-width: fit-content;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
   }
   #statsPopup h2 {
     margin: 0 0 15px 0;
@@ -1119,7 +1126,7 @@ form > input:hover {
     padding: 8px 20px;
     font-size: 1rem;
     cursor: pointer;
-    background: rgb(110, 87, 24);
+    background: linear-gradient(to right, #86600c, #e3a51c);
     border: none;
     border-radius: 12px;
     color: white;
@@ -1127,7 +1134,14 @@ form > input:hover {
     transition: all 0.25s ease;
   }
   #closeStatsBtn:hover {
-    background: rgb(133, 110, 52);
+    transform: scale(1.04);
+    background: #86600c;
+    transition: all 0.5s ease;
+  }
+
+  #closeStatsBtn:not(:hover) {
+    transform: scale(1);
+    transition: all 0.5s ease;
   }
 
 @media screen and (max-width: 650px) {
@@ -1149,11 +1163,16 @@ form > input:hover {
         width: 100%;
     }
     #starting-menu {
-        width: 65%;    
+        flex-direction: column;
+        width: 100%;    
         height: fit-content;
     }
+    #main-menu {
+        width: 100%;
+    }
     #banner {
-        width: 75%;
+        width: 100%;
+        height: 200%;
     }
     .cards {
         width: 15%;
@@ -1220,7 +1239,7 @@ form > input:hover {
         padding: 0px 5px;
     }
 
-    input, form > input, #buttonSide > input, #rememberMeDiv > input {
+    form > input, #buttonSide > input, #rememberMeDiv > input {
         margin: 5px;
         border-radius: 5px;
         font-size: 10px;
@@ -1416,9 +1435,7 @@ form > input:hover {
 }
 
 @media screen and (min-width: 1200px) {
-    #banner {
-        height: 60%;
-    }
+    
 }
 
 @keyframes moveAndFadeBeforeCenter {
@@ -1436,6 +1453,130 @@ form > input:hover {
         opacity: 0;
         transform: translateY(-50%);
     }
+}
+
+#bottomVolumeDiv {
+    bottom: 2%;
+    left: 2%;
+    position: fixed;
+}
+
+#bot-volume-icon {
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+}
+
+#main-menu > button {
+    padding: 20px 20px;
+    font-size: 20px;
+    min-width: 75%;
+    border-radius: 20px;
+    border: 2px solid #e3a51c;
+    background: linear-gradient(to right, #ce9211, #e3a51c);
+}
+
+#main-menu > button:hover {
+    color: #000000;
+}
+
+#main-menu > h2 {
+    width: 100%;
+}
+
+.fa-gamepad, .fa-gear, .fa-x, .fa-user, .fa-image, .fa-book, .fa-music, .fa-volume-high {
+    margin-right: 3%;
+}
+
+.fa-user-circle {
+    font-size: 40px;
+}
+.fa-user-circle:hover {
+    transform: scale(1.1);
+    color: #000000;
+    transition: all 1s;
+    cursor: pointer;
+}
+
+.fa-user-circle:not(:hover) {
+    transform: scale(1.0);
+    transition: all 1s;
+}
+
+#noAccountText {
+    text-align: center;
+    margin: 5px;
+}
+
+#signUpText {
+    color: rgb(51, 141, 245);
+}
+
+#signUpText {
+    cursor: pointer;
+}
+
+.greenbtn {
+    background: rgb(30, 126, 21);
+    box-shadow: 1px 1px 1px rgb(15, 82, 9);
+}
+
+.greenbtn:hover {
+    background: rgb(15, 82, 9);
+}
+
+.redbtn {
+    background: rgb(207, 35, 29);
+    box-shadow: 1px 1px 1px rgb(136, 13, 9);
+}
+
+.redbtn:hover {
+    background: rgb(136, 13, 9);
+}
+
+#settingsPopup > label {
+    text-align: left;
+    font-size: 18px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.slider {
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    background: rgba(104, 104, 104, 0.1);
+    outline: none;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #41c21a;
+    border: 2px solid green;
+    box-shadow: 1px 5px 15px black;  
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: #41c21a;
+    border: 2px solid green;
+    box-shadow: 2px 2px 5px black;          
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
 #animateCards {

@@ -36,25 +36,19 @@
         <div id="successMessage">
             <p>Login/Registration successful</p>
         </div>
-        <div id="top-left-bar" class="dropdown">
-            <img class="icon" src="https://cdn-icons-png.flaticon.com/512/1077/1077012.png" alt="Icona Nickname" />
-            <span id="nicknameTag" class="dropbtn">Guest</span>
+        <div id="login-container" class="dropdown">
+            <span class="dropbtn"><i class="fas fa-user-circle" onclick="loginButton()"></i></span>
             <div class="dropdown-content" id="dropdownList">
                 <div id="statsDiv"><i class="fas fa-chart-bar"></i> Statistics</div>
                 <div id="disconnectDiv"><i class="fas fa-sign-out-alt"></i> Logout</div>
             </div>
-        </div>
-        <div id="login-container">
-            <button id="login-hud" onclick="loginButton()">
-                <div class="buttonLogin">
-                    <p>Login</p>
-                </div>
-            </button>
+            <!--
             <button id="register-hud" onclick="registerButton()">
                 <div class="buttonLogin">
                     <p>Register</p>
                 </div>
             </button>
+            -->
         </div>
 
         <div id="statsPopup">
@@ -78,6 +72,7 @@
                     <input type="text" name="loginInput" id="loginInput" placeholder="Email" required>
                     <label for="loginPassword">Insert Password:</label>
                     <input type="password" name="loginPassword" id="loginPassword" placeholder="Password" required>
+                    <span id="noAccountText">Don't have an account? <span id="signUpText" onclick="registerButton()">Sign up here!</span></span>
                     <p id="errorLog"></p>
                     <!--
                     <div id="rememberMeDiv">
@@ -124,34 +119,40 @@
                 </form>
             </div>
         </div>
-        <div id="banner"></div>
         <div id="pdfMainMenu" style="display:none;">
             <embed id="pdfIframe" src="pdf/guide.pdf" width="90%" height="100%">
-            <button onclick="closeGuideMain()">Close</button>
+            <button class="redbtn" onclick="closeGuideMain()">Close</button>
         </div>
         <div id="starting-menu">
+        <div id="banner"></div>
             <div id="main-menu">
-                <button id="play-button" onclick="playGame()">Play</button>
-                <button onclick="apriImpostazioni()">Settings</button>
-                <button onclick="exitGame()">Exit</button>
+                <h2><i class="fa-solid fa-user"></i>Playing as <span id="nicknameTag">Guest</span></h2>
+                <button id="play-button" onclick="playGame()"><i class="fa-solid fa-gamepad"></i>Play</button>
+                <button onclick="apriImpostazioni()"><i class="fa-solid fa-gear"></i>Settings</button>
+                <button onclick="exitGame()"><i class="fa-solid fa-x"></i>Exit</button>
                 <!--<span><b>Game is under development. Working gameplay is NOT guaranteed at all times.</b></span>-->
-                <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
             </div>
             <div id="settingsPopup">
                 <h2>Settings</h2>
-                <label for="volumeControlMusic">Music Volume:</label>
-                <input type="range" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)"
-                    value="5">
-                <label for="volumeControlEffects">Effects Volume:</label>
-                <input type="range" id="volumeControlEffects" min="0" max="100"
-                    oninput="cambiaVolumeEffects(this.value)" value="5">
-                <button onclick="openGuideMain()">Open Guide</button>
-                <button onclick="apriBackground()">Choose Background</button>
-                <button id="btn" onclick="chiudiImpostazioni()">Close</button>
+                <label for="volumeControlMusic"><i class="fa-solid fa-music"></i>Music Volume</label>
+                <div class="container">
+                    <input type="range" class="slider" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)" value="5">
+                </div>
+                <label for="volumeControlEffects"><i class="fa-solid fa-volume-high"></i>Effects Volume</label>
+                <div class="container">
+                    <input type="range" class="slider" id="volumeControlEffects" min="0" max="100" oninput="cambiaVolumeEffects(this.value)" value="5">    
+                </div>
+                <button class="greenbtn" onclick="openGuideMain()"><i class="fa-solid fa-book"></i>Open Guide</button>
+                <button class="greenbtn" onclick="apriBackground()"><i class="fa-solid fa-image"></i>Choose Background</button>
+                <button class="redbtn" id="btn" onclick="chiudiImpostazioni()">Close</button>
             </div>
         </div>
         <div id="backgroundPopup">
             <div id="backgroundCards-menu">
+                <div class="backgroundCards">
+                    <img class="backgroundPreview" src="img/backgrounds/mainmenu.webp"
+                        onclick="cambiaBackground('img/backgrounds/mainmenu.webp')" alt="Opzione Main Menu">
+                </div>
                 <div class="backgroundCards">
                     <img loading="lazy" class="backgroundPreview" src="img/backgrounds/main-background.webp"
                         onclick="cambiaBackground('img/backgrounds/main-background.webp')" alt="Opzione 1">
@@ -169,7 +170,7 @@
                         onclick="cambiaBackground('img/backgrounds/green-background.webp')" alt="Opzione 4">
                 </div>
             </div>
-            <button id="btn" onclick="chiudiBackground()">Close</button>
+            <button class="redbtn" id="btn" onclick="chiudiBackground()">Close</button>
         </div>
         <div class="fixed-social" aria-label="Social links">
             <a href="https://github.com/MatteoBira/JSS" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
@@ -185,6 +186,9 @@
             <a href="" target="_blank" rel="noopener noreferrer" aria-label="Bug Report">
                 <i class="fa fa-bug"></i>
             </a>
+        </div>
+        <div id="bottomVolumeDiv">
+            <i id="bot-volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
         </div>
     </div>
 
@@ -269,11 +273,11 @@
                     <p id="popupText"></p>
                 </div>
                 <div id="inGameSettings">
-                    <label for="volumeControlMusic">Music Volume:</label>
-                    <input type="range" id="volumeControlMusic" min="0" max="100"
+                    <label for="volumeControlMusicInGame">Music Volume:</label>
+                    <input type="range" id="volumeControlMusicInGame" min="0" max="100"
                         oninput="cambiaVolumeMusica(this.value)" value="5">
-                    <label for="volumeControlEffects">Effects Volume:</label>
-                    <input type="range" id="volumeControlEffects" min="0" max="100"
+                    <label for="volumeControlEffectsInGame">Effects Volume:</label>
+                    <input type="range" id="volumeControlEffectsInGame" min="0" max="100"
                         oninput="cambiaVolumeEffects(this.value)" value="5">
                     <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
                     <button onclick="openGuide()">Open Guide</button>
@@ -285,6 +289,10 @@
 
                 <div id="backgroundIGPopup">
                     <div id="backgroundIGCards-menu">
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/mainmenu.webp"
+                                onclick="cambiaBackground('img/backgrounds/mainmenu.webp')" alt="Opzione Main Menu">
+                        </div>
                         <div class="backgroundCards">
                             <img class="backgroundPreview" src="img/backgrounds/main-background.webp"
                                 onclick="cambiaBackground('img/backgrounds/main-background.webp')" alt="Opzione 1">
@@ -306,7 +314,7 @@
                 </div>
                 <div id="pdfContainer" style="display:none;">
                     <embed id="pdfIframe" src="pdf/guide.pdf" width="90%" height="100%">
-                    <button onclick="closeGuide()">Close</button>
+                    <button id="redbtn" onclick="closeGuide()">Close</button>
                 </div>
                 <div id="table"></div>
             </div>
