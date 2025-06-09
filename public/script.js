@@ -525,8 +525,7 @@ function chiudiImpostazioni() {
   document.getElementById("settingsPopup").style.display = "none";
   document.getElementById("banner").style.display = "block";
   document.getElementById("main-menu").style.display = "block";
-  if (globalUuid == undefined)
-    document.getElementById("login-container").style.display = "flex";
+  document.getElementById("login-container").style.display = "flex";
 }
 
 function apriBackground() {
