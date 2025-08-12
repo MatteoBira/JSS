@@ -298,7 +298,7 @@ app.post('/login', async (req, res) => {
             [email]
         );
         if (!result.rowCount) {
-            return res.status(401).json({ success: false, error: 'Credenziali non valide noon esiste.' });
+            return res.status(401).json({ success: false, error: 'Credenziali non valide non esiste.' });
         }
         const user = result.rows[0];
 

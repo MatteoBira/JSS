@@ -58,15 +58,18 @@ let timeout;
 let carteSelezionate = [];
 let scopeTotali = 0;
 let popupText;
+let indiceCarta = 0;
 
 let globalUsername;
 let globalUuid;
+
 const resultMatch = document.getElementById('result');
 const showTablePoints = document.getElementById('round-summary')
 const playedCardSound = document.getElementById("playedCardSound");
 const scopaSound = document.getElementById("scopaSound");
 const victorySound = document.getElementById("victorySound");
 const dealingSound = document.getElementById("dealCards");
+const loginContainer = document.getElementById("login-container");
 
 document.addEventListener("DOMContentLoaded", () => {
   checkCookieLogin();
@@ -82,17 +85,17 @@ async function checkCookieLogin() {
       if (!res.ok) {
         console.log("Cookie not found");
 
+        loginContainer.addEventListener('click', loginButton);
       }
       else {
         data = await res.json();
         globalUsername = data.user.username;
         globalUuid = data.user.id;
 
-        document.getElementById("login-container").style.display = "none";
-
         document.getElementById("player1ID").textContent = data.user.username;
         let nick = document.getElementById("nicknameTag");
         nick.textContent = data.user.username;
+        loginContainer.removeEventListener('click',loginButton);
         let dropdown = document.getElementById("dropdownList");
         dropdown.removeAttribute("id");
       }
@@ -472,8 +475,8 @@ function removeTableCards(playedCard, cards, final) {
 
   if (!array || array.length === 0) return;
 
-  if (playedCard) { //remove_table_cards to clean table at the end with card = null, handling
-    const card = updateTable(playedCard); // Aggiunge la carta giocata al tavolo
+  if (playedCard) { 
+    const card = updateTable(playedCard); // aggiunge la carta giocata al tavolo
     card.getDiv().style.boxShadow = "0 0 30px red";
     carteDaRimuovere.push(playedCard);
   }
@@ -509,9 +512,7 @@ function removeTableCards(playedCard, cards, final) {
 }
 
 function exitGame() {
-  if (confirm("Sei sicuro di voler uscire?")) {
-    window.location.href = "https://www.google.com/";
-  }
+  //Useless function (I don't want you to leave :c)
 }
 
 function apriImpostazioni() {
@@ -527,8 +528,7 @@ function chiudiImpostazioni() {
   document.getElementById("settingsPopup").style.display = "none";
   document.getElementById("banner").style.display = "block";
   document.getElementById("main-menu").style.display = "block";
-  if (globalUuid == undefined)
-    document.getElementById("login-container").style.display = "flex";
+  document.getElementById("login-container").style.display = "flex";
 }
 
 function apriBackground() {
@@ -601,7 +601,7 @@ function volumeChanger() {
 }
 
 function startGame() {
-  document.body.style.backgroundImage = "url('img/backgrounds/main-background.webp')";
+  document.body.style.backgroundImage = "url('img/backgrounds/wood-background.webp')";
   document.getElementById("main-container").style.display = "none";
   document.getElementById("content").style.display = "flex";
   document.title = "Scopa - Game";
@@ -634,10 +634,12 @@ function openGuide() {
 
   document.getElementById("pdfContainer").style.display = "flex";
   document.getElementById("starting-menu").style.display = "none";
+  document.getElementById("inGameSettings").style.display = "none";
 }
 
 function closeGuide() {
   document.getElementById("pdfContainer").style.display = "none";
+  document.getElementById("inGameSettings").style.display = "flex";
 }
 
 function openGuideMain() {
@@ -662,7 +664,25 @@ function isMobile() {
 }
 
 function getCardImagePath(card) {
-  return `./img/cards/${card.getValore()}${card.getSeme()}.webp`;
+  switch(indiceCarta){
+    case 0:
+      return `./img/cards/${card.getValore()}${card.getSeme()}.webp`;
+    case 1:
+      return `./img/neapolitanCards/${card.getValore()}${card.getSeme()}.webp`;
+    default:
+      return `./img/cards/${card.getValore()}${card.getSeme()}.webp`;
+  };
+}
+
+function getCardImageSelectorPath(index) {
+  switch(index){
+    case 0:
+      return `./img/cards/10D.webp`;
+    case 1:
+      return `./img/neapolitanCards/10D.webp`;
+    default:
+      return `./img/cards/10D.webp`;
+  };
 }
 
 function mostraPopup() {
@@ -747,9 +767,23 @@ function aggiungiCardOption(carte, cardSelectionMenu, comboCards) {
   convertedCards.forEach((src, index) => {
     const cardPreview = document.createElement('img');
     cardPreview.classList.add('cardPreview');
-    cardPreview.src = `./img/cards/${src}.webp`;
-    cardPreview.alt = "Carta " + index;
-    cardSet.appendChild(cardPreview);
+    switch(indiceCarta){
+      case 0:
+        cardPreview.src = `./img/cards/${src}.webp`;
+        cardPreview.alt = "Carta " + index;
+        cardSet.appendChild(cardPreview);
+      break;  
+      case 1:
+        cardPreview.src = `./img/neapolitanCards/${src}.webp`;
+        cardPreview.alt = "Carta " + index;
+        cardSet.appendChild(cardPreview);
+      break; 
+      default:
+        cardPreview.src = `./img/cards/${src}.webp`;
+        cardPreview.alt = "Carta " + index;
+        cardSet.appendChild(cardPreview);
+      break;
+    };
   });
 
   cardOption.appendChild(cardSet);
@@ -854,6 +888,8 @@ function loginButton() {
   document.getElementById("banner").style.display = "none";
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("login-container").style.display = "none";
+  document.getElementById("fixed-social").style.display = "none";
+  document.getElementById("bottomVolumeDiv").style.display = "none";
 
   document.getElementById("loginPopup").style.display = "flex";
   document.getElementById("loginMenu").style.display = "flex";
@@ -879,6 +915,8 @@ function exitLogin() {
   document.getElementById("loginPopup").style.display = "none";
   document.getElementById("registerMenu").style.display = "none";
   document.getElementById("errorLog").style.display = "none";
+  document.getElementById("fixed-social").style.display = "flex";
+  document.getElementById("bottomVolumeDiv").style.display = "block";
   document.getElementById("banner").style.display = "flex";
   document.getElementById("starting-menu").style.display = "flex";
   document.getElementById("login-container").style.display = "flex";
@@ -905,6 +943,9 @@ window.onload = function () {
   const savedVolumeEffects = localStorage.getItem('volumeEffects');
   const savedBackground = localStorage.getItem('background');
   const audioIcon = document.querySelectorAll(".volume-icon");
+  if(!isNaN(localStorage.getItem('indiceCarta')))
+    indiceCarta = parseInt(localStorage.getItem('indiceCarta'));
+  document.getElementById("carta-immagine").src = getCardImageSelectorPath(indiceCarta);
   audioIcon.forEach((iconImage) => {
     if (icon == "fa-volume-mute") {
       iconImage.classList.remove("fa-volume-up");
@@ -980,7 +1021,6 @@ function importLoginData(event) {
       return res.json();
     })
     .then((data) => {
-      console.log("Vamos: " + JSON.stringify(data));
       if (data.success) {
         globalUsername = data.user.username;
         globalUuid = data.user.id;
@@ -989,20 +1029,16 @@ function importLoginData(event) {
         successMessage.style.display = "block";
         successMessage.style.opacity = 1;
 
-        document.getElementById("login-container").style.display = "none";
-
         document.getElementById("player1ID").textContent = data.user.username;
         let nick = document.getElementById("nicknameTag");
         nick.textContent = data.user.username;
-
-        document.getElementById("top-left-bar").style.cursor = "pointer";
 
         setTimeout(() => {
           successMessage.style.opacity = 0;
           setTimeout(() => {
             successMessage.style.display = "none";
             exitLogin();
-            document.getElementById("login-container").style.display = "none";
+            loginContainer.removeEventListener('click', loginButton);
             let dropdown = document.getElementById("dropdownList");
             dropdown.removeAttribute("id");
           }, 500);
@@ -1081,17 +1117,15 @@ document.getElementById("confirmButton").addEventListener("click", function (eve
         const successMessage = document.getElementById("successMessage");
         successMessage.style.display = "block";
         successMessage.style.opacity = 1;
-        document.getElementById("login-container").style.display = "none";
         document.getElementById("player1ID").textContent = data.user.username;
         document.getElementById("nicknameTag").textContent = data.user.username;
-        document.getElementById("top-left-bar").style.cursor = "pointer";
 
         setTimeout(() => {
           successMessage.style.opacity = 0;
           setTimeout(() => {
             successMessage.style.display = "none";
             exitLogin();
-            document.getElementById("login-container").style.display = "none";
+            loginContainer.removeEventListener('click',loginButton);
             document.getElementById("dropdownList").removeAttribute("id");
           }, 500);
         }, 2500);
@@ -1171,6 +1205,8 @@ document.addEventListener("keyup", (event) => {
 
 let sliderMusicMain = document.getElementById("volumeControlMusic");
 let sliderEffectsMain = document.getElementById("volumeControlEffects");
+let sliderMusicInGame = document.getElementById("volumeControlMusicInGame");
+let sliderEffectsInGame = document.getElementById("volumeControlEffectsInGame");
 
 function calcValueMusic() {
   valuePercentageMusic = (sliderMusicMain.value / sliderMusicMain.max)*100;
@@ -1188,8 +1224,26 @@ sliderEffectsMain.addEventListener('input', function(){
   calcValueEffects();
 });
 
+function calcValueMusicIG() {
+  valuePercentageMusicIG = (sliderMusicInGame.value / sliderMusicInGame.max)*100;
+  sliderMusicInGame.style.background = `linear-gradient(to right,rgb(255, 230, 0) ${valuePercentageMusicIG}%, #ebe9e7 ${valuePercentageMusicIG}%)`;
+}
+sliderMusicInGame.addEventListener('input', function(){
+  calcValueMusicIG();
+});
+
+function calcValueEffectsIG() {
+  valuePercentageEffectsIG = (sliderEffectsInGame.value / sliderEffectsInGame.max)*100;
+  sliderEffectsInGame.style.background = `linear-gradient(to right,rgb(255, 230, 0) ${valuePercentageEffectsIG}%, #ebe9e7 ${valuePercentageEffectsIG}%)`;
+}
+sliderEffectsInGame.addEventListener('input', function(){
+  calcValueEffectsIG();
+});
+
 calcValueMusic();
 calcValueEffects();
+calcValueMusicIG();
+calcValueEffectsIG();
 
 function setSliderInitialVisual(slider) {
     const percentage = (slider.value / slider.max) * 100;
@@ -1202,7 +1256,77 @@ function setSliderInitialVisual(slider) {
   window.addEventListener("DOMContentLoaded", function () {
     const musicSlider = document.getElementById("volumeControlMusic");
     const effectsSlider = document.getElementById("volumeControlEffects");
+    const musicSliderIG = document.getElementById("volumeControlMusicInGame");
+    const effectsSliderIG = document.getElementById("volumeControlEffectsInGame");
 
     setSliderInitialVisual(musicSlider);
     setSliderInitialVisual(effectsSlider);
+    setSliderInitialVisual(musicSliderIG);
+    setSliderInitialVisual(effectsSliderIG);
   });
+
+  let eyeIcon1 = document.getElementById("eyeIcon1");
+  let password1 = document.getElementById("loginPassword");
+  let eyeIcon2 = document.getElementById("eyeIcon2");
+  let password2 = document.getElementById("registerPassword");
+  let eyeIcon3 = document.getElementById("eyeIcon3");
+  let password3 = document.getElementById("confirmRegisterPassword");
+
+  eyeIcon1.onclick = () => {
+    if(password1.type == "password")
+    {
+      password1.type = "text";
+      eyeIcon1.classList.remove("fa-eye-slash");
+      eyeIcon1.classList.add("fa-eye");
+    }
+    else
+    {
+      password1.type = "password";      
+      eyeIcon1.classList.remove("fa-eye");
+      eyeIcon1.classList.add("fa-eye-slash");
+    }
+  }
+  eyeIcon2.onclick = () => {
+    if(password2.type == "password")
+    {
+      password2.type = "text";
+      eyeIcon2.classList.remove("fa-eye-slash");
+      eyeIcon2.classList.add("fa-eye");
+    }
+    else
+    {
+      password2.type = "password";      
+      eyeIcon2.classList.remove("fa-eye");
+      eyeIcon2.classList.add("fa-eye-slash");
+    }
+  }
+  eyeIcon3.onclick = () => {
+    if(password3.type == "password")
+    {
+      password3.type = "text";
+      eyeIcon3.classList.remove("fa-eye-slash");
+      eyeIcon3.classList.add("fa-eye");
+    }
+    else
+    {
+      password3.type = "password";      
+      eyeIcon3.classList.remove("fa-eye");
+      eyeIcon3.classList.add("fa-eye-slash");
+    }
+  }
+
+  const carteStyle = [
+    "./img/cards/10D.webp",
+    "./img/neapolitanCards/10D.webp"
+  ];
+
+function scorriSinistra() {
+    indiceCarta = (indiceCarta - 1 + carteStyle.length) % carteStyle.length;
+    document.getElementById("carta-immagine").src = carteStyle[indiceCarta];
+    localStorage.setItem('indiceCarta', indiceCarta);
+}
+function scorriDestra() {
+    indiceCarta = (indiceCarta + 1) % carteStyle.length;
+    document.getElementById("carta-immagine").src = carteStyle[indiceCarta];
+    localStorage.setItem('indiceCarta', indiceCarta);
+}
