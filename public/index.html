@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Gioca a Scopa online con amici e sfida avversari in tutto il mondo. Play Scopa online and challenge opponents worldwide in this classic Italian card game.">
     <link rel="stylesheet" href="style.css">
+    <!--
     <meta name="google-signin-client_id" content="ID.apps.googleusercontent.com">
+    -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 
     <link rel="icon" type="image/x-icon" href="img/pageIcon.ico">
@@ -30,111 +32,141 @@
     </audio>
     <div id="main-container">
         <div id="successMessage">
-           <p>Login/Registrazione eseguita con successo</p> 
+            <p>Login/Registration successful</p>
         </div>
-        <div id="top-left-bar" class="dropdown">
-            <img class="icon" src="https://cdn-icons-png.flaticon.com/512/1077/1077012.png" alt="Icona Nickname" />
-            <span id="nicknameTag" class="dropbtn">Guest</span>
+        <div id="login-container" class="dropdown">
+            <span class="dropbtn"><i class="fas fa-user-circle"></i></span>
             <div class="dropdown-content" id="dropdownList">
-              <div id="statsDiv"><i class="fas fa-chart-bar"></i> Statistics</div>
-              <div id="disconnectDiv"><i class="fas fa-sign-out-alt"></i> Logout</div>
+                <div id="statsDiv"><i class="fas fa-chart-bar"></i> Statistics</div>
+                <div id="disconnectDiv"><i class="fas fa-sign-out-alt"></i> Logout</div>
             </div>
-          </div>
-        <div id="login-container">
-            <button id="login-hud" onclick="loginButton()">
-                <div class="buttonLogin">
-                    <p>Login</p>
-                </div>
-            </button>
+            <!--
             <button id="register-hud" onclick="registerButton()">
                 <div class="buttonLogin">
                     <p>Register</p>
                 </div>
             </button>
+            -->
         </div>
 
         <div id="statsPopup">
             <h2 id="statsPopupTitle">Your statistics All-Time</h2>
             <div class="stats-list">
-              <div><span>Rounds Won:</span> <span class="value" id="roundWin">0</span></div>
-              <div><span>Rounds Lost:</span> <span class="value" id="roundLost">0</span></div>
-              <div><span>Total Rounds:</span> <span class="value" id="roundTotal">0</span></div>
-              <div><span>Matches Won:</span> <span class="value" id="partiteWin">0</span></div>
-              <div><span>Matches Lost:</span> <span class="value" id="partiteLost">0</span></div>
-              <div><span>Total Matches:</span> <span class="value" id="partiteTotal">0</span></div>
-              <div><span>Scopes:</span> <span class="value" id="scopeCount">0</span></div>
+                <div><span>Rounds Won:</span> <span class="value" id="roundWin">0</span></div>
+                <div><span>Rounds Lost:</span> <span class="value" id="roundLost">0</span></div>
+                <div><span>Total Rounds:</span> <span class="value" id="roundTotal">0</span></div>
+                <div><span>Matches Won:</span> <span class="value" id="partiteWin">0</span></div>
+                <div><span>Matches Lost:</span> <span class="value" id="partiteLost">0</span></div>
+                <div><span>Total Matches:</span> <span class="value" id="partiteTotal">0</span></div>
+                <div><span>Scopes:</span> <span class="value" id="scopeCount">0</span></div>
             </div>
             <button id="closeStatsBtn" type="button">Close</button>
         </div>
         <div id="loginPopup">
             <div id="loginMenu">
+                <div class="closeLoginBtn">
+                    <input type="button" onclick="exitLogin()" class="exitButton" value="X">
+                </div>
                 <h2>Login</h2>
                 <form id="loginForm">
-                    <label for="loginInput">Insert Email:</label>
-                    <input type="text" name="loginInput" id="loginInput" placeholder="Email" required>
-                    <label for="loginPassword">Insert Password:</label>
-                    <input type="password" name="loginPassword" id="loginPassword" placeholder="Password" required>
+                    <div class="input-box">
+                        <input type="email" name="loginInput" id="loginInput" placeholder="Email" required><i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="loginPassword" id="loginPassword" placeholder="Password" required><i id="eyeIcon1" class="fa-solid fa-eye-slash"></i>
+                    </div>
+                    <span id="noAccountText">Don't have an account? <span id="signUpText" onclick="registerButton()">Sign up here!</span></span>
+                    <p id="errorLog"></p>
+                    <!--
                     <div id="rememberMeDiv">
-                        <input type="checkbox" value="lsRememberMe" id="rememberMe"> 
+                        <input type="checkbox" value="lsRememberMe" id="rememberMe">
                         <label for="rememberMe">Remember me</label>
                     </div>
+                    -->
                     <div id="buttonSide">
-                        <input type="button" onclick="exitLogin()" class="exitButton" value="Exit">
                         <input type="submit" class="confirmButton" value="Confirm">
                     </div>
+                    <!--
                     <div id="google-login" style="margin-top: 20px; text-align: center;">
                         <div id="my-signin2-login"></div>
                     </div>
+                -->
                 </form>
             </div>
 
             <div id="registerMenu">
+                <div class="closeLoginBtn">
+                    <input type="button" onclick="exitLogin()" class="exitButton" value="X">
+                </div>
                 <h2>Register</h2>
                 <form id="registerForm">
-                    <label for="registerUsername">Insert Username:</label>
-                    <input type="text" name="registerUsername" id="registerUsername" placeholder="Username" required>
-                    <label for="registerEmail">Insert Email:</label>
-                    <input type="email" name="registerEmail" id="registerEmail" placeholder="Email" required>
-                    <label for="registerPassword">Insert Password:</label>
-                    <input type="password" name="registerPassword" id="registerPassword" placeholder="Password" required>                    
-                    <label for="confirmRegisterPassword">Confirm Password:</label>
-                    <input type="password" name="confirmRegisterPassword" id="confirmRegisterPassword" placeholder="Confirm Password" required>
+                    <div class="input-box">
+                        <input type="text" name="registerUsername" id="registerUsername" placeholder="Username" required><i class="fa fa-user" aria-hidden="true"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="email" name="registerEmail" id="registerEmail" placeholder="Email" required><i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="registerPassword" id="registerPassword" placeholder="Password" required><i id="eyeIcon2" class="fa-solid fa-eye-slash"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" name="confirmRegisterPassword" id="confirmRegisterPassword" placeholder="Confirm Password" required><i id="eyeIcon3" class="fa-solid fa-eye-slash"></i>
+                    </div>
                     <p id="errorLog"></p>
                     <div id="buttonSide">
-                        <input type="button" onclick="exitLogin()" class="exitButton" value="Exit">
                         <input type="submit" class="confirmButton" id="confirmButton" value="Confirm">
                     </div>
+                    <!--
                     <div id="google-register" style="margin-top: 20px; text-align: center;">
                         <div id="my-signin2-register"></div>
+                    
                     </div>
+                    -->
                 </form>
             </div>
         </div>
-        <div id="banner"></div>
         <div id="pdfMainMenu" style="display:none;">
             <embed id="pdfIframe" src="pdf/guide.pdf" width="90%" height="100%">
-            <button onclick="closeGuideMain()">Close</button>
+            <button class="redbtn" onclick="closeGuideMain()">Close</button>
         </div>
         <div id="starting-menu">
+        <div id="banner" style="background-image: url(img/banner.webp);" fetchpriority=high></div>
             <div id="main-menu">
-                <button id="play-button" onclick="playGame()">Play</button>
-                <button onclick="apriImpostazioni()">Settings</button>
-                <button onclick="exitGame()">Exit</button>
-                <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
+                <h2><i class="fa-solid fa-user"></i>Playing as <span id="nicknameTag">Guest</span></h2>
+                <button id="play-button" onclick="playGame()"><i class="fa-solid fa-gamepad"></i>Play</button>
+                <button onclick="apriImpostazioni()"><i class="fa-solid fa-gear"></i>Settings</button>
+                <!--<span><b>Game is under development. Working gameplay is NOT guaranteed at all times.</b></span>-->
             </div>
             <div id="settingsPopup">
-                <h2>Impostazioni</h2>
-                <label for="volumeControlMusic">Volume Musica:</label>
-                <input type="range" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)" value="5">
-                <label for="volumeControlEffects">Volume Effetti:</label>
-                <input type="range" id="volumeControlEffects" min="0" max="100" oninput="cambiaVolumeEffects(this.value)" value="5">
-                <button onclick="openGuideMain()">Open Guide</button>
-                <button onclick="apriBackground()">Choose Background</button>
-                <button id="btn" onclick="chiudiImpostazioni()">Close</button>
+                <h2>Settings</h2>
+                <label for="volumeControlMusic"><i class="fa-solid fa-music"></i>Music Volume</label>
+                <div class="container">
+                    <input type="range" class="slider" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)" value="5">
+                </div>
+                <label for="volumeControlEffects"><i class="fa-solid fa-volume-high"></i>Effects Volume</label>
+                <div class="container">
+                    <input type="range" class="slider" id="volumeControlEffects" min="0" max="100" oninput="cambiaVolumeEffects(this.value)" value="5">    
+                </div>
+                <div id="cardStyleSelector">
+                        <div class="arrow" onclick="scorriSinistra()"><i class="fa-solid fa-angle-left"></i></div>
+                        <img src="./img/cards/10D.webp" alt="Card" class="cards cardSelector" id="carta-immagine">
+                        <div class="arrow" onclick="scorriDestra()"><i class="fa-solid fa-angle-right"></i></div>
+                </div>
+                <button class="greenbtn" onclick="openGuideMain()"><i class="fa-solid fa-book"></i>Open Guide</button>
+                <button class="greenbtn" onclick="apriBackground()"><i class="fa-solid fa-image"></i>Choose Background</button>
+                <button class="redbtn" id="btn" onclick="chiudiImpostazioni()">Close</button>
             </div>
         </div>
         <div id="backgroundPopup">
             <div id="backgroundCards-menu">
+                <div class="backgroundCards">
+                    <img class="backgroundPreview" src="img/backgrounds/mainMenu-background.webp"
+                        onclick="cambiaBackground('img/backgrounds/mainMenu-background.webp')" alt="Opzione Main Menu">
+                </div>
+                <div class="backgroundCards">
+                    <img class="backgroundPreview" src="img/backgrounds/wood-background.webp"
+                        onclick="cambiaBackground('img/backgrounds/wood-background.webp')" alt="Opzione 4">
+                </div>
                 <div class="backgroundCards">
                     <img loading="lazy" class="backgroundPreview" src="img/backgrounds/main-background.webp"
                         onclick="cambiaBackground('img/backgrounds/main-background.webp')" alt="Opzione 1">
@@ -152,19 +184,29 @@
                         onclick="cambiaBackground('img/backgrounds/green-background.webp')" alt="Opzione 4">
                 </div>
             </div>
-            <button id="btn" onclick="chiudiBackground()">Close</button>
+            <button class="redbtn" id="btn" onclick="chiudiBackground()">Close</button>
         </div>
-        <div class="fixed-social" aria-label="Social links">
+        <div id="fixed-social" class="fixed-social" aria-label="Social links">
             <a href="https://github.com/MatteoBira/JSS" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-              <i class="fab fa-github"></i>
+                <i class="fab fa-github"></i>
             </a>
-            <a href="https://www.instagram.com/playscopa.online?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-              <i class="fab fa-instagram"></i>
+            <a href="https://www.instagram.com/playscopa.online?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
             </a>
-          </div>
+            <a href="https://status.playscopa.online/" target="_blank" rel="noopener noreferrer" aria-label="Status">
+                <i class="fa-solid fa-server"></i>
+            </a>
+            <a href="bugReport.html" target="_blank" rel="noopener noreferrer" aria-label="Bug Report">
+                <i class="fa fa-bug"></i>
+            </a>
+        </div>
+        <div id="bottomVolumeDiv">
+            <i id="bot-volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
+        </div>
     </div>
 
-    <div id="content">
+    <div id="content" fetchpriority="low">
         <div id="left-content">
             <div id="guide">
                 <img onclick="inGameSettings()" src="img/setting.webp" alt="Settings icon">
@@ -178,7 +220,7 @@
         <div id="main-content">
             <div id="scopaCardContainer">
                 <div class="cards" id="scopaCard">
-                    <span id="scopaCardText">Scopa x0</span>
+                    <span id="scopaCardText">Scope x0</span>
                 </div>
             </div>
             <div id="round-summary">
@@ -245,20 +287,23 @@
                     <p id="popupText"></p>
                 </div>
                 <div id="inGameSettings">
-                    <label for="volumeControlMusic">Volume Musica:</label>
-                    <input type="range" id="volumeControlMusic" min="0" max="100" oninput="cambiaVolumeMusica(this.value)" value="5">
-                    <label for="volumeControlEffects">Volume Effetti:</label>
-                    <input type="range" id="volumeControlEffects" min="0" max="100" oninput="cambiaVolumeEffects(this.value)" value="5">
+                    <label for="volumeControlMusicInGame">Music Volume:</label>
+                    <input type="range" class="slider" id="volumeControlMusicInGame" min="0" max="100" oninput="cambiaVolumeMusica(this.value)" value="5">
+                    <label for="volumeControlEffectsInGame">Effects Volume:</label>
+                    <input type="range" class="slider" id="volumeControlEffectsInGame" min="0" max="100" oninput="cambiaVolumeEffects(this.value)" value="5">
                     <i id="volume-icon" class="fas fa-volume-up volume-icon" onclick="volumeChanger()"></i>
-                    <button onclick="openGuide()">Open Guide</button>
-                    <button onclick="apriIGBackground()">Choose Background</button>
-                    <button onclick="location.reload()">Exit Game</button>
-                    <button style="margin-top: 25px; width: 65%;" id="btn"
-                        onclick="chiudiIGImpostazioni()">Close</button>
+                    <button class="greenbtn"  onclick="openGuide()">Open Guide</button>
+                    <button class="greenbtn" onclick="apriIGBackground()">Choose Background</button>
+                    <button class="redbtn"  onclick="location.reload()">Exit Game</button>
+                    <button class="greenbtn" style="margin-top: 25px; width: 65%;" id="btn" onclick="chiudiIGImpostazioni()">Close</button>
                 </div>
 
                 <div id="backgroundIGPopup">
                     <div id="backgroundIGCards-menu">
+                        <div class="backgroundCards">
+                            <img class="backgroundPreview" src="img/backgrounds/wood-background.webp"
+                                onclick="cambiaBackground('img/backgrounds/wood-background.webp')" alt="Opzione 4">
+                        </div>
                         <div class="backgroundCards">
                             <img class="backgroundPreview" src="img/backgrounds/main-background.webp"
                                 onclick="cambiaBackground('img/backgrounds/main-background.webp')" alt="Opzione 1">
@@ -276,11 +321,11 @@
                                 onclick="cambiaBackground('img/backgrounds/green-background.webp')" alt="Opzione 4">
                         </div>
                     </div>
-                    <button id="btn" onclick="chiudiIGBackground()">Close</button>
+                    <button class="redbtn" id="btn" onclick="chiudiIGBackground()">Close</button>
                 </div>
                 <div id="pdfContainer" style="display:none;">
                     <embed id="pdfIframe" src="pdf/guide.pdf" width="90%" height="100%">
-                    <button onclick="closeGuide()">Close</button>
+                    <button class="redbtn" onclick="closeGuide()">Close</button>
                 </div>
                 <div id="table"></div>
             </div>
@@ -302,5 +347,4 @@
     <script src="https://apis.google.com/js/platform.js?onload=renderGoogleButtons" async defer></script>
     <script src="script.js"></script>
 </body>
-
 </html>

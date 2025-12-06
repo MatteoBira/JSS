@@ -58,46 +58,48 @@ let timeout;
 let carteSelezionate = [];
 let scopeTotali = 0;
 let popupText;
+let indiceCarta = 0;
 
 let globalUsername;
 let globalUuid;
+
 const resultMatch = document.getElementById('result');
 const showTablePoints = document.getElementById('round-summary')
 const playedCardSound = document.getElementById("playedCardSound");
 const scopaSound = document.getElementById("scopaSound");
 const victorySound = document.getElementById("victorySound");
 const dealingSound = document.getElementById("dealCards");
+const loginContainer = document.getElementById("login-container");
 
 document.addEventListener("DOMContentLoaded", () => {
   checkCookieLogin();
   document.getElementById("content").style.display = "none";
 });
 
-function checkCookieLogin() {
+async function checkCookieLogin() {
   fetch("https://api.playscopa.online/checkCookie", {
     method: "GET",
     credentials: 'include'
   })
-    .then((res) => {
+    .then(async (res) => {
       if (!res.ok) {
-        throw new Error('Network response was not ok ' + res.statusText);
+        console.log("Cookie not found");
+
+        loginContainer.addEventListener('click', loginButton);
       }
       else {
-        return res.json();
+        data = await res.json();
+        globalUsername = data.user.username;
+        globalUuid = data.user.id;
+
+        document.getElementById("player1ID").textContent = data.user.username;
+        let nick = document.getElementById("nicknameTag");
+        nick.textContent = data.user.username;
+        loginContainer.removeEventListener('click',loginButton);
+        let dropdown = document.getElementById("dropdownList");
+        dropdown.removeAttribute("id");
       }
     })
-    .then((data) => {
-      globalUsername = data.user.username;
-      globalUuid = data.user.id;
-
-      document.getElementById("login-container").style.display = "none";
-
-      document.getElementById("player1ID").textContent = data.user.username;
-      let nick = document.getElementById("nicknameTag");
-      nick.textContent = data.user.username;
-      let dropdown = document.getElementById("dropdownList");
-      dropdown.removeAttribute("id");
-    });
 }
 
 function closeMatch(text) {
@@ -182,14 +184,6 @@ function playGame() {
         cardIdNumberCorrection[0].id = "bot-card1";
         cardIdNumberCorrection[1].id = "bot-card2";
         cardIdNumberCorrection[2].id = "bot-card3";
-        /*
-                cardIdNumberCorrection[0].addEventListener('click', function() {
-                });
-                cardIdNumberCorrection[1].addEventListener('click', function() {
-                });
-                cardIdNumberCorrection[2].addEventListener('click', function() {
-                });
-        */
         generateHand();
         socket.send(JSON.stringify({ type: "getcount" }));
         break;
@@ -242,10 +236,11 @@ function playGame() {
       case "remove_opponent_card":
         playedCardSound.play();
         removeOpponentCard();
+        cardsAdjust();
         break;
 
       case "remove_table_cards":
-        removeTableCards(data.card, data.cards);
+        removeTableCards(data.card, data.cards, data.final); //final = true se è il gestisciUltimeCarte
         break;
 
       case "turn": //turn cambiato solo su richiesta del server.
@@ -260,6 +255,11 @@ function playGame() {
         mostraPopup();
         break;
 
+      case "opponentScopa":
+        document.getElementById('popupText').textContent = "Il tuo avversario ha fatto Scopa!";
+        mostraPopup();
+        break;
+
       case "progressResult":
         popupText = "Hai " + data.verdict + " il round!";
         resultMatch.textContent = popupText;
@@ -267,7 +267,9 @@ function playGame() {
           scopaSound.play();
         }
         setResultColor(data.verdict);
-        showTablePoints.style.display = "block"
+        setTimeout(() => {
+          showTablePoints.style.display = "flex"
+        }, 2500);
         scopeTotali = 0;
         aggiornaScopaDisplay();
         tableHand.length = 0;
@@ -282,7 +284,9 @@ function playGame() {
         scopeTotali = 0;
         aggiornaScopaDisplay();
         fineGame();
-        showTablePoints.style.display = "block"
+        setTimeout(() => {
+          showTablePoints.style.display = "flex"
+        }, 2500);
         tableHand.length = 0;
         break;
 
@@ -290,7 +294,9 @@ function playGame() {
         popupText = "Hai " + data.verdict + " la partita!";
         resultMatch.textContent = popupText;
         setResultColor(data.verdict);
-        showTablePoints.style.display = "block"
+        setTimeout(() => {
+          showTablePoints.style.display = "flex"
+        }, 2500);
         clearInterval(timeout);
         scopeTotali = 0;
         aggiornaScopaDisplay();
@@ -303,7 +309,9 @@ function playGame() {
         popupText = "Hai " + data.verdict + " il round!";
         resultMatch.textContent = popupText;
         setResultColor(data.verdict);
-        showTablePoints.style.display = "block"
+        setTimeout(() => {
+          showTablePoints.style.display = "flex"
+        }, 2500);
         tableHand.length = 0;
         break;
 
@@ -377,15 +385,23 @@ function playCard(card) {
 
   socket.send(JSON.stringify({ type: "move", card: card.toJSON() }));
   myTurn = false;
+  playedCardSound.play();
 
   // Rimuovi la carta da myHand
+  let element = card.getDiv();
   myHand = myHand.filter((c) => c !== card);
   console.log(JSON.stringify(tableHand));
+  
+    element.id = "animateCards";
+    console.log(element);
+
   setTimeout(() => {
     card.getDiv().remove();
     card.setDiv(null);
-  }, "0");
-  playedCardSound.play();
+  }, 1100);
+  
+  cardsAdjust();
+  
 }
 
 function updateTable(cardData) {
@@ -395,24 +411,37 @@ function updateTable(cardData) {
   const card = new Carta(cardDiv, cardData.valore, cardData.seme);
   const imagePath = getCardImagePath(card);
   cardDiv.style.backgroundImage = `url('${imagePath}')`;
-  tableDiv.appendChild(cardDiv);
-  tableHand.push(card);
-
-  let cardsAdjust = document.getElementById("player-hand").getElementsByTagName("div");
-  if (cardsAdjust.length == 1)
-    cardsAdjust[0].id = "bot-card2";
-  else if (cardsAdjust.length == 2) {
-    cardsAdjust[0].id = "bot-card1";
-    cardsAdjust[1].id = "bot-card3";
-  }
-  let opponentCardsAdjust = document.getElementById("opponent-hand").getElementsByTagName("div");
-  if (opponentCardsAdjust.length == 1)
-    opponentCardsAdjust[0].id = "top-card2";
-  else if (opponentCardsAdjust.length == 2) {
-    opponentCardsAdjust[0].id = "top-card1";
-    opponentCardsAdjust[1].id = "top-card3";
-  }
+  setTimeout(()=> {
+    tableDiv.appendChild(cardDiv);
+    tableHand.push(card);
+  
+  },1000);
+  
   return card;
+}
+
+function cardsAdjust(){
+  setTimeout(()=> {
+    let cardsAdjust = document.getElementById("player-hand").getElementsByTagName("div");
+    console.log(cardsAdjust)
+    if (cardsAdjust.length == 1){
+      console.log("Giocata Una Carta Qualsiasi");
+      cardsAdjust[0].id = "bot-card2";
+    }
+    else if (cardsAdjust.length == 2) {
+      console.log("Giocata Una Carta ");
+      cardsAdjust[0].id = "bot-card1";
+      cardsAdjust[1].id = "bot-card3";
+    }
+  
+    let opponentCardsAdjust = document.getElementById("opponent-hand").getElementsByTagName("div");
+    if (opponentCardsAdjust.length == 1)
+      opponentCardsAdjust[0].id = "top-card2";
+    else if (opponentCardsAdjust.length == 2) {
+      opponentCardsAdjust[0].id = "top-card1";
+      opponentCardsAdjust[1].id = "top-card3";
+    }
+  },1000);
 }
 
 function removeOpponentCard() {
@@ -438,7 +467,7 @@ function removeSingleCard(cardToRemove) {
   });
 }
 
-function removeTableCards(playedCard, cards) {
+function removeTableCards(playedCard, cards, final) {
   const tableDiv = document.getElementById("table");
   const array = cards.slice(); // Copia delle carte da rimuovere
   const carteDaRimuovere = [...array];
@@ -446,16 +475,21 @@ function removeTableCards(playedCard, cards) {
 
   if (!array || array.length === 0) return;
 
-  if (playedCard) { //remove_table_cards to clean table at the end with card = null, handling
-    const card = updateTable(playedCard); // Aggiunge la carta giocata al tavolo
-    card.getDiv().style.boxShadow = "0 0 10px red";
+  if (playedCard) { 
+    const card = updateTable(playedCard); // aggiunge la carta giocata al tavolo
+    card.getDiv().style.boxShadow = "0 0 30px red";
     carteDaRimuovere.push(playedCard);
   }
 
   array.forEach((card) => {
     tableHand.forEach((c) => {
       if (card.valore == c.getValore() && card.seme == c.getSeme()) {
-        c.getDiv().style.boxShadow = "0 0 10px blue";
+        setTimeout(()=>{
+          if (final)
+            c.getDiv().style.boxShadow = "0 0 30px green";
+          else
+            c.getDiv().style.boxShadow = "0 0 30px blue";
+        },1000);
       }
     });
   });
@@ -474,35 +508,36 @@ function removeTableCards(playedCard, cards) {
         return true;
       });
     });
-  }, 1500);
+  }, 2500);
 }
 
 function exitGame() {
-  if (confirm("Sei sicuro di voler uscire?")) {
-    window.location.href = "https://www.google.com/";
-  }
+  //Useless function (I don't want you to leave :c)
 }
 
 function apriImpostazioni() {
+  document.title = "Scopa - Settings";
   document.getElementById("settingsPopup").style.display = "block";
   document.getElementById("main-menu").style.display = "none";
+  document.getElementById("banner").style.display = "none";
   document.getElementById("login-container").style.display = "none";
 }
 
 function chiudiImpostazioni() {
+  document.title = "Scopa - Home";
   document.getElementById("settingsPopup").style.display = "none";
+  document.getElementById("banner").style.display = "block";
   document.getElementById("main-menu").style.display = "block";
+  document.getElementById("login-container").style.display = "flex";
 }
 
 function apriBackground() {
   document.getElementById("backgroundPopup").style.display = "flex";
-  document.getElementById("banner").style.display = "none";
   document.getElementById("starting-menu").style.display = "none";
 }
 
 function chiudiBackground() {
   document.getElementById("backgroundPopup").style.display = "none";
-  document.getElementById("banner").style.display = "flex";
   document.getElementById("starting-menu").style.display = "flex";
 }
 
@@ -566,11 +601,19 @@ function volumeChanger() {
 }
 
 function startGame() {
+  document.body.style.backgroundImage = "url('img/backgrounds/wood-background.webp')";
   document.getElementById("main-container").style.display = "none";
   document.getElementById("content").style.display = "flex";
+  document.title = "Scopa - Game";
   updateStatus();
   generateDeck();
   generateHand();
+  turnState();
+}
+
+function turnState() {
+  document.getElementById('popupText').innerText = myTurn ? "Your Turn!" : "Opponent's Turn!";
+  mostraPopup();
 }
 
 function inGameSettings() {
@@ -591,10 +634,12 @@ function openGuide() {
 
   document.getElementById("pdfContainer").style.display = "flex";
   document.getElementById("starting-menu").style.display = "none";
+  document.getElementById("inGameSettings").style.display = "none";
 }
 
 function closeGuide() {
   document.getElementById("pdfContainer").style.display = "none";
+  document.getElementById("inGameSettings").style.display = "flex";
 }
 
 function openGuideMain() {
@@ -619,7 +664,25 @@ function isMobile() {
 }
 
 function getCardImagePath(card) {
-  return `./img/cards/${card.getValore()}${card.getSeme()}.webp`;
+  switch(indiceCarta){
+    case 0:
+      return `./img/cards/${card.getValore()}${card.getSeme()}.webp`;
+    case 1:
+      return `./img/neapolitanCards/${card.getValore()}${card.getSeme()}.webp`;
+    default:
+      return `./img/cards/${card.getValore()}${card.getSeme()}.webp`;
+  };
+}
+
+function getCardImageSelectorPath(index) {
+  switch(index){
+    case 0:
+      return `./img/cards/10D.webp`;
+    case 1:
+      return `./img/neapolitanCards/10D.webp`;
+    default:
+      return `./img/cards/10D.webp`;
+  };
 }
 
 function mostraPopup() {
@@ -633,7 +696,7 @@ function mostraPopup() {
 
   setTimeout(() => {
     nascondiPopup();
-  }, 3000);
+  }, 2500);
 }
 
 function nascondiPopup() {
@@ -704,9 +767,23 @@ function aggiungiCardOption(carte, cardSelectionMenu, comboCards) {
   convertedCards.forEach((src, index) => {
     const cardPreview = document.createElement('img');
     cardPreview.classList.add('cardPreview');
-    cardPreview.src = `./img/cards/${src}.webp`;
-    cardPreview.alt = "Carta " + index;
-    cardSet.appendChild(cardPreview);
+    switch(indiceCarta){
+      case 0:
+        cardPreview.src = `./img/cards/${src}.webp`;
+        cardPreview.alt = "Carta " + index;
+        cardSet.appendChild(cardPreview);
+      break;  
+      case 1:
+        cardPreview.src = `./img/neapolitanCards/${src}.webp`;
+        cardPreview.alt = "Carta " + index;
+        cardSet.appendChild(cardPreview);
+      break; 
+      default:
+        cardPreview.src = `./img/cards/${src}.webp`;
+        cardPreview.alt = "Carta " + index;
+        cardSet.appendChild(cardPreview);
+      break;
+    };
   });
 
   cardOption.appendChild(cardSet);
@@ -767,6 +844,7 @@ function iniziaNuovoRound() {
 }
 
 function fineGame() {
+  document.title = "Scopa - Home";
   document.getElementById("fineGameButton").textContent = "Esci"
   scopeTotali = 0;
   document.getElementById("fineGameButton").onclick = function () {
@@ -806,9 +884,12 @@ function setResultColor(check) {
 }
 
 function loginButton() {
+  document.title = "Scopa - Login";
   document.getElementById("banner").style.display = "none";
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("login-container").style.display = "none";
+  document.getElementById("fixed-social").style.display = "none";
+  document.getElementById("bottomVolumeDiv").style.display = "none";
 
   document.getElementById("loginPopup").style.display = "flex";
   document.getElementById("loginMenu").style.display = "flex";
@@ -817,9 +898,11 @@ function loginButton() {
 }
 
 function registerButton() {
-  document.getElementById("banner").style.display = "none";
+  document.title = "Scopa - Register";
+  document.getElementById("banner").style.display = "none";loginMenu
   document.getElementById("starting-menu").style.display = "none";
   document.getElementById("login-container").style.display = "none";
+  document.getElementById("loginMenu").style.display = "none";
   document.getElementById("loginPopup").style.display = "flex";
   document.getElementById("registerMenu").style.display = "flex";
   let errorText = document.getElementById("errorLog");
@@ -828,8 +911,12 @@ function registerButton() {
 }
 
 function exitLogin() {
+  document.title ="Scopa - Home";
   document.getElementById("loginPopup").style.display = "none";
   document.getElementById("registerMenu").style.display = "none";
+  document.getElementById("errorLog").style.display = "none";
+  document.getElementById("fixed-social").style.display = "flex";
+  document.getElementById("bottomVolumeDiv").style.display = "block";
   document.getElementById("banner").style.display = "flex";
   document.getElementById("starting-menu").style.display = "flex";
   document.getElementById("login-container").style.display = "flex";
@@ -856,6 +943,9 @@ window.onload = function () {
   const savedVolumeEffects = localStorage.getItem('volumeEffects');
   const savedBackground = localStorage.getItem('background');
   const audioIcon = document.querySelectorAll(".volume-icon");
+  if(!isNaN(localStorage.getItem('indiceCarta')))
+    indiceCarta = parseInt(localStorage.getItem('indiceCarta'));
+  document.getElementById("carta-immagine").src = getCardImageSelectorPath(indiceCarta);
   audioIcon.forEach((iconImage) => {
     if (icon == "fa-volume-mute") {
       iconImage.classList.remove("fa-volume-up");
@@ -879,10 +969,11 @@ window.onload = function () {
   }
 };
 
-function onSuccess(googleUser) {
-  const profile = googleUser.getBasicProfile();
-  console.log('Logged in as: ' + profile.getName());
-}
+/*
+  function onSuccess(googleUser) {
+    const profile = googleUser.getBasicProfile();
+    console.log('Logged in as: ' + profile.getName());
+  }
 
 function onFailure(error) {
   console.log(error);
@@ -908,7 +999,7 @@ function renderGoogleButtons() {
     'onfailure': onFailure
   });
 }
-
+*/
 function importLoginData(event) {
   let feemail = document.getElementById("loginInput").value;
   let fepassword = document.getElementById("loginPassword").value;
@@ -923,13 +1014,13 @@ function importLoginData(event) {
   })
     .then((res) => {
       if (!res.ok) {
+        document.getElementById("errorLog").style.display = "block";
         document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
         throw new Error('Network response was not ok ' + res.statusText);
       }
       return res.json();
     })
     .then((data) => {
-      console.log("Vamos: " + JSON.stringify(data));
       if (data.success) {
         globalUsername = data.user.username;
         globalUuid = data.user.id;
@@ -938,20 +1029,16 @@ function importLoginData(event) {
         successMessage.style.display = "block";
         successMessage.style.opacity = 1;
 
-        document.getElementById("login-container").style.display = "none";
-
         document.getElementById("player1ID").textContent = data.user.username;
         let nick = document.getElementById("nicknameTag");
         nick.textContent = data.user.username;
-
-        document.getElementById("top-left-bar").style.cursor = "pointer";
 
         setTimeout(() => {
           successMessage.style.opacity = 0;
           setTimeout(() => {
             successMessage.style.display = "none";
             exitLogin();
-            document.getElementById("login-container").style.display = "none";
+            loginContainer.removeEventListener('click', loginButton);
             let dropdown = document.getElementById("dropdownList");
             dropdown.removeAttribute("id");
           }, 500);
@@ -959,8 +1046,8 @@ function importLoginData(event) {
       }
     })
     .catch((err) => {
-      let errorText = document.getElementById("errorLog");
-      errorText.textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
+      document.getElementById("errorLog").style.display = "block";
+      document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
       console.log("Non vamos: " + err.message);
     });
 
@@ -979,12 +1066,26 @@ function validatePassword() {
   password.reportValidity();
 }
 
+function validateEmail() {
+  let email = document.getElementById("registerEmail");
+  let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex per validare l'email
+
+  if (!emailPattern.test(email.value)) {
+    email.setCustomValidity("Inserisci un'email valida.");
+  } else {
+    email.setCustomValidity("");
+  }
+  email.reportValidity();
+}
+
+
 document.getElementById("confirmButton").addEventListener("click", function (event) {
   validatePassword();
+  validateEmail();
 
   let password = document.getElementById("registerPassword");
-
-  if (!password.checkValidity()) {
+  let email = document.getElementById("registerEmail");
+  if (!password.checkValidity() || !email.checkValidity()) {
     event.preventDefault();
     return;
   }
@@ -1016,24 +1117,22 @@ document.getElementById("confirmButton").addEventListener("click", function (eve
         const successMessage = document.getElementById("successMessage");
         successMessage.style.display = "block";
         successMessage.style.opacity = 1;
-        document.getElementById("login-container").style.display = "none";
         document.getElementById("player1ID").textContent = data.user.username;
         document.getElementById("nicknameTag").textContent = data.user.username;
-        document.getElementById("top-left-bar").style.cursor = "pointer";
 
         setTimeout(() => {
           successMessage.style.opacity = 0;
           setTimeout(() => {
             successMessage.style.display = "none";
             exitLogin();
-            document.getElementById("login-container").style.display = "none";
+            loginContainer.removeEventListener('click',loginButton);
             document.getElementById("dropdownList").removeAttribute("id");
           }, 500);
         }, 2500);
       }
     })
     .catch((err) => {
-      document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante la registrazione ⚠️";
+      document.getElementById("errorLog").textContent = "⚠️ Errore verificato durante l'accesso ⚠️";
       console.log("Non vamos: " + err.message);
     });
 });
@@ -1061,6 +1160,7 @@ document.getElementById("disconnectDiv").addEventListener("click", (event) => {
 });
 
 document.getElementById('closeStatsBtn').addEventListener('click', () => {
+  document.title = "Scopa - Home";
   const popup = document.getElementById('statsPopup');
   popup.style.display = 'none';
 });
@@ -1083,16 +1183,151 @@ document.getElementById('statsDiv').addEventListener('click', () => {
         updateStatisticsAllTime(data.user.stats);
       }
     });
+    document.title = "Scopa - Statistics";
   const popup = document.getElementById('statsPopup');
   popup.style.display = 'flex';
 });
 
 function updateStatisticsAllTime(stats) {
-  document.getElementById("roundWin").textContent = stats.roundwin ?? 0;
-  document.getElementById("roundLost").textContent = stats.roundlost ?? 0;
-  document.getElementById("roundTotal").textContent = stats.roundtotal ?? 0;
-  document.getElementById("partiteWin").textContent = stats.partitewin ?? 0;
-  document.getElementById("partiteLost").textContent = stats.partitelost ?? 0;
-  document.getElementById("partiteTotal").textContent = stats.partitetotal ?? 0;
-  document.getElementById("scopeCount").textContent = stats.scope ?? 0;
+  document.getElementById("roundWin").textContent = stats.roundwin ?? "Can't Load stats";
+  document.getElementById("roundLost").textContent = stats.roundlost ?? "Can't Load stats";
+  document.getElementById("roundTotal").textContent = stats.roundtotal ?? "Can't Load stats";
+  document.getElementById("partiteWin").textContent = stats.partitewin ?? "Can't Load stats";
+  document.getElementById("partiteLost").textContent = stats.partitelost ?? "Can't Load stats";
+  document.getElementById("partiteTotal").textContent = stats.partitetotal ?? "Can't Load stats";
+  document.getElementById("scopeCount").textContent = stats.scope ?? "Can't Load stats";
+}
+
+document.addEventListener("keyup", (event) => {
+  if (event.keyCode == 27)
+    exitLogin();
+});
+
+let sliderMusicMain = document.getElementById("volumeControlMusic");
+let sliderEffectsMain = document.getElementById("volumeControlEffects");
+let sliderMusicInGame = document.getElementById("volumeControlMusicInGame");
+let sliderEffectsInGame = document.getElementById("volumeControlEffectsInGame");
+
+function calcValueMusic() {
+  valuePercentageMusic = (sliderMusicMain.value / sliderMusicMain.max)*100;
+    sliderMusicMain.style.background = `linear-gradient(to right,rgb(255, 230, 0) ${valuePercentageMusic}%, #ebe9e7 ${valuePercentageMusic}%)`;
+}
+sliderMusicMain.addEventListener('input', function(){
+  calcValueMusic();
+});
+
+function calcValueEffects() {
+  valuePercentageEffects = (sliderEffectsMain.value / sliderEffectsMain.max)*100;
+    sliderEffectsMain.style.background = `linear-gradient(to right,rgb(255, 230, 0) ${valuePercentageEffects}%, #ebe9e7 ${valuePercentageEffects}%)`;
+}
+sliderEffectsMain.addEventListener('input', function(){
+  calcValueEffects();
+});
+
+function calcValueMusicIG() {
+  valuePercentageMusicIG = (sliderMusicInGame.value / sliderMusicInGame.max)*100;
+  sliderMusicInGame.style.background = `linear-gradient(to right,rgb(255, 230, 0) ${valuePercentageMusicIG}%, #ebe9e7 ${valuePercentageMusicIG}%)`;
+}
+sliderMusicInGame.addEventListener('input', function(){
+  calcValueMusicIG();
+});
+
+function calcValueEffectsIG() {
+  valuePercentageEffectsIG = (sliderEffectsInGame.value / sliderEffectsInGame.max)*100;
+  sliderEffectsInGame.style.background = `linear-gradient(to right,rgb(255, 230, 0) ${valuePercentageEffectsIG}%, #ebe9e7 ${valuePercentageEffectsIG}%)`;
+}
+sliderEffectsInGame.addEventListener('input', function(){
+  calcValueEffectsIG();
+});
+
+calcValueMusic();
+calcValueEffects();
+calcValueMusicIG();
+calcValueEffectsIG();
+
+function setSliderInitialVisual(slider) {
+    const percentage = (slider.value / slider.max) * 100;
+    slider.style.background = `linear-gradient(to right, rgb(255, 230, 0) ${percentage}%, #ebe9e7 ${percentage}%)`;
+
+    slider.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  window.addEventListener("DOMContentLoaded", function () {
+    const musicSlider = document.getElementById("volumeControlMusic");
+    const effectsSlider = document.getElementById("volumeControlEffects");
+    const musicSliderIG = document.getElementById("volumeControlMusicInGame");
+    const effectsSliderIG = document.getElementById("volumeControlEffectsInGame");
+
+    setSliderInitialVisual(musicSlider);
+    setSliderInitialVisual(effectsSlider);
+    setSliderInitialVisual(musicSliderIG);
+    setSliderInitialVisual(effectsSliderIG);
+  });
+
+  let eyeIcon1 = document.getElementById("eyeIcon1");
+  let password1 = document.getElementById("loginPassword");
+  let eyeIcon2 = document.getElementById("eyeIcon2");
+  let password2 = document.getElementById("registerPassword");
+  let eyeIcon3 = document.getElementById("eyeIcon3");
+  let password3 = document.getElementById("confirmRegisterPassword");
+
+  eyeIcon1.onclick = () => {
+    if(password1.type == "password")
+    {
+      password1.type = "text";
+      eyeIcon1.classList.remove("fa-eye-slash");
+      eyeIcon1.classList.add("fa-eye");
+    }
+    else
+    {
+      password1.type = "password";      
+      eyeIcon1.classList.remove("fa-eye");
+      eyeIcon1.classList.add("fa-eye-slash");
+    }
+  }
+  eyeIcon2.onclick = () => {
+    if(password2.type == "password")
+    {
+      password2.type = "text";
+      eyeIcon2.classList.remove("fa-eye-slash");
+      eyeIcon2.classList.add("fa-eye");
+    }
+    else
+    {
+      password2.type = "password";      
+      eyeIcon2.classList.remove("fa-eye");
+      eyeIcon2.classList.add("fa-eye-slash");
+    }
+  }
+  eyeIcon3.onclick = () => {
+    if(password3.type == "password")
+    {
+      password3.type = "text";
+      eyeIcon3.classList.remove("fa-eye-slash");
+      eyeIcon3.classList.add("fa-eye");
+    }
+    else
+    {
+      password3.type = "password";      
+      eyeIcon3.classList.remove("fa-eye");
+      eyeIcon3.classList.add("fa-eye-slash");
+    }
+  }
+
+  const carteStyle = [
+    "./img/cards/10D.webp",
+    "./img/neapolitanCards/10D.webp"
+  ];
+
+function scorriSinistra() {
+  indiceCarta = (indiceCarta - 1 + 2) % 2;
+  
+    document.getElementById("carta-immagine").src = carteStyle[indiceCarta];
+    localStorage.setItem('indiceCarta', indiceCarta);
+}
+
+function scorriDestra() {
+  indiceCarta = (indiceCarta + 1) % 2;
+    document.getElementById("carta-immagine").src = carteStyle[indiceCarta];
+    localStorage.setItem('indiceCarta', indiceCarta);
 }

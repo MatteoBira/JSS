@@ -105,7 +105,7 @@ server.on("connection", (socket) => {
                         socket.send(JSON.stringify({ type: "error", message: "Invalid credentials" }));
                     }
                 }
-                console.log("Un check crazyyy: " + username + ":  " + uuid);
+                console.log("Un check: " + username + ":  " + uuid);
                 if (players.length === 1)
                     if (players[0].getUsername() != "Guest" && players[0].getUsername() == username && players[0].getUuid() == uuid) {
                         socket.send(JSON.stringify({ type: "sameUser" }));
