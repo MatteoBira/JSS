@@ -9,7 +9,6 @@ const client = new Client({
     database: process.env.DB_NAME
 });
 
-connectToDb();
 
 async function connectToDb() {
     try {
@@ -23,6 +22,8 @@ async function connectToDb() {
         console.error('Errore nella connessione al database:', error.message);
     }
 }
+
+connectToDb();
 
 async function setAdmin(email) {
     try {

@@ -1249,7 +1249,6 @@ function setSliderInitialVisual(slider) {
     const percentage = (slider.value / slider.max) * 100;
     slider.style.background = `linear-gradient(to right, rgb(255, 230, 0) ${percentage}%, #ebe9e7 ${percentage}%)`;
 
-    // Forza il "reflow" visivo
     slider.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
@@ -1321,12 +1320,14 @@ function setSliderInitialVisual(slider) {
   ];
 
 function scorriSinistra() {
-    indiceCarta = (indiceCarta - 1 + carteStyle.length) % carteStyle.length;
+  indiceCarta = (indiceCarta - 1 + 2) % 2;
+  
     document.getElementById("carta-immagine").src = carteStyle[indiceCarta];
     localStorage.setItem('indiceCarta', indiceCarta);
 }
+
 function scorriDestra() {
-    indiceCarta = (indiceCarta + 1) % carteStyle.length;
+  indiceCarta = (indiceCarta + 1) % 2;
     document.getElementById("carta-immagine").src = carteStyle[indiceCarta];
     localStorage.setItem('indiceCarta', indiceCarta);
 }

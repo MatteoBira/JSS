@@ -87,3 +87,7 @@ lerna-debug.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Custom additions
+qipt
+bug-reports

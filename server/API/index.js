@@ -5,8 +5,10 @@ const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const { Pool } = require('pg');
 const cors = require('cors');
-
+const fs = require('fs').promises;
+const path = require('path');
 const app = express();
+const rateLimit = require("express-rate-limit");
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -22,13 +24,19 @@ const SESSION_TTL = 1000 * 60 * 60 * 24; // 24h
 const pgSession = require('connect-pg-simple')(session);
 
 // --- MIDDLEWARES ---
+const limiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minuti
+    max: 100, // Limita ogni IP a 100 richieste per windowMs
+    message: "Too many requests",
+});
 
 let corsOptions = {
     origin: 'https://playscopa.online',
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     credentials: true
 }
-app.set('trust proxy', true);
+app.set('trust proxy', 2);
+app.use(limiter);
 app.use(cors(corsOptions));
 // logger middleware
 app.use((req, res, next) => {
@@ -51,7 +59,7 @@ app.use(session({
     },
     store: new pgSession({
         pool: pool,                // Connection pool
-        tableName: 'session'   // Use another table-name than the default "session" one
+        tableName: 'session'
     }),
 }));
 
@@ -70,6 +78,39 @@ const checkAdmin = async function (req, res, next) {
     }
 }
 
+app.post('/bug-report', async (req, res) => {
+    try {
+        const email = req.body.email;
+        const name = req.body.name;
+        const bugtype = req.body['bug-type'];  // qui accedo con notazione a stringa
+        const description = req.body.description;
+
+        if (!email || !name || !bugtype || !description) {
+            throw new Error("Campi richiesti mancanti!");
+        }
+
+        const content =
+            `Nome: ${name}
+Email: ${email}
+Tipo bug: ${bugtype}
+Descrizione: ${description}
+`;
+
+        const dir = path.join(__dirname, 'bug-reports');
+        await fs.mkdir(dir, { recursive: true });
+
+        const filename = `bugreport_${Date.now()}.txt`;
+        const filepath = path.join(dir, filename);
+
+        await fs.writeFile(filepath, content, 'utf8');
+
+        return res.json({ success: true, message: 'Report salvato.' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, error: 'Errore interno del server.' });
+    }
+});
+
 
 // --- SHOW TABLE ---
 app.get('/show', checkAdmin, async (req, res) => {
@@ -80,7 +121,7 @@ app.get('/show', checkAdmin, async (req, res) => {
             success: true,
             message: 'Tabella mostrata con successo',
             resultUsers: resultUser.rows,
-            resultSesson: resultSession.rows
+            resultSession: resultSession.rows
         });
     } catch (err) {
         console.error(err);
